@@ -1,3 +1,4 @@
+/* --- Your existing IPTV styles --- */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
@@ -166,4 +167,51 @@ header {
   #channel-grid {
     justify-content: center;
   }
+}
+
+
+/* --- 👇 Add this login page style (won't affect IPTV layout) --- */
+.login-container {
+  background: #1e1e1e;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  margin: 10vh auto;
+}
+
+.login-container h1 {
+  margin-bottom: 1rem;
+}
+
+.login-container input {
+  width: 100%;
+  padding: 0.8rem;
+  margin: 0.5rem 0;
+  border: none;
+  border-radius: 6px;
+  background: #2c2c2c;
+  color: #fff;
+}
+
+.login-container button {
+  width: 100%;
+  padding: 0.8rem;
+  margin-top: 1rem;
+  background: #00bcd4;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.login-container button:hover {
+  background: #0097a7;
+}
+
+.error {
+  color: #ff5252;
+  margin-top: 1rem;
 }
