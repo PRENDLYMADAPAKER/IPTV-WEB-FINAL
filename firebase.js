@@ -1,4 +1,5 @@
-// Firebase config (already initialized)
+// firebase.js
+
 const firebaseConfig = {
   apiKey: "AIzaSyA0TjMoFSYBIs0VQ9shUilOuDGb1uXHjKI",
   authDomain: "iptv-log-in.firebaseapp.com",
@@ -6,90 +7,128 @@ const firebaseConfig = {
   storageBucket: "iptv-log-in.appspot.com",
   messagingSenderId: "820026131349",
   appId: "1:820026131349:web:417abd6ad9057c55a92c9c",
-  measurementId: "G-4Y8T6J595Z"
+  measurementId: "G-4Y8T6J595Z",
+  databaseURL: "https://iptv-log-in-default-rtdb.firebaseio.com/"
 };
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
-const db = firebase.firestore();
+const db = firebase.database();
 
-const adminEmail = "nzm19980404@gmail.com";
-
-// Show toast
-function showToast(message) {
-  const toast = document.createElement("div");
-  toast.className = "toast";
-  toast.textContent = message;
-  document.body.appendChild(toast);
-  setTimeout(() => {
-    toast.remove();
-  }, 4000);
-}
-
-// Generate device ID
+// Generate or retrieve device ID
 function getDeviceId() {
   let deviceId = localStorage.getItem("device_id");
   if (!deviceId) {
-    deviceId = "device-" + Math.random().toString(36).substring(2, 12);
+    deviceId = crypto.randomUUID();
     localStorage.setItem("device_id", deviceId);
   }
   return deviceId;
 }
 
-// Handle login
-document.getElementById("login-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
+// Show toast messages
+function showToast(message, success = false) {
+  const toast = document.createElement("div");
+  toast.className = "toast-message";
+  toast.textContent = message;
+  toast.style.backgroundColor = success ? "#00c851" : "#ff4444";
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+// Check if device is registered or within limit
+async function checkDeviceLimit(user) {
   const deviceId = getDeviceId();
+  const userDevicesRef = db.ref(`devices/${user.uid}`);
 
-  try {
-    const userCredential = await auth.signInWithEmailAndPassword(email, password);
-    const user = userCredential.user;
+  const snapshot = await userDevicesRef.get();
+  const devices = snapshot.exists() ? snapshot.val() : {};
+  const deviceKeys = Object.keys(devices);
 
-    if (email === adminEmail) {
-      // Admin, skip device check
-      window.location.href = "iptv.html";
-      return;
-    }
+  if (devices[deviceId]) return true;
 
-    const userRef = db.collection("devices").doc(user.uid);
-    const doc = await userRef.get();
-    let deviceList = [];
+  const MAX_DEVICES = 2;
 
-    if (doc.exists) {
-      deviceList = doc.data().deviceIds || [];
-    }
+  if (deviceKeys.length >= MAX_DEVICES) {
+    return false;
+  } else {
+    await userDevicesRef.child(deviceId).set(true);
+    return true;
+  }
+}
 
-    if (!deviceList.includes(deviceId)) {
-      if (deviceList.length >= 2) {
-        showToast("Max device limit reached!");
-        await auth.signOut();
-        return;
+// Remove device on logout
+async function logoutAndRemoveDevice(user) {
+  const deviceId = getDeviceId();
+  await db.ref(`devices/${user.uid}/${deviceId}`).remove();
+  await auth.signOut();
+  sessionStorage.clear(); // clear session auth
+}
+
+// UI: Toggle password visibility
+document.addEventListener("DOMContentLoaded", () => {
+  const toggle = document.getElementById("toggle-password");
+  const password = document.getElementById("password");
+
+  if (toggle && password) {
+    toggle.addEventListener("click", () => {
+      const type = password.getAttribute("type") === "password" ? "text" : "password";
+      password.setAttribute("type", type);
+      toggle.classList.toggle("visible");
+    });
+  }
+
+  const loginForm = document.getElementById("login-form");
+  const loginBtn = document.getElementById("login-btn");
+
+  if (loginForm) {
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const email = loginForm.email.value;
+      const password = loginForm.password.value;
+
+      try {
+        const userCredential = await auth.signInWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+
+        const allowed = await checkDeviceLimit(user);
+        if (!allowed) {
+          showToast("Max device limit reached (2)", false);
+          await auth.signOut();
+          return;
+        }
+
+        showToast("Login successful!", true);
+        sessionStorage.setItem("loggedIn", "true");
+        setTimeout(() => window.location.href = "index.html", 1500);
+      } catch (error) {
+        showToast("Incorrect email or password.", false);
       }
-      deviceList.push(deviceId);
-      await userRef.set({ deviceIds: deviceList });
-    }
-
-    showToast("Login successful!");
-    setTimeout(() => {
-      window.location.href = "iptv.html";
-    }, 1500);
-  } catch (error) {
-    showToast("Incorrect email or password!");
-    console.error(error.message);
+    });
   }
-});
 
-// Auto redirect if logged in
-auth.onAuthStateChanged((user) => {
-  if (user && window.location.pathname.includes("login")) {
-    window.location.href = "iptv.html";
+  const logoutBtn = document.getElementById("logout-btn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+      const user = auth.currentUser;
+      if (user) {
+        await logoutAndRemoveDevice(user);
+        window.location.href = "login.html";
+      }
+    });
   }
-});
 
-// Toggle password visibility
-document.getElementById("toggle-password").addEventListener("click", () => {
-  const passwordField = document.getElementById("password");
-  passwordField.type = passwordField.type === "password" ? "text" : "password";
+  // Prevent access to index.html if not logged in
+  if (window.location.pathname.includes("index.html")) {
+    auth.onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = "login.html";
+      }
+    });
+  }
+
+  // Restore login UI styling if user logs out
+  if (window.location.pathname.includes("login.html")) {
+    document.body.classList.add("login-page");
+  }
 });
