@@ -6,42 +6,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IPTV Login</title>
   <link rel="stylesheet" href="style.css" />
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-  <script src="firebase.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-auth-compat.js"></script>
+  <script defer src="firebase.js"></script>
 </head>
 <body>
-  <div class="neon-bg"></div>
-  <div class="login-card">
-    <img src="logo.png" class="login-logo" alt="Logo" />
-    <h2>Welcome to IPTV</h2>
-    <form id="login-form">
-      <input type="email" name="email" placeholder="Email" required />
+  <div class="login-wrapper">
+    <img src="logo.png" alt="IPTV Logo" class="login-logo" />
+    <div class="login-card">
+      <h2>Welcome to IPTV</h2>
+      <input type="email" id="email" placeholder="Email" />
       <div class="password-wrapper">
-        <input type="password" name="password" placeholder="Password" id="password-input" required />
+        <input type="password" id="password" placeholder="Password" />
         <span class="toggle-password" onclick="togglePassword()">👁️</span>
       </div>
-      <button type="submit">Login</button>
-      <div id="error-box"></div>
-    </form>
+      <button onclick="login()">Login</button>
+    </div>
   </div>
-
   <div id="toast" class="toast"></div>
-
-  <script>
-    function togglePassword() {
-      const input = document.getElementById('password-input');
-      input.type = input.type === 'password' ? 'text' : 'password';
-    }
-
-    function showToast(message, color = '#ff5252') {
-      const toast = document.getElementById('toast');
-      toast.textContent = message;
-      toast.style.backgroundColor = color;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 3000);
-    }
-  </script>
 </body>
 </html>
