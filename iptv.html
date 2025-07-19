@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IPTV Premium</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script> <!-- ✅ HLS.js added -->
+  <script src="firebase.js"></script>
+</head>
+<body>
+  <header>
+    <img src="logo.png" class="logo" />
+    <div id="clock"></div>
+    <button id="logout-btn">Logout</button>
+  </header>
+
+  <main>
+    <div id="video-container">
+      <video id="video-player" controls autoplay></video>
+      <div id="now-playing">
+        <img id="channel-icon" src="" alt="Icon" />
+        <span id="channel-name">Now Playing</span>
+        <div id="epg-info"></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <input type="text" id="search-bar" placeholder="Search channels..." />
+      <select id="category-filter"></select>
+    </div>
+
+    <div id="channel-grid"></div>
+  </main>
+
+  <script src="iptv.js"></script>
+</body>
+</html>
