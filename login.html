@@ -1,28 +1,28 @@
-<!-- login.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login - IPTV</title>
+  <title>IPTV Login</title>
   <link rel="stylesheet" href="style.css" />
+  <script defer src="login.js"></script>
 </head>
-<body class="login-body">
-  <div class="neon-bg"></div>
+<body class="login-page">
   <div class="login-container">
-    <img src="logo.png" alt="Logo" class="login-logo" />
-    <h1>Login to IPTV</h1>
-    <input type="email" id="email" placeholder="Email" />
-    <div class="password-wrapper">
-      <input type="password" id="password" placeholder="Password" />
-      <span id="togglePassword">👁️</span>
+    <div class="login-box">
+      <img src="logo.png" alt="Logo" class="login-logo" />
+      <h2>Welcome Back</h2>
+      <input type="email" id="email" placeholder="Email" required />
+
+      <div class="password-wrapper">
+        <input type="password" id="password" placeholder="Password" required />
+        <span id="toggle-password" class="password-toggle">👁️</span>
+      </div>
+
+      <button id="login-btn">Login</button>
     </div>
-    <button onclick="login()" class="login-btn">Login</button>
-    <p id="toast" class="toast-message"></p>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="firebase.js"></script>
+  <div id="toast" class="toast" style="display:none;"></div>
 </body>
 </html>
