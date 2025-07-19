@@ -1,115 +1,95 @@
-// firebase.js
-
+// Firebase config (already initialized)
 const firebaseConfig = {
   apiKey: "AIzaSyA0TjMoFSYBIs0VQ9shUilOuDGb1uXHjKI",
   authDomain: "iptv-log-in.firebaseapp.com",
   projectId: "iptv-log-in",
-  storageBucket: "iptv-log-in.firebasestorage.app",
+  storageBucket: "iptv-log-in.appspot.com",
   messagingSenderId: "820026131349",
   appId: "1:820026131349:web:417abd6ad9057c55a92c9c",
-  measurementId: "G-4Y8T6J595Z",
-  databaseURL: "https://iptv-log-in-default-rtdb.firebaseio.com/"
+  measurementId: "G-4Y8T6J595Z"
 };
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
-const db = firebase.database();
+const db = firebase.firestore();
 
+const adminEmail = "nzm19980404@gmail.com";
+
+// Show toast
+function showToast(message) {
+  const toast = document.createElement("div");
+  toast.className = "toast";
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.remove();
+  }, 4000);
+}
+
+// Generate device ID
 function getDeviceId() {
   let deviceId = localStorage.getItem("device_id");
   if (!deviceId) {
-    deviceId = crypto.randomUUID();
+    deviceId = "device-" + Math.random().toString(36).substring(2, 12);
     localStorage.setItem("device_id", deviceId);
   }
   return deviceId;
 }
 
-async function checkDeviceLimit(user) {
+// Handle login
+document.getElementById("login-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
   const deviceId = getDeviceId();
-  const userDevicesRef = db.ref(`devices/${user.uid}`);
 
-  const snapshot = await userDevicesRef.get();
-  const devices = snapshot.exists() ? snapshot.val() : {};
-  const deviceKeys = Object.keys(devices);
+  try {
+    const userCredential = await auth.signInWithEmailAndPassword(email, password);
+    const user = userCredential.user;
 
-  if (devices[deviceId]) return true;
-
-  const MAX_DEVICES = 2;
-  if (deviceKeys.length >= MAX_DEVICES) {
-    return false;
-  } else {
-    await userDevicesRef.child(deviceId).set(true);
-    return true;
-  }
-}
-
-async function logoutAndRemoveDevice(user) {
-  const deviceId = getDeviceId();
-  await db.ref(`devices/${user.uid}/${deviceId}`).remove();
-  await auth.signOut();
-}
-
-function showToast(message, duration = 3000) {
-  const toast = document.getElementById("toast");
-  if (toast) {
-    toast.textContent = message;
-    toast.classList.add("show");
-    setTimeout(() => toast.classList.remove("show"), duration);
-  }
-}
-
-window.addEventListener("DOMContentLoaded", () => {
-  const loginForm = document.getElementById("login-form");
-  const errorBox = document.getElementById("error-box");
-
-  auth.onAuthStateChanged(async (user) => {
-    if (user) {
-      const allowed = await checkDeviceLimit(user);
-      if (allowed) {
-        window.location.href = "index.html";
-      } else {
-        showToast("Device limit reached. Max 2 devices allowed.");
-        await auth.signOut();
-      }
+    if (email === adminEmail) {
+      // Admin, skip device check
+      window.location.href = "iptv.html";
+      return;
     }
-  });
 
-  if (loginForm) {
-    loginForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      errorBox.textContent = "";
+    const userRef = db.collection("devices").doc(user.uid);
+    const doc = await userRef.get();
+    let deviceList = [];
 
-      const email = loginForm.email.value;
-      const password = loginForm.password.value;
+    if (doc.exists) {
+      deviceList = doc.data().deviceIds || [];
+    }
 
-      try {
-        const userCredential = await auth.signInWithEmailAndPassword(email, password);
-        const user = userCredential.user;
-
-        const allowed = await checkDeviceLimit(user);
-        if (!allowed) {
-          showToast("Device limit reached. Max 2 devices allowed.");
-          await auth.signOut();
-          return;
-        }
-
-        showToast("Login successful 🎉 Redirecting...");
-        setTimeout(() => window.location.href = "index.html", 1500);
-      } catch (error) {
-        showToast("Incorrect email or password.");
-        errorBox.textContent = error.message;
+    if (!deviceList.includes(deviceId)) {
+      if (deviceList.length >= 2) {
+        showToast("Max device limit reached!");
+        await auth.signOut();
+        return;
       }
-    });
-  }
+      deviceList.push(deviceId);
+      await userRef.set({ deviceIds: deviceList });
+    }
 
-  const logoutBtn = document.getElementById("logout-btn");
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", async () => {
-      const user = auth.currentUser;
-      if (user) {
-        await logoutAndRemoveDevice(user);
-        window.location.href = "login.html";
-      }
-    });
+    showToast("Login successful!");
+    setTimeout(() => {
+      window.location.href = "iptv.html";
+    }, 1500);
+  } catch (error) {
+    showToast("Incorrect email or password!");
+    console.error(error.message);
   }
+});
+
+// Auto redirect if logged in
+auth.onAuthStateChanged((user) => {
+  if (user && window.location.pathname.includes("login")) {
+    window.location.href = "iptv.html";
+  }
+});
+
+// Toggle password visibility
+document.getElementById("toggle-password").addEventListener("click", () => {
+  const passwordField = document.getElementById("password");
+  passwordField.type = passwordField.type === "password" ? "text" : "password";
 });
