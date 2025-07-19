@@ -9,53 +9,93 @@
   <script defer src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script defer src="firebase.js"></script>
   <script defer src="iptv.js"></script>
-  <style>
-    body { visibility: hidden; } /* Hide UI until auth is checked */
-  </style>
 </head>
 <body>
+  <!-- Login UI -->
+  <div id="login-screen">
+    <div class="login-container">
+      <img src="logo.png" alt="Logo" class="login-logo">
+      <h2>Welcome to IPTV Web</h2>
+      <input type="email" id="login-email" placeholder="Email">
+      <div class="password-wrapper">
+        <input type="password" id="login-password" placeholder="Password">
+        <span class="toggle-password" onclick="togglePassword()">👁️</span>
+      </div>
+      <button id="login-button">Login</button>
+      <div id="toast" class="toast"></div>
+    </div>
+    <div class="neon-background"></div>
+  </div>
+
   <!-- IPTV UI -->
-  <header>
-    <img src="logo.png" alt="Logo" class="logo">
-    <div id="clock"></div>
-    <button id="logout-btn">Logout</button>
-  </header>
+  <div id="iptv-screen" style="display:none">
+    <header>
+      <img src="logo.png" alt="Logo" class="logo">
+      <div id="clock"></div>
+      <button id="logout-btn">Logout</button>
+    </header>
 
-  <div id="video-player-container">
-    <video id="video-player" controls autoplay></video>
+    <div id="video-player-container">
+      <video id="video-player" controls autoplay></video>
+    </div>
+
+    <div id="now-playing">
+      <img src="https://img.icons8.com/ios-filled/50/ffffff/television.png" />
+      <span id="now-playing-title">Now Playing</span>
+    </div>
+
+    <div id="search-container">
+      <input type="text" id="search-bar" placeholder="Search channel...">
+      <select id="category-filter">
+        <option value="All">All Categories</option>
+      </select>
+    </div>
+
+    <div id="channel-grid"></div>
   </div>
-
-  <div id="now-playing">
-    <img src="https://img.icons8.com/ios-filled/50/ffffff/television.png" />
-    <span id="now-playing-title">Now Playing</span>
-  </div>
-
-  <div id="search-container">
-    <input type="text" id="search-bar" placeholder="Search channel...">
-    <select id="category-filter">
-      <option value="All">All Categories</option>
-    </select>
-  </div>
-
-  <div id="channel-grid"></div>
 
   <script>
-    // Check login first
+    const loginScreen = document.getElementById('login-screen');
+    const iptvScreen = document.getElementById('iptv-screen');
+
     firebase.auth().onAuthStateChanged((user) => {
-      if (!user) {
-        window.location.href = "login.html";
+      if (user) {
+        loginScreen.style.display = 'none';
+        iptvScreen.style.display = 'block';
       } else {
-        document.body.style.visibility = "visible"; // Show UI only after auth
+        loginScreen.style.display = 'block';
+        iptvScreen.style.display = 'none';
       }
     });
 
-    // Logout button logic
-    document.getElementById('logout-btn')?.addEventListener('click', () => {
+    document.getElementById("login-button").addEventListener("click", () => {
+      const email = document.getElementById("login-email").value;
+      const password = document.getElementById("login-password").value;
+      firebase.auth().signInWithEmailAndPassword(email, password)
+        .then(() => showToast("Login successful!"))
+        .catch((error) => showToast("Incorrect email or password"));
+    });
+
+    document.getElementById("logout-btn").addEventListener("click", () => {
       firebase.auth().signOut().then(() => {
         localStorage.removeItem("device_id");
-        window.location.href = "login.html";
+        showToast("Logged out");
+        loginScreen.style.display = 'block';
+        iptvScreen.style.display = 'none';
       });
     });
+
+    function togglePassword() {
+      const pwd = document.getElementById("login-password");
+      pwd.type = pwd.type === "password" ? "text" : "password";
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById("toast");
+      toast.innerText = msg;
+      toast.style.display = "block";
+      setTimeout(() => toast.style.display = "none", 3000);
+    }
   </script>
 </body>
 </html>
