@@ -5,26 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>IPTV Login</title>
   <link rel="stylesheet" href="style.css" />
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
-<body class="login-page">
+<body class="login-page" onload="document.body.classList.add('login-page')">
+
   <div class="login-container">
-    <img src="logo.png" alt="IPTV Logo" class="login-logo" />
-    <h2>Welcome to IPTV</h2>
+    <img src="logo.png" alt="Logo" class="login-logo" />
+    <h2>IPTV Premium Login</h2>
+
     <form id="login-form">
       <input type="email" name="email" placeholder="Email" required />
-      <div class="password-wrapper">
+      
+      <div class="password-container">
         <input type="password" name="password" id="password" placeholder="Password" required />
         <span id="toggle-password">👁️</span>
       </div>
+      
       <button type="submit">Login</button>
-      <p id="error-box" class="error"></p>
-      <p id="success-box" class="success" style="display: none;">Login successful! Redirecting...</p>
+      <p id="error-box"></p>
     </form>
   </div>
 
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+  <!-- Firebase Logic -->
   <script src="firebase.js"></script>
+
+  <!-- Password toggle -->
+  <script>
+    const togglePassword = document.getElementById("toggle-password");
+    const passwordField = document.getElementById("password");
+
+    togglePassword.addEventListener("click", () => {
+      const type = passwordField.type === "password" ? "text" : "password";
+      passwordField.type = type;
+      togglePassword.textContent = type === "password" ? "👁️" : "🙈";
+    });
+  </script>
+
 </body>
 </html>
