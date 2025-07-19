@@ -1,4 +1,5 @@
-// Firebase Config
+// firebase.js
+
 const firebaseConfig = {
   apiKey: "AIzaSyA0TjMoFSYBIs0VQ9shUilOuDGb1uXHjKI",
   authDomain: "iptv-log-in.firebaseapp.com",
@@ -26,13 +27,20 @@ function getDeviceId() {
 async function checkDeviceLimit(user) {
   const deviceId = getDeviceId();
   const userDevicesRef = db.ref(`devices/${user.uid}`);
+
   const snapshot = await userDevicesRef.get();
   const devices = snapshot.exists() ? snapshot.val() : {};
   const deviceKeys = Object.keys(devices);
+
   if (devices[deviceId]) return true;
-  if (deviceKeys.length >= 2) return false;
-  await userDevicesRef.child(deviceId).set(true);
-  return true;
+
+  const MAX_DEVICES = 2;
+  if (deviceKeys.length >= MAX_DEVICES) {
+    return false;
+  } else {
+    await userDevicesRef.child(deviceId).set(true);
+    return true;
+  }
 }
 
 async function logoutAndRemoveDevice(user) {
@@ -41,25 +49,36 @@ async function logoutAndRemoveDevice(user) {
   await auth.signOut();
 }
 
+function showToast(message, duration = 3000) {
+  const toast = document.getElementById("toast");
+  if (toast) {
+    toast.textContent = message;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), duration);
+  }
+}
+
 window.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("login-form");
   const errorBox = document.getElementById("error-box");
-  const successBox = document.getElementById("success-box");
 
-  // Auto-redirect if user is already logged in
   auth.onAuthStateChanged(async (user) => {
     if (user) {
       const allowed = await checkDeviceLimit(user);
-      if (allowed) window.location.href = "index.html";
-      else await logoutAndRemoveDevice(user);
+      if (allowed) {
+        window.location.href = "index.html";
+      } else {
+        showToast("Device limit reached. Max 2 devices allowed.");
+        await auth.signOut();
+      }
     }
   });
 
   if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      errorBox.innerText = "";
-      successBox.style.display = "none";
+      errorBox.textContent = "";
+
       const email = loginForm.email.value;
       const password = loginForm.password.value;
 
@@ -69,24 +88,17 @@ window.addEventListener("DOMContentLoaded", () => {
 
         const allowed = await checkDeviceLimit(user);
         if (!allowed) {
-          errorBox.innerText = "Device limit reached (2 max). Contact admin.";
+          showToast("Device limit reached. Max 2 devices allowed.");
           await auth.signOut();
           return;
         }
 
-        successBox.style.display = "block";
-        setTimeout(() => window.location.href = "index.html", 1000);
+        showToast("Login successful 🎉 Redirecting...");
+        setTimeout(() => window.location.href = "index.html", 1500);
       } catch (error) {
-        errorBox.innerText = error.message;
+        showToast("Incorrect email or password.");
+        errorBox.textContent = error.message;
       }
-    });
-  }
-
-  const toggleBtn = document.getElementById("toggle-password");
-  if (toggleBtn) {
-    toggleBtn.addEventListener("click", () => {
-      const pwInput = document.getElementById("password");
-      pwInput.type = pwInput.type === "password" ? "text" : "password";
     });
   }
 
