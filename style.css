@@ -1,133 +1,96 @@
-/* === Global & Body === */
+/* General Styles */
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
   color: #ffffff;
   overflow-x: hidden;
 }
 
-/* === Neon Background Animation === */
-.neon-bg {
+/* Neon Animation */
+@keyframes neon {
+  0% { box-shadow: 0 0 5px #0ff, 0 0 10px #0ff; }
+  50% { box-shadow: 0 0 20px #0ff, 0 0 30px #0ff; }
+  100% { box-shadow: 0 0 5px #0ff, 0 0 10px #0ff; }
+}
+
+/* Toast */
+.toast {
   position: fixed;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle at center, rgba(0, 255, 255, 0.15), transparent 70%);
-  animation: pulse 8s infinite ease-in-out;
-  z-index: -1;
-  pointer-events: none;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 0.6;
-  }
-  50% {
-    transform: scale(1.2);
-    opacity: 0.2;
-  }
-}
-
-/* === Login Card === */
-.login-card {
-  background-color: #1e1e1e;
-  padding: 30px;
-  max-width: 320px;
-  margin: 10vh auto;
-  border-radius: 12px;
-  text-align: center;
-  box-shadow: 0 0 15px #00ffff33;
-  position: relative;
-  z-index: 1;
-}
-
-.login-logo {
-  width: 60px;
-  height: 60px;
-  object-fit: cover;
-  border-radius: 50%;
-  margin-bottom: 16px;
-  border: 2px solid #00ffff;
-}
-
-.login-card input {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
-  border-radius: 8px;
-  border: none;
-  outline: none;
-  background-color: #2c2c2c;
-  color: #fff;
-  font-size: 14px;
-}
-
-.password-container {
-  position: relative;
-}
-
-#toggle-password {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  font-size: 16px;
-  color: #aaa;
-}
-
-#login-btn {
-  width: 100%;
-  padding: 12px;
-  border: none;
-  background-color: #00ffff;
-  color: black;
-  font-weight: bold;
-  font-size: 15px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-#login-btn:hover {
-  background-color: #00cccc;
-}
-
-/* Toast Notification */
-#toast-container {
-  position: fixed;
-  bottom: 30px;
+  bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 999;
-}
-
-.toast {
-  background-color: #333;
+  background: #222;
   color: #fff;
-  padding: 12px 18px;
-  margin-top: 10px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px #000;
+  opacity: 0;
+  z-index: 9999;
+  transition: opacity 0.4s ease;
+}
+.toast.show {
+  opacity: 1;
+}
+
+/* Login Card */
+.login-card {
+  max-width: 380px;
+  margin: 80px auto;
+  padding: 25px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 12px;
+  animation: neon 2s infinite alternate;
+  box-shadow: 0 0 10px rgba(0,255,255,0.3);
+}
+
+/* Logo */
+.login-logo {
+  display: block;
+  margin: 0 auto 20px;
+  width: 100px;
+  height: auto;
+  border-radius: 50%;
+}
+
+/* Input Styles */
+input[type="email"],
+input[type="password"] {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: none;
   border-radius: 6px;
-  min-width: 200px;
-  text-align: center;
-  animation: slideup 0.4s ease, fadeout 0.4s ease 2.5s forwards;
+  font-size: 16px;
 }
 
-@keyframes slideup {
-  from { transform: translateY(100px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+.login-button {
+  width: 100%;
+  padding: 12px;
+  background: #00c6ff;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.login-button:hover {
+  background: #007eaa;
 }
 
-@keyframes fadeout {
-  to { opacity: 0; transform: translateY(-20px); }
+/* Toggle Password */
+.password-toggle {
+  position: relative;
+}
+.password-toggle-icon {
+  position: absolute;
+  right: 14px;
+  top: 12px;
+  color: #999;
+  cursor: pointer;
 }
 
-/* === IPTV UI BELOW === */
-
-/* HEADER */
+/* IPTV UI */
 header {
   display: flex;
   align-items: center;
@@ -138,7 +101,6 @@ header {
   top: 0;
   z-index: 1001;
 }
-
 .logo {
   width: 48px;
   height: 48px;
@@ -146,7 +108,6 @@ header {
   object-fit: cover;
   border: 2px solid #ffffff33;
 }
-
 #clock {
   font-size: 16px;
   font-weight: bold;
@@ -154,7 +115,6 @@ header {
   flex-grow: 1;
   color: #ccc;
 }
-
 #logout-btn {
   background-color: crimson;
   color: white;
@@ -167,14 +127,11 @@ header {
 #logout-btn:hover {
   background-color: #ff2f3f;
 }
-
-/* Video Player */
 #video-player-container {
   background-color: #000;
   text-align: center;
   padding: 10px 0;
 }
-
 #video-player {
   width: 95vw;
   max-width: 100%;
@@ -182,22 +139,17 @@ header {
   border-radius: 10px;
   background: black;
 }
-
-/* Now Playing */
 #now-playing {
   display: flex;
   align-items: center;
   justify-content: center;
   margin-top: 8px;
 }
-
 #now-playing img {
   width: 24px;
   height: 24px;
   margin-right: 8px;
 }
-
-/* Search and Filter */
 #search-container {
   display: flex;
   flex-direction: column;
@@ -205,7 +157,6 @@ header {
   background-color: #1e1e1e;
   gap: 10px;
 }
-
 #search-bar {
   padding: 10px;
   border-radius: 5px;
@@ -213,7 +164,6 @@ header {
   outline: none;
   width: 100%;
 }
-
 #category-filter {
   padding: 10px;
   border-radius: 5px;
@@ -222,8 +172,6 @@ header {
   background-color: #2c2c2c;
   color: white;
 }
-
-/* Channel Grid */
 #channel-grid {
   overflow-x: auto;
   white-space: nowrap;
@@ -232,7 +180,6 @@ header {
   scroll-snap-type: x mandatory;
   gap: 10px;
 }
-
 .channel-card {
   background-color: #1c1c1c;
   border-radius: 12px;
@@ -247,11 +194,9 @@ header {
   transition: transform 0.2s;
   flex-shrink: 0;
 }
-
 .channel-card:hover {
   transform: scale(1.05);
 }
-
 .channel-card img {
   width: 100%;
   height: 70px;
@@ -259,7 +204,6 @@ header {
   border-radius: 8px;
   margin-bottom: 6px;
 }
-
 .channel-card p {
   margin: 0;
   font-size: 13px;
@@ -270,18 +214,14 @@ header {
   text-overflow: ellipsis;
   max-width: 100%;
 }
-
 .favorite {
   color: gold;
 }
-
-/* Responsive Tweaks */
 @media (min-width: 768px) {
   #video-player {
     height: 400px;
   }
-
   #channel-grid {
     justify-content: center;
   }
-  }
+}
