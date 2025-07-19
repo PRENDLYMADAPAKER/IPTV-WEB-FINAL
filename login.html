@@ -4,19 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>IPTV Premium Login</title>
+
+  <!-- Inline style to HIDE page until Firebase finishes -->
   <style>
-    body {
+    html, body {
+      margin: 0;
+      padding: 0;
       background-color: #111;
       color: white;
       font-family: Arial, sans-serif;
       text-align: center;
       padding-top: 100px;
-      display: none; /* hide initially */
+      display: none; /* HIDE initially */
     }
+
     h1 {
       font-size: 28px;
       margin-bottom: 20px;
     }
+
     input {
       padding: 10px;
       margin: 5px;
@@ -24,6 +30,7 @@
       border: none;
       border-radius: 5px;
     }
+
     button {
       padding: 10px 20px;
       font-size: 16px;
@@ -33,15 +40,18 @@
       border-radius: 5px;
       cursor: pointer;
     }
+
     button:hover {
       background-color: #ff3333;
     }
+
     #error-box {
       color: red;
       margin-top: 10px;
     }
   </style>
-  <!-- Firebase -->
+
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
@@ -58,12 +68,13 @@
   <div id="error-box"></div>
 
   <script>
+    // Wait for Firebase to check auth before showing UI
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
-        // User already logged in
+        // Already logged in
         window.location.href = "index.html";
       } else {
-        // Show login form after Firebase has finished checking
+        // Now we show the page
         document.body.style.display = "block";
       }
     });
