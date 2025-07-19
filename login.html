@@ -3,38 +3,84 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>IPTV Login</title>
+  <link rel="stylesheet" href="style.css">
   <style>
     body {
-      display: none;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    #login-box {
+      background-color: #1e1e1e;
+      padding: 30px;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    #login-box h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 12px;
+      border: none;
+      border-radius: 5px;
+      background: #2c2c2c;
+      color: white;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: crimson;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #ff2f3f;
+    }
+
+    #error-box {
+      color: orange;
+      margin-top: 12px;
+      text-align: center;
     }
   </style>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-  <script src="firebase.js"></script>
 </head>
 <body>
-  <div class="login-container">
+  <div id="login-box">
+    <h2>Login to IPTV</h2>
     <form id="login-form">
-      <h2>Login</h2>
       <input type="email" name="email" placeholder="Email" required />
       <input type="password" name="password" placeholder="Password" required />
       <button type="submit">Login</button>
-      <div id="error-box" style="color: red; margin-top: 10px;"></div>
     </form>
+    <div id="error-box"></div>
   </div>
 
-  <script>
-    firebase.auth().onAuthStateChanged(function(user) {
-      if (user) {
-        window.location.href = "index.html";
-      } else {
-        // Show the UI after Firebase confirms user is not logged in
-        document.body.style.display = "block";
-      }
-    });
-  </script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <!-- Your Firebase logic -->
+  <script src="firebase.js"></script>
 </body>
 </html>
