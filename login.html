@@ -1,90 +1,29 @@
+<!-- ✅ login.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IPTV Login</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body class="login-body">
+<body>
   <div class="neon-bg"></div>
   <div class="login-container">
     <img src="logo.png" alt="Logo" class="login-logo" />
-    <h2>Login to IPTV</h2>
-    <div class="login-form">
-      <input type="email" id="email" placeholder="Email" required />
+    <div class="login-card">
+      <h2>Welcome to IPTV</h2>
+      <input type="email" id="email" placeholder="Email" />
       <div class="password-container">
-        <input type="password" id="password" placeholder="Password" required />
-        <span class="toggle-password" onclick="togglePassword()">👁️</span>
+        <input type="password" id="password" placeholder="Password" />
+        <span id="toggle-password">👁️</span>
       </div>
-      <button onclick="login()">Login</button>
+      <button id="login-btn">Login</button>
+      <div id="toast"></div>
     </div>
-    <p id="error-message" class="error-message"></p>
   </div>
-
-  <!-- Toast Notification -->
-  <div id="toast" class="toast"></div>
-
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="firebase.js"></script>
-  <script>
-    // Auto redirect if logged in
-    firebase.auth().onAuthStateChanged((user) => {
-      if (user) window.location.href = "iptv.html";
-    });
-
-    function togglePassword() {
-      const passInput = document.getElementById("password");
-      passInput.type = passInput.type === "password" ? "text" : "password";
-    }
-
-    function showToast(message, success = false) {
-      const toast = document.getElementById("toast");
-      toast.textContent = message;
-      toast.style.backgroundColor = success ? "#00c853" : "#d50000";
-      toast.classList.add("show");
-      setTimeout(() => toast.classList.remove("show"), 3000);
-    }
-
-    async function login() {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
-
-      try {
-        const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
-        const user = userCredential.user;
-
-        // DEVICE LIMIT CHECK
-        const uid = user.uid;
-        const db = firebase.firestore();
-        const docRef = db.collection("devices").doc(uid);
-        const docSnap = await docRef.get();
-
-        let deviceId = localStorage.getItem("deviceId");
-        if (!deviceId) {
-          deviceId = crypto.randomUUID();
-          localStorage.setItem("deviceId", deviceId);
-        }
-
-        let devices = docSnap.exists ? docSnap.data().deviceIds || [] : [];
-
-        if (!devices.includes(deviceId)) {
-          if (devices.length >= 2) {
-            showToast("Max device limit reached.", false);
-            await firebase.auth().signOut();
-            return;
-          }
-          devices.push(deviceId);
-          await docRef.set({ deviceIds: devices });
-        }
-
-        showToast("Login successful!", true);
-        setTimeout(() => window.location.href = "iptv.html", 1500);
-      } catch (error) {
-        showToast("Incorrect email or password.", false);
-      }
-    }
-  </script>
 </body>
 </html>
