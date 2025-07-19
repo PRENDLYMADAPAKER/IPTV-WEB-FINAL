@@ -1,6 +1,8 @@
 // firebase.js
 
 // Your existing Firebase config
+// firebase.js
+
 const firebaseConfig = {
   apiKey: "AIzaSyA0TjMoFSYBIs0VQ9shUilOuDGb1uXHjKI",
   authDomain: "iptv-log-in.firebaseapp.com",
@@ -9,7 +11,7 @@ const firebaseConfig = {
   messagingSenderId: "820026131349",
   appId: "1:820026131349:web:417abd6ad9057c55a92c9c",
   measurementId: "G-4Y8T6J595Z",
-  databaseURL: "https://iptv-log-in-default-rtdb.firebaseio.com/" // Add this line
+  databaseURL: "https://iptv-log-in-default-rtdb.firebaseio.com/"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -57,15 +59,43 @@ async function logoutAndRemoveDevice(user) {
   await auth.signOut();
 }
 
-// Hook login form
+// Run after DOM fully loaded
 window.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("login-form");
   const errorBox = document.getElementById("error-box");
+  const logoutBtn = document.getElementById("logout-btn");
 
+  // Listen for auth state changes
+  auth.onAuthStateChanged(async (user) => {
+    const currentPage = window.location.pathname;
+
+    // If user is logged in and on login.html, redirect to IPTV
+    if (user && currentPage.includes("login.html")) {
+      window.location.href = "index.html";
+    }
+
+    // If user is NOT logged in and on index.html, redirect to login
+    if (!user && currentPage.includes("index.html")) {
+      window.location.href = "login.html";
+    }
+
+    // Add logout handler only if on IPTV page
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", async () => {
+        if (user) {
+          await logoutAndRemoveDevice(user);
+          window.location.href = "login.html";
+        }
+      });
+    }
+  });
+
+  // Handle login form submit
   if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       errorBox.innerText = "";
+
       const email = loginForm.email.value;
       const password = loginForm.password.value;
 
@@ -80,20 +110,9 @@ window.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        window.location.href = "index.html"; // Success: go to IPTV
+        window.location.href = "index.html";
       } catch (error) {
         errorBox.innerText = error.message;
-      }
-    });
-  }
-
-  const logoutBtn = document.getElementById("logout-btn");
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", async () => {
-      const user = auth.currentUser;
-      if (user) {
-        await logoutAndRemoveDevice(user);
-        window.location.href = "login.html";
       }
     });
   }
