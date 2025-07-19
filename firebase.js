@@ -12,104 +12,65 @@ const firebaseConfig = {
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
-const db = firebase.firestore();
+const db = firebase.database();
 
-// Show toast message
-function showToast(message) {
-  const container = document.getElementById("toast-container");
-  const toast = document.createElement("div");
-  toast.className = "toast";
-  toast.innerText = message;
-  container.appendChild(toast);
-  setTimeout(() => toast.remove(), 3000);
+// Show toast
+function showToast(message, isError = false) {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.style.backgroundColor = isError ? "#ff3c3c" : "#4caf50";
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 4000);
 }
 
-// Save device ID
-function getDeviceId() {
-  let id = localStorage.getItem("device_id");
-  if (!id) {
-    id = crypto.randomUUID();
-    localStorage.setItem("device_id", id);
-  }
-  return id;
+// Save current device
+function saveDevice(uid) {
+  const deviceId = navigator.userAgent + "_" + Math.random().toString(36).substring(2);
+  const ref = db.ref("devices/" + uid);
+  return ref.once("value").then(snapshot => {
+    const devices = snapshot.val() || {};
+    const deviceKeys = Object.keys(devices);
+    if (deviceKeys.length >= 2 && !Object.values(devices).includes(deviceId)) {
+      throw new Error("Max device limit reached.");
+    }
+    devices[Date.now()] = deviceId;
+    return ref.set(devices);
+  });
 }
 
-// Handle login
-document.getElementById("login-btn").addEventListener("click", async () => {
+// Login
+function login() {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
 
-  try {
-    const { user } = await auth.signInWithEmailAndPassword(email, password);
-    const userId = user.uid;
-    const deviceId = getDeviceId();
-    const devicesRef = db.collection("devices").doc(userId);
-    const doc = await devicesRef.get();
+  if (!email || !password) {
+    showToast("Please enter email and password", true);
+    return;
+  }
 
-    if (!doc.exists) {
-      await devicesRef.set({ ids: [deviceId] });
-    } else {
-      let ids = doc.data().ids || [];
-
-      // Check if device already registered
-      if (!ids.includes(deviceId)) {
-        if (ids.length >= 2) {
-          showToast("Max device limit reached");
-          auth.signOut();
-          return;
-        }
-        ids.push(deviceId);
-        await devicesRef.update({ ids });
+  auth.signInWithEmailAndPassword(email, password)
+    .then(userCredential => {
+      const user = userCredential.user;
+      return saveDevice(user.uid).then(() => {
+        showToast("Login successful");
+        setTimeout(() => {
+          window.location.href = "iptv.html";
+        }, 1000);
+      });
+    })
+    .catch(error => {
+      if (error.message.includes("Max device")) {
+        showToast("Max device limit reached", true);
+        auth.signOut();
+      } else {
+        showToast("Incorrect email or password", true);
       }
-    }
-
-    showToast("Login successful!");
-    setTimeout(() => {
-      window.location.href = "iptv.html";
-    }, 1200);
-
-  } catch (error) {
-    console.error(error);
-    showToast("Invalid email or password");
-  }
-});
-
-// Auto redirect if already logged in
-auth.onAuthStateChanged(async (user) => {
-  if (user) {
-    const currentPage = window.location.pathname;
-    if (currentPage.includes("login.html")) {
-      window.location.href = "iptv.html";
-    }
-  }
-});
-
-// Force redirect to login if not logged in
-if (window.location.pathname.includes("iptv.html")) {
-  auth.onAuthStateChanged((user) => {
-    if (!user) {
-      window.location.href = "login.html";
-    }
-  });
+    });
 }
 
-// Logout button
-const logoutBtn = document.getElementById("logout-btn");
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", async () => {
-    const user = auth.currentUser;
-    if (user) {
-      const deviceId = getDeviceId();
-      const ref = db.collection("devices").doc(user.uid);
-      const doc = await ref.get();
-      if (doc.exists) {
-        let ids = doc.data().ids || [];
-        ids = ids.filter((id) => id !== deviceId);
-        await ref.update({ ids });
-      }
-    }
-    await auth.signOut();
-    localStorage.removeItem("device_id");
-    window.location.href = "login.html";
-  });
-}
+// Auto-redirect if already logged in
+auth.onAuthStateChanged(user => {
+  if (user && window.location.pathname.endsWith("login.html")) {
+    window.location.href = "iptv.html";
+  }
+});
