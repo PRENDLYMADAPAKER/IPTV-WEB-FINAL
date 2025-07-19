@@ -2,38 +2,34 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>IPTV Web</title>
   <link rel="stylesheet" href="style.css" />
   <script defer src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script defer src="firebase.js"></script>
   <script defer src="iptv.js"></script>
-  <style>
-    body { margin: 0; font-family: Arial, sans-serif; }
-    .hidden { display: none; }
-  </style>
 </head>
 <body>
-  <!-- Login UI -->
-  <div id="login-screen">
-    <div class="login-container">
-      <img src="logo.png" alt="Logo" class="logo-login" />
+
+  <!-- LOGIN UI -->
+  <div id="login-container">
+    <div id="login-box">
+      <img src="logo.png" alt="IPTV Logo">
       <h2>Welcome to IPTV</h2>
-      <input type="email" id="email" placeholder="Email" required />
+      <input type="email" id="email" placeholder="Email" />
       <div class="password-wrapper">
-        <input type="password" id="password" placeholder="Password" required />
-        <span id="togglePassword">👁️</span>
+        <input type="password" id="password" placeholder="Password" />
+        <span id="toggle-password">👁️</span>
       </div>
       <button id="login-btn">Login</button>
-      <p id="login-message"></p>
     </div>
   </div>
 
   <!-- IPTV UI -->
-  <div id="iptv-screen" class="hidden">
+  <div id="iptv-container" style="display:none;">
     <header>
-      <img src="logo.png" alt="Logo" class="logo" />
+      <img src="logo.png" alt="Logo" class="logo">
       <div id="clock"></div>
       <button id="logout-btn">Logout</button>
     </header>
@@ -48,7 +44,7 @@
     </div>
 
     <div id="search-container">
-      <input type="text" id="search-bar" placeholder="Search channel..." />
+      <input type="text" id="search-bar" placeholder="Search channel...">
       <select id="category-filter">
         <option value="All">All Categories</option>
       </select>
@@ -58,48 +54,38 @@
   </div>
 
   <script>
-    // Auth check
-    firebase.auth().onAuthStateChanged((user) => {
-      const loginScreen = document.getElementById("login-screen");
-      const iptvScreen = document.getElementById("iptv-screen");
+    // Show/hide password
+    document.getElementById("toggle-password").onclick = () => {
+      const passInput = document.getElementById("password");
+      passInput.type = passInput.type === "password" ? "text" : "password";
+    };
 
+    // Auth state check
+    firebase.auth().onAuthStateChanged((user) => {
       if (user) {
-        loginScreen.classList.add("hidden");
-        iptvScreen.classList.remove("hidden");
+        document.getElementById("login-container").style.display = "none";
+        document.getElementById("iptv-container").style.display = "block";
       } else {
-        loginScreen.classList.remove("hidden");
-        iptvScreen.classList.add("hidden");
+        document.getElementById("login-container").style.display = "flex";
+        document.getElementById("iptv-container").style.display = "none";
       }
     });
 
     // Login logic
-    document.getElementById("login-btn")?.addEventListener("click", () => {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      const message = document.getElementById("login-message");
-
+    document.getElementById("login-btn").onclick = () => {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
       firebase.auth().signInWithEmailAndPassword(email, password)
-        .then(() => {
-          message.textContent = "Login successful!";
-        })
-        .catch((error) => {
-          message.textContent = error.message;
-        });
-    });
+        .catch((err) => alert("Login Failed: " + err.message));
+    };
 
     // Logout logic
-    document.getElementById("logout-btn")?.addEventListener("click", () => {
+    document.getElementById("logout-btn").onclick = () => {
       firebase.auth().signOut().then(() => {
         localStorage.removeItem("device_id");
         location.reload();
       });
-    });
-
-    // Password toggle
-    document.getElementById("togglePassword")?.addEventListener("click", () => {
-      const passInput = document.getElementById("password");
-      passInput.type = passInput.type === "password" ? "text" : "password";
-    });
+    };
   </script>
 </body>
 </html>
