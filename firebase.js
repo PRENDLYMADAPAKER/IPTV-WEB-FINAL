@@ -1,8 +1,4 @@
-// firebase.js
-
-// Your existing Firebase config
-// firebase.js
-
+// Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyA0TjMoFSYBIs0VQ9shUilOuDGb1uXHjKI",
   authDomain: "iptv-log-in.firebaseapp.com",
@@ -18,7 +14,6 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
 
-// Generate unique device ID and store in localStorage
 function getDeviceId() {
   let deviceId = localStorage.getItem("device_id");
   if (!deviceId) {
@@ -28,74 +23,43 @@ function getDeviceId() {
   return deviceId;
 }
 
-// Check if device is already registered or within limit
 async function checkDeviceLimit(user) {
   const deviceId = getDeviceId();
   const userDevicesRef = db.ref(`devices/${user.uid}`);
-
   const snapshot = await userDevicesRef.get();
   const devices = snapshot.exists() ? snapshot.val() : {};
   const deviceKeys = Object.keys(devices);
-
-  // If current device already registered, allow login
   if (devices[deviceId]) return true;
-
-  // Max device limit (change to 2 max)
-  const MAX_DEVICES = 2;
-
-  if (deviceKeys.length >= MAX_DEVICES) {
-    return false;
-  } else {
-    // Register new device
-    await userDevicesRef.child(deviceId).set(true);
-    return true;
-  }
+  if (deviceKeys.length >= 2) return false;
+  await userDevicesRef.child(deviceId).set(true);
+  return true;
 }
 
-// Log out and remove device from DB
 async function logoutAndRemoveDevice(user) {
   const deviceId = getDeviceId();
   await db.ref(`devices/${user.uid}/${deviceId}`).remove();
   await auth.signOut();
 }
 
-// Run after DOM fully loaded
 window.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("login-form");
   const errorBox = document.getElementById("error-box");
-  const logoutBtn = document.getElementById("logout-btn");
+  const successBox = document.getElementById("success-box");
 
-  // Listen for auth state changes
+  // Auto-redirect if user is already logged in
   auth.onAuthStateChanged(async (user) => {
-    const currentPage = window.location.pathname;
-
-    // If user is logged in and on login.html, redirect to IPTV
-    if (user && currentPage.includes("login.html")) {
-      window.location.href = "index.html";
-    }
-
-    // If user is NOT logged in and on index.html, redirect to login
-    if (!user && currentPage.includes("index.html")) {
-      window.location.href = "login.html";
-    }
-
-    // Add logout handler only if on IPTV page
-    if (logoutBtn) {
-      logoutBtn.addEventListener("click", async () => {
-        if (user) {
-          await logoutAndRemoveDevice(user);
-          window.location.href = "login.html";
-        }
-      });
+    if (user) {
+      const allowed = await checkDeviceLimit(user);
+      if (allowed) window.location.href = "index.html";
+      else await logoutAndRemoveDevice(user);
     }
   });
 
-  // Handle login form submit
   if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       errorBox.innerText = "";
-
+      successBox.style.display = "none";
       const email = loginForm.email.value;
       const password = loginForm.password.value;
 
@@ -110,9 +74,29 @@ window.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        window.location.href = "index.html";
+        successBox.style.display = "block";
+        setTimeout(() => window.location.href = "index.html", 1000);
       } catch (error) {
         errorBox.innerText = error.message;
+      }
+    });
+  }
+
+  const toggleBtn = document.getElementById("toggle-password");
+  if (toggleBtn) {
+    toggleBtn.addEventListener("click", () => {
+      const pwInput = document.getElementById("password");
+      pwInput.type = pwInput.type === "password" ? "text" : "password";
+    });
+  }
+
+  const logoutBtn = document.getElementById("logout-btn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+      const user = auth.currentUser;
+      if (user) {
+        await logoutAndRemoveDevice(user);
+        window.location.href = "login.html";
       }
     });
   }
