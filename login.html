@@ -1,29 +1,99 @@
-<!-- ✅ login.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IPTV Login</title>
+  <title>IPTV App</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="firebase.js" defer></script>
+  <script src="iptv.js" defer></script>
 </head>
 <body>
-  <div class="neon-bg"></div>
-  <div class="login-container">
+  <!-- Gradient + Neon Background -->
+  <div class="neon-background"></div>
+
+  <!-- Login Container -->
+  <div id="login-container" class="login-wrapper">
     <img src="logo.png" alt="Logo" class="login-logo" />
-    <div class="login-card">
-      <h2>Welcome to IPTV</h2>
-      <input type="email" id="email" placeholder="Email" />
-      <div class="password-container">
-        <input type="password" id="password" placeholder="Password" />
-        <span id="toggle-password">👁️</span>
-      </div>
-      <button id="login-btn">Login</button>
-      <div id="toast"></div>
+    <h2>Welcome to IPTV</h2>
+    <input type="email" id="email" placeholder="Email" />
+    <div class="password-field">
+      <input type="password" id="password" placeholder="Password" />
+      <span id="toggle-password">👁️</span>
     </div>
+    <button id="login-btn">Login</button>
+    <div id="toast" class="toast"></div>
   </div>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="firebase.js"></script>
+
+  <!-- Main App (Hidden by default) -->
+  <div id="main-app" style="display:none">
+    <header>
+      <img src="logo.png" alt="Logo" class="logo" />
+      <div id="clock"></div>
+      <button id="logout-btn">Logout</button>
+    </header>
+
+    <div id="video-player-container">
+      <video id="video-player" controls autoplay></video>
+      <div id="now-playing">
+        <img src="play.png" alt="Playing" />
+        <span id="now-playing-title">Now Playing: </span>
+      </div>
+    </div>
+
+    <div id="search-container">
+      <input type="text" id="search-bar" placeholder="Search channels..." />
+      <select id="category-filter"></select>
+    </div>
+
+    <div id="channel-grid"></div>
+  </div>
+
+  <script>
+    // Password Toggle
+    document.getElementById("toggle-password").addEventListener("click", () => {
+      const password = document.getElementById("password");
+      password.type = password.type === "password" ? "text" : "password";
+    });
+
+    // Show toast
+    function showToast(message, success = true) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.className = `toast ${success ? 'success' : 'error'}`;
+      toast.style.display = "block";
+      setTimeout(() => (toast.style.display = "none"), 3000);
+    }
+
+    // Firebase login
+    document.getElementById("login-btn").addEventListener("click", async () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      try {
+        const result = await firebase.auth().signInWithEmailAndPassword(email, password);
+        // Device limit check (must be handled in firebase.js)
+        showToast("Login successful!", true);
+        document.getElementById("login-container").style.display = "none";
+        document.getElementById("main-app").style.display = "block";
+      } catch (error) {
+        const msg = error.message.includes("auth") ? "Incorrect email or password" : error.message;
+        showToast(msg, false);
+      }
+    });
+
+    // Auto-redirect if already logged in
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        document.getElementById("login-container").style.display = "none";
+        document.getElementById("main-app").style.display = "block";
+      } else {
+        document.getElementById("login-container").style.display = "flex";
+        document.getElementById("main-app").style.display = "none";
+      }
+    });
+  </script>
 </body>
 </html>
