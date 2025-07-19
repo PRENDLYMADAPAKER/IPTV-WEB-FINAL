@@ -3,89 +3,151 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>IPTV Web</title>
+  <title>IPTV Web App</title>
   <link rel="stylesheet" href="style.css" />
-  <script defer src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script defer src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script defer src="firebase.js"></script>
-  <script defer src="iptv.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(160deg, #0f0c29, #302b63, #24243e);
+      color: white;
+    }
+
+    #login-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .login-box {
+      background: #000;
+      border-radius: 20px;
+      padding: 30px 20px;
+      box-shadow: 0 0 20px #00f0ff44;
+      width: 90%;
+      max-width: 350px;
+    }
+
+    .login-box img {
+      width: 80px;
+      margin: 0 auto 20px;
+      display: block;
+    }
+
+    .login-box h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .login-box input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
+    }
+
+    .password-container {
+      position: relative;
+    }
+
+    .password-container input {
+      padding-right: 40px;
+    }
+
+    .password-container .toggle-password {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+    }
+
+    #login-btn {
+      background: cyan;
+      color: black;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      padding: 12px;
+      width: 100%;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    #login-btn:hover {
+      background: #00f7ff;
+    }
+
+    #iptv-container {
+      display: none;
+      padding: 20px;
+    }
+  </style>
 </head>
 <body>
-
   <!-- LOGIN UI -->
   <div id="login-container">
-    <div id="login-box">
-      <img src="logo.png" alt="IPTV Logo">
+    <div class="login-box">
+      <img src="logo.png" alt="IPTV Logo" />
       <h2>Welcome to IPTV</h2>
       <input type="email" id="email" placeholder="Email" />
-      <div class="password-wrapper">
+      <div class="password-container">
         <input type="password" id="password" placeholder="Password" />
-        <span id="toggle-password">👁️</span>
+        <span class="toggle-password" onclick="togglePassword()">👁️</span>
       </div>
       <button id="login-btn">Login</button>
     </div>
   </div>
 
-  <!-- IPTV UI -->
-  <div id="iptv-container" style="display:none;">
-    <header>
-      <img src="logo.png" alt="Logo" class="logo">
-      <div id="clock"></div>
-      <button id="logout-btn">Logout</button>
-    </header>
-
-    <div id="video-player-container">
-      <video id="video-player" controls autoplay></video>
-    </div>
-
-    <div id="now-playing">
-      <img src="https://img.icons8.com/ios-filled/50/ffffff/television.png" />
-      <span id="now-playing-title">Now Playing</span>
-    </div>
-
-    <div id="search-container">
-      <input type="text" id="search-bar" placeholder="Search channel...">
-      <select id="category-filter">
-        <option value="All">All Categories</option>
-      </select>
-    </div>
-
-    <div id="channel-grid"></div>
+  <!-- IPTV MAIN UI -->
+  <div id="iptv-container">
+    <h2>Welcome to IPTV Home!</h2>
+    <!-- Your IPTV player, search bar, channel list, etc goes here -->
   </div>
 
-  <script>
-    // Show/hide password
-    document.getElementById("toggle-password").onclick = () => {
-      const passInput = document.getElementById("password");
-      passInput.type = passInput.type === "password" ? "text" : "password";
-    };
+  <!-- Firebase SDK + logic -->
+  <script type="module">
+    import { auth } from './firebase.js';
+    import { signInWithEmailAndPassword, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js';
 
-    // Auth state check
-    firebase.auth().onAuthStateChanged((user) => {
-      if (user) {
-        document.getElementById("login-container").style.display = "none";
-        document.getElementById("iptv-container").style.display = "block";
-      } else {
-        document.getElementById("login-container").style.display = "flex";
-        document.getElementById("iptv-container").style.display = "none";
+    const emailEl = document.getElementById('email');
+    const passwordEl = document.getElementById('password');
+    const loginBtn = document.getElementById('login-btn');
+
+    loginBtn.addEventListener('click', async () => {
+      const email = emailEl.value.trim();
+      const password = passwordEl.value.trim();
+
+      if (!email || !password) {
+        alert("Please enter email and password.");
+        return;
+      }
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('iptv-container').style.display = 'block';
+      } catch (error) {
+        alert("Login failed: " + error.message);
       }
     });
 
-    // Login logic
-    document.getElementById("login-btn").onclick = () => {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
-      firebase.auth().signInWithEmailAndPassword(email, password)
-        .catch((err) => alert("Login Failed: " + err.message));
-    };
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('iptv-container').style.display = 'block';
+      }
+    });
 
-    // Logout logic
-    document.getElementById("logout-btn").onclick = () => {
-      firebase.auth().signOut().then(() => {
-        localStorage.removeItem("device_id");
-        location.reload();
-      });
-    };
+    window.togglePassword = () => {
+      const pwInput = document.getElementById('password');
+      pwInput.type = pwInput.type === "password" ? "text" : "password";
+    }
   </script>
 </body>
 </html>
