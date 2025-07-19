@@ -1,49 +1,47 @@
+<!-- login.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IPTV Login</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+  <script src="firebase.js" defer></script>
 </head>
-<body class="login-page" onload="document.body.classList.add('login-page')">
-
-  <div class="login-container">
-    <img src="logo.png" alt="Logo" class="login-logo" />
-    <h2>IPTV Premium Login</h2>
-
+<body>
+  <div class="neon-bg"></div>
+  <div class="login-card">
+    <img src="logo.png" class="login-logo" alt="Logo" />
+    <h2>Welcome to IPTV</h2>
     <form id="login-form">
       <input type="email" name="email" placeholder="Email" required />
-      
-      <div class="password-container">
-        <input type="password" name="password" id="password" placeholder="Password" required />
-        <span id="toggle-password">👁️</span>
+      <div class="password-wrapper">
+        <input type="password" name="password" placeholder="Password" id="password-input" required />
+        <span class="toggle-password" onclick="togglePassword()">👁️</span>
       </div>
-      
       <button type="submit">Login</button>
-      <p id="error-box"></p>
+      <div id="error-box"></div>
     </form>
   </div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <div id="toast" class="toast"></div>
 
-  <!-- Firebase Logic -->
-  <script src="firebase.js"></script>
-
-  <!-- Password toggle -->
   <script>
-    const togglePassword = document.getElementById("toggle-password");
-    const passwordField = document.getElementById("password");
+    function togglePassword() {
+      const input = document.getElementById('password-input');
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
 
-    togglePassword.addEventListener("click", () => {
-      const type = passwordField.type === "password" ? "text" : "password";
-      passwordField.type = type;
-      togglePassword.textContent = type === "password" ? "👁️" : "🙈";
-    });
+    function showToast(message, color = '#ff5252') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.style.backgroundColor = color;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
   </script>
-
 </body>
 </html>
