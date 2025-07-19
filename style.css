@@ -63,6 +63,76 @@ header {
 
 #now-playing {
   display: flex;
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #121212;
+  color: #ffffff;
+  overflow-x: hidden;
+}
+
+/* HEADER */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #1c1c1c;
+  padding: 10px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 1001;
+}
+
+/* Logo: small and round */
+.logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ffffff33;
+}
+
+/* Clock in center */
+#clock {
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  flex-grow: 1;
+  color: #ccc;
+}
+
+/* Logout Button */
+#logout-btn {
+  background-color: crimson;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+#logout-btn:hover {
+  background-color: #ff2f3f;
+}
+
+/* Video Player */
+#video-player-container {
+  background-color: #000;
+  text-align: center;
+  padding: 10px 0;
+}
+
+#video-player {
+  width: 95vw;
+  max-width: 100%;
+  height: 250px;
+  border-radius: 10px;
+  background: black;
+}
+
+/* Now Playing */
+#now-playing {
+  display: flex;
   align-items: center;
   justify-content: center;
   margin-top: 8px;
@@ -74,6 +144,7 @@ header {
   margin-right: 8px;
 }
 
+/* Search and Filter */
 #search-container {
   display: flex;
   flex-direction: column;
@@ -99,6 +170,7 @@ header {
   color: white;
 }
 
+/* Channel Grid */
 #channel-grid {
   overflow-x: auto;
   white-space: nowrap;
@@ -150,6 +222,7 @@ header {
   color: gold;
 }
 
+/* Responsive Tweaks */
 @media (min-width: 768px) {
   #video-player {
     height: 400px;
