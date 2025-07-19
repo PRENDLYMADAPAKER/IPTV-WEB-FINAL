@@ -3,136 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login - IPTV Premium</title>
-  <link rel="stylesheet" href="style.css" />
-  <script type="module" src="login.js" defer></script>
-  <style>
-    body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      background-color: #121212;
-      margin: 0;
-      font-family: Arial, sans-serif;
-      color: #fff;
-      opacity: 0;
-      animation: fadeIn 0.8s forwards;
-    }
-
-    @keyframes fadeIn {
-      to { opacity: 1; }
-    }
-
-    .login-container {
-      background-color: #1e1e1e;
-      padding: 30px;
-      border-radius: 12px;
-      width: 90%;
-      max-width: 350px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-      text-align: center;
-    }
-
-    .login-container img {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      margin-bottom: 20px;
-    }
-
-    .login-container h2 {
-      margin-bottom: 20px;
-    }
-
-    .login-container input {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border-radius: 6px;
-      border: none;
-      background-color: #2c2c2c;
-      color: #fff;
-      font-size: 14px;
-    }
-
-    .password-field {
-      position: relative;
-    }
-
-    .toggle-password {
-      position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      cursor: pointer;
-      color: #ccc;
-      font-size: 13px;
-    }
-
-    .login-container button {
-      width: 100%;
-      padding: 10px;
-      background-color: #00bcd4;
-      border: none;
-      color: #fff;
-      font-weight: bold;
-      border-radius: 6px;
-      margin-top: 15px;
-      cursor: pointer;
-      transition: background-color 0.3s;
-      position: relative;
-    }
-
-    .login-container button:hover {
-      background-color: #0097a7;
-    }
-
-    .spinner {
-      display: none;
-      position: absolute;
-      right: 15px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 18px;
-      height: 18px;
-      border: 2px solid #fff;
-      border-top: 2px solid transparent;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: translateY(-50%) rotate(360deg); }
-    }
-
-    .error {
-      color: #f44336;
-      font-size: 13px;
-      margin-top: 10px;
-    }
-  </style>
+  <title>IPTV Premium Login</title>
+  <link rel="stylesheet" href="login.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script src="firebase.js"></script>
 </head>
 <body>
   <div class="login-container">
-    <img src="logo.png" alt="Logo" />
-    <h2>Login to IPTV</h2>
-
-    <form id="login-form">
-      <input type="email" id="email" name="email" placeholder="Email" required />
-
-      <div class="password-field">
-        <input type="password" id="password" name="password" placeholder="Password" required />
-        <span class="toggle-password" id="togglePassword">Show</span>
-      </div>
-
-      <button type="submit">
-        Login
-        <div class="spinner" id="spinner"></div>
-      </button>
-
-      <div class="error" id="error-msg"></div>
-    </form>
+    <h1>IPTV Premium Login</h1>
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button id="login-btn">Login</button>
+    <p id="error-msg"></p>
   </div>
+
+  <script>
+    document.getElementById("login-btn").addEventListener("click", () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      firebase.auth().signInWithEmailAndPassword(email, password)
+        .then(() => window.location.href = "iptv.html")
+        .catch((error) => {
+          document.getElementById("error-msg").textContent = error.message;
+        });
+    });
+  </script>
 </body>
 </html>
