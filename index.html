@@ -30,27 +30,7 @@
   <div class="channel-carousel" id="channelCarousel"></div>
   <div class="channel-grid" id="channelGrid"></div>
 
-  <!-- Firebase config + IPTV logic -->
   <script src="firebase.js"></script>
   <script src="iptv.js"></script>
-
-  <!-- 👇 This ensures user is logged in before loading IPTV -->
-  <script>
-    firebase.auth().onAuthStateChanged(user => {
-      if (!user) {
-        window.location.href = "login.html"; // redirect if not logged in
-      } else {
-        if (typeof loadChannels === "function") {
-          loadChannels(); // run IPTV logic only after login
-        }
-      }
-    });
-
-    document.getElementById('logoutBtn').onclick = () => {
-      firebase.auth().signOut().then(() => {
-        window.location.href = "login.html";
-      });
-    };
-  </script>
 </body>
 </html>
