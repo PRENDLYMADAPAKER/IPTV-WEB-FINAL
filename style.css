@@ -47,14 +47,22 @@ video {
 .now-playing {
   display: flex;
   align-items: center;
-  margin-top: 8px;
+  gap: 10px;
+  margin: 10px 16px;
 }
 
-#channel-icon {
-  width: 30px;
-  height: 30px;
+#channel-icon,
+#now-playing-icon {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  margin-right: 10px;
+  object-fit: contain;
+}
+
+#channel-name,
+#now-playing-title {
+  font-weight: bold;
+  font-size: 16px;
 }
 
 /* 🔍 SEARCH + FILTER */
@@ -116,6 +124,23 @@ video {
   padding: 10px 16px;
 }
 
+.channel-grid .channel {
+  background: #1f1f2f;
+  border-radius: 12px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #fff;
+}
+
+.channel-grid .channel img {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  margin-bottom: 4px;
+}
+
 /* 🔐 LOGIN PAGE */
 .login-body {
   background: linear-gradient(to bottom right, #1a1a40, #0a0a1a);
@@ -152,4 +177,4 @@ video {
   right: 10px;
   cursor: pointer;
   color: #ccc;
-}
+  }
