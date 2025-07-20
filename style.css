@@ -1,235 +1,156 @@
-/* General Reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Segoe UI', sans-serif;
-}
+/* style.css */
 
-/* Body Background */
 body {
-  background: linear-gradient(145deg, #0f0f2b, #1c1c3c);
-  color: #fff;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-/* ===== Login Section ===== */
-#login-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 20px;
-}
-
-.login-card {
-  background: #111122;
-  border-radius: 20px;
-  padding: 30px 25px;
-  box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
-  width: 100%;
-  max-width: 350px;
-  text-align: center;
-}
-
-.login-card img {
-  width: 80px;
-  height: 80px;
-  margin-bottom: 20px;
-  border-radius: 50%;
-  box-shadow: 0 0 20px cyan;
-}
-
-.login-card h2 {
-  margin-bottom: 20px;
-}
-
-.login-card input {
-  width: 100%;
-  padding: 10px 15px;
-  margin: 10px 0;
-  border: none;
-  border-radius: 8px;
-  background-color: #2b2b4f;
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to bottom right, #1a1a40, #0a0a1a);
   color: white;
 }
 
-.login-card input::placeholder {
-  color: #aaa;
+/* 🔐 LOGIN PAGE STYLES */
+.login-body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.login-container {
+  background: #111;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 0 15px #00ffff33;
+  text-align: center;
+  width: 90%;
+  max-width: 350px;
+}
+
+.login-logo {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 1rem;
+  border-radius: 50%;
+  box-shadow: 0 0 20px #00ffff;
+}
+
+.login-container input {
+  width: 100%;
+  padding: 0.75rem;
+  margin: 0.5rem 0;
+  border: none;
+  border-radius: 8px;
+  background: #333;
+  color: white;
+  font-size: 1rem;
 }
 
 .password-wrapper {
   position: relative;
 }
 
-.password-wrapper .toggle-password {
+.toggle-password {
   position: absolute;
-  top: 50%;
-  right: 12px;
-  transform: translateY(-50%);
+  right: 10px;
+  top: 12px;
   cursor: pointer;
-  color: #ccc;
+  font-size: 1.1rem;
 }
 
-.login-card button {
+button {
   width: 100%;
-  padding: 12px;
-  margin-top: 15px;
-  background: cyan;
+  padding: 0.75rem;
+  background: #00f0ff;
   border: none;
   border-radius: 8px;
-  font-weight: bold;
   color: black;
+  font-size: 1rem;
+  font-weight: bold;
   cursor: pointer;
-  transition: background 0.3s ease;
+  margin-top: 1rem;
 }
 
-.login-card button:hover {
-  background: #00eaff;
-}
-
-/* ===== Main IPTV Section ===== */
-#main-section {
+.toast {
+  margin-top: 1rem;
+  padding: 0.5rem;
+  background: #222;
+  border-left: 4px solid #00f0ff;
   display: none;
-  padding: 15px;
+  border-radius: 4px;
 }
 
-.top-bar {
+.toast.visible {
+  display: block;
+}
+
+/* 📺 MAIN IPTV PAGE */
+.header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  padding: 0.8rem 1rem;
+  background: #111;
 }
 
-.top-bar img {
-  height: 50px;
+.header img {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
 }
 
-.top-bar button {
-  background: red;
+.logout-btn {
+  background: #ff2e63;
   border: none;
-  padding: 10px 15px;
-  border-radius: 8px;
+  padding: 0.5rem 1rem;
   color: white;
+  border-radius: 8px;
   font-weight: bold;
   cursor: pointer;
 }
 
-/* Video Player */
-#videoPlayer {
+.video-player {
   width: 100%;
-  max-height: 45vh;
+  max-height: 200px;
   background: black;
-  border-radius: 12px;
-  margin-bottom: 10px;
+  margin-top: 0.5rem;
 }
 
-/* Now Playing Banner */
-#nowPlaying {
-  margin: 15px 0 10px;
+.channel-banner {
+  text-align: center;
   font-weight: bold;
-  font-size: 18px;
+  padding: 0.5rem;
 }
 
-/* Filters and Search */
-.controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-
-.controls input,
-.controls select {
-  padding: 8px 10px;
+.channel-search {
+  margin: 0.8rem;
+  width: calc(100% - 1.6rem);
+  padding: 0.5rem;
   border-radius: 8px;
   border: none;
-  flex: 1;
 }
 
-/* Channel Carousel */
-#channelGrid {
-  display: flex;
+.carousel-container {
   overflow-x: auto;
-  gap: 10px;
-  scroll-snap-type: x mandatory;
+  white-space: nowrap;
+  padding: 1rem;
+  display: flex;
+  gap: 1rem;
 }
 
 .channel-card {
-  flex: 0 0 auto;
-  scroll-snap-align: start;
-  width: 100px;
-  background: #1e1e3f;
-  padding: 10px;
-  border-radius: 12px;
+  display: inline-block;
+  width: 120px;
+  background: #222;
+  padding: 0.5rem;
+  border-radius: 10px;
   text-align: center;
-  color: white;
-  position: relative;
 }
 
 .channel-card img {
-  width: 60px;
-  height: 60px;
-  object-fit: contain;
+  width: 100%;
   border-radius: 8px;
-  margin-bottom: 8px;
 }
 
-.channel-card .star {
-  position: absolute;
-  top: 6px;
-  right: 8px;
-  font-size: 16px;
-  color: #ccc;
-  cursor: pointer;
-}
-
-.channel-card .star.fav {
-  color: yellow;
-}
-
-/* Scrollbar hidden for horizontal carousel */
-#channelGrid::-webkit-scrollbar {
-  display: none;
-}
-
-/* Toast/Alert */
-#toast {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #222;
-  color: white;
-  padding: 12px 20px;
-  border-radius: 8px;
-  display: none;
-  z-index: 999;
-}
-
-/* Responsive tweaks */
-@media (max-width: 600px) {
-  .login-card {
-    padding: 25px 20px;
-  }
-
-  .top-bar img {
-    height: 40px;
-  }
-
-  .top-bar button {
-    padding: 8px 12px;
-    font-size: 14px;
-  }
-
-  .channel-card {
-    width: 90px;
-  }
-
-  #nowPlaying {
-    font-size: 16px;
-  }
+.star {
+  font-size: 1.2rem;
+  color: gold;
 }
