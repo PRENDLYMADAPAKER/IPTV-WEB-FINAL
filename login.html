@@ -34,17 +34,29 @@
     };
 
     document.getElementById('loginBtn').onclick = async () => {
+      msg.innerText = "";
       try {
         const userCred = await firebase.auth().signInWithEmailAndPassword(emailInput.value, pwInput.value);
         const uid = userCred.user.uid;
-        const deviceId = navigator.userAgent + new Date().getTime();
+        const deviceId = navigator.userAgent + '_' + new Date().getTime();
         const ref = firebase.database().ref('devices/' + uid);
-        ref.once('value', snap => {
+
+        ref.once('value').then((snap) => {
           let devices = snap.val() || [];
+
           if (!devices.includes(deviceId)) {
-            if (devices.length >= 2) throw new Error('Device limit reached');
+            if (devices.length >= 2) {
+              throw new Error("Device limit reached.");
+            }
+
             devices.push(deviceId);
-            ref.set(devices).then(() => window.location.href = "index.html");
+            ref.set(devices)
+              .then(() => {
+                // Delay to ensure Firebase writes before redirect
+                setTimeout(() => {
+                  window.location.href = "index.html";
+                }, 500);
+              });
           } else {
             window.location.href = "index.html";
           }
