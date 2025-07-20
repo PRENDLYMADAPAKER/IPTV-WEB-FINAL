@@ -1,138 +1,131 @@
 // iptv.js
 
-const m3uUrl = "https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/refs/heads/main/IPTVPREMIUM.m3u";
+const M3U_URL = "https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/refs/heads/main/IPTVPREMIUM.m3u";
 
-let allChannels = [];
-let currentChannelIndex = 0;
+let channels = [], filtered = [], currentIndex = 0;
+let hls;
 
-const video = document.getElementById("videoPlayer");
-const channelGrid = document.getElementById("channelGrid");
-const searchInput = document.getElementById("searchInput");
-const categorySelect = document.getElementById("categorySelect");
-const nowPlaying = document.getElementById("nowPlaying");
-const favoritesOnly = false;
+async function fetchChannels() {
+  const res = await fetch(M3U_URL);
+  const text = await res.text();
+  const lines = text.split("\n");
+  let channel = {};
 
-function loadM3U() {
-  fetch(m3uUrl)
-    .then(res => res.text())
-    .then(parseM3U)
-    .then(channels => {
-      allChannels = channels;
-      renderChannels(channels);
-      playChannel(0);
-    });
-}
-
-function parseM3U(data) {
-  const lines = data.split('\n');
-  const channels = [];
-  let current = {};
   for (let line of lines) {
-    line = line.trim();
-    if (line.startsWith('#EXTINF')) {
-      const nameMatch = line.match(/,(.*)/);
-      current.name = nameMatch ? nameMatch[1] : "No Name";
-      const logoMatch = line.match(/tvg-logo="([^"]+)"/);
-      current.logo = logoMatch ? logoMatch[1] : "https://via.placeholder.com/100";
-      const groupMatch = line.match(/group-title="([^"]+)"/);
-      current.group = groupMatch ? groupMatch[1] : "Other";
-    } else if (line.startsWith('http')) {
-      current.url = line;
-      channels.push({...current});
-      current = {};
+    if (line.startsWith("#EXTINF")) {
+      const name = line.split(",")[1]?.trim() || "Unnamed";
+      const logoMatch = /tvg-logo="([^"]+)"/.exec(line);
+      const groupMatch = /group-title="([^"]+)"/.exec(line);
+      channel = {
+        name,
+        logo: logoMatch ? logoMatch[1] : "",
+        group: groupMatch ? groupMatch[1] : "Other"
+      };
+    } else if (line.startsWith("http")) {
+      channel.url = line.trim();
+      channels.push(channel);
+      channel = {};
     }
   }
-  return channels;
+
+  populateCategories();
+  renderChannels();
+  playChannel(0);
 }
 
-function renderChannels(channels) {
-  channelGrid.innerHTML = '';
-  const filtered = applyFilters(channels);
-  filtered.forEach((ch, index) => {
-    const div = document.createElement("div");
-    div.className = "channel-card";
-    div.innerHTML = `
-      <img src="${ch.logo}" />
+function populateCategories() {
+  const select = document.getElementById("categoryFilter");
+  const cats = Array.from(new Set(channels.map(c => c.group)));
+  select.innerHTML = `<option value="all">All Categories</option>` +
+    cats.map(cat => `<option value="${cat}">${cat}</option>`).join("");
+}
+
+function renderChannels() {
+  const search = document.getElementById("search").value.toLowerCase();
+  const selectedCat = document.getElementById("categoryFilter").value;
+  const container = document.getElementById("channelCarousel");
+  container.innerHTML = "";
+
+  filtered = channels.filter(ch =>
+    (selectedCat === "all" || ch.group === selectedCat) &&
+    ch.name.toLowerCase().includes(search)
+  );
+
+  filtered.forEach((ch, i) => {
+    const card = document.createElement("div");
+    card.className = "channel-card";
+    card.innerHTML = `
+      <img src="${ch.logo}" class="channel-icon" alt="${ch.name}">
       <div>${ch.name}</div>
-      <div class="star" onclick="toggleFavorite('${ch.name}')">⭐</div>
     `;
-    div.onclick = () => playChannel(index);
-    channelGrid.appendChild(div);
+    card.onclick = () => playChannel(i);
+    container.appendChild(card);
   });
-
-  // Populate categories
-  const uniqueGroups = [...new Set(channels.map(ch => ch.group))];
-  categorySelect.innerHTML = `<option value="">All Categories</option>` + 
-    uniqueGroups.map(g => `<option value="${g}">${g}</option>`).join('');
-}
-
-function applyFilters(channels) {
-  const search = searchInput.value.toLowerCase();
-  const group = categorySelect.value;
-  let filtered = channels;
-
-  if (search) {
-    filtered = filtered.filter(ch => ch.name.toLowerCase().includes(search));
-  }
-
-  if (group) {
-    filtered = filtered.filter(ch => ch.group === group);
-  }
-
-  return filtered;
 }
 
 function playChannel(index) {
-  const channel = allChannels[index];
-  currentChannelIndex = index;
-  nowPlaying.innerHTML = `<img src="${channel.logo}" style="width:30px;vertical-align:middle;margin-right:8px" /> ${channel.name}`;
-  
+  currentIndex = index;
+  const ch = filtered[index] || channels[index];
+  const video = document.getElementById("videoPlayer");
+
+  if (hls) {
+    hls.destroy();
+  }
+
   if (Hls.isSupported()) {
-    const hls = new Hls();
-    hls.loadSource(channel.url);
+    hls = new Hls();
+    hls.loadSource(ch.url);
     hls.attachMedia(video);
+    video.play().catch(() => {
+      video.muted = true;
+      video.play();
+    });
   } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    video.src = channel.url;
+    video.src = ch.url;
+    video.play().catch(() => {
+      video.muted = true;
+      video.play();
+    });
   } else {
-    alert("This browser does not support HLS.");
+    alert("This browser doesn't support HLS.");
   }
+
+  document.getElementById("nowIcon").src = ch.logo;
+  document.getElementById("nowName").textContent = " " + ch.name;
 }
 
-function toggleFavorite(name) {
-  const key = "fav_" + name;
-  const isFav = localStorage.getItem(key);
-  if (isFav) {
-    localStorage.removeItem(key);
-  } else {
-    localStorage.setItem(key, "true");
+// Keyboard left/right support
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowRight") {
+    currentIndex = (currentIndex + 1) % filtered.length;
+    playChannel(currentIndex);
+  } else if (e.key === "ArrowLeft") {
+    currentIndex = (currentIndex - 1 + filtered.length) % filtered.length;
+    playChannel(currentIndex);
   }
-  renderChannels(allChannels);
-}
-
-searchInput.addEventListener("input", () => renderChannels(allChannels));
-categorySelect.addEventListener("change", () => renderChannels(allChannels));
-
-video.addEventListener("ended", () => {
-  let next = (currentChannelIndex + 1) % allChannels.length;
-  playChannel(next);
 });
 
-// Swipe support
+// Touch swipe support
 let startX = 0;
-video.addEventListener("touchstart", e => startX = e.touches[0].clientX);
-video.addEventListener("touchend", e => {
-  const deltaX = e.changedTouches[0].clientX - startX;
-  if (Math.abs(deltaX) > 50) {
-    if (deltaX < 0) {
-      // swipe left
-      let next = (currentChannelIndex + 1) % allChannels.length;
-      playChannel(next);
-    } else {
-      // swipe right
-      let prev = (currentChannelIndex - 1 + allChannels.length) % allChannels.length;
-      playChannel(prev);
-    }
+document.addEventListener("touchstart", e => {
+  startX = e.touches[0].clientX;
+});
+
+document.addEventListener("touchend", e => {
+  const endX = e.changedTouches[0].clientX;
+  const diff = startX - endX;
+  if (diff > 50) {
+    currentIndex = (currentIndex + 1) % filtered.length;
+    playChannel(currentIndex);
+  } else if (diff < -50) {
+    currentIndex = (currentIndex - 1 + filtered.length) % filtered.length;
+    playChannel(currentIndex);
   }
 });
 
-window.onload = loadM3U;
+window.logout = function () {
+  localStorage.clear();
+  location.href = "login.html";
+};
+
+window.onload = fetchChannels;
