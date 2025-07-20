@@ -69,8 +69,10 @@ async function loadChannels() {
   play(entries[0]);
 }
 
-// 👉 Only setup after DOM is fully loaded
-document.addEventListener("DOMContentLoaded", () => {
-  // 🔐 No auth check here (handled in index.html)
-  loadChannels();
-});
+// 🚪 Logout
+document.getElementById('logoutBtn').onclick = () => {
+  firebase.auth().signOut().then(() => window.location.href = "login.html");
+};
+
+// ✅ Now load channels directly (auth check is handled in index.html)
+loadChannels();
