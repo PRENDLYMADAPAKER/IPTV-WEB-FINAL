@@ -2,64 +2,52 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IPTV PREMIUM</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <script defer src="firebase.js"></script>
+  <script type="module" src="firebase.js"></script>
   <script defer src="iptv.js"></script>
 </head>
 <body>
-
-  <!-- 🔐 LOGIN PAGE -->
-  <div id="login-section" class="login-body">
-    <div class="login-container">
-      <img src="logo.png" alt="Logo" class="login-logo" />
-      <h3>Welcome To IPTV PREMIUM</h3>
-      <input type="email" id="email" placeholder="Email" />
+  <div id="login-screen" class="login-screen">
+    <div class="login-card">
+      <img src="logo.png" alt="IPTV Logo" class="login-logo" />
+      <h2>Welcome Back</h2>
+      <input type="email" id="email" placeholder="Email" required />
       <div class="password-wrapper">
-        <input type="password" id="password" placeholder="Password" />
-        <span class="toggle-password" onclick="togglePassword()">👁️</span>
+        <input type="password" id="password" placeholder="Password" required />
+        <span id="togglePassword" class="toggle-password">👁️</span>
       </div>
-      <button onclick="login()">Login</button>
-      <div id="toast" class="toast"></div>
+      <button id="loginBtn">Login</button>
     </div>
   </div>
 
-  <!-- 📺 MAIN IPTV UI -->
-  <div id="iptv-section" style="display:none;">
-    <!-- Header -->
-    <div class="header">
-      <img src="logo.png" alt="Logo" />
-      <button class="logout-btn" onclick="logout()">Logout</button>
-    </div>
+  <div id="iptv-app" class="iptv-app hidden">
+    <header class="app-header">
+      <img src="logo.png" alt="IPTV Logo" class="app-logo" />
+      <button id="logoutBtn" class="logout-btn">Logout</button>
+    </header>
 
-    <!-- Video Player -->
-    <video id="videoPlayer" class="video-player" controls autoplay></video>
+    <main>
+      <div class="video-container">
+        <video id="videoPlayer" controls autoplay></video>
+      </div>
 
-    <!-- Now Playing -->
-    <div class="channel-banner">
-      <span id="nowPlaying">Now Playing: </span>
-    </div>
+      <div class="now-playing">
+        <span id="nowPlayingTitle">Now Playing: </span>
+        <img id="nowPlayingIcon" class="channel-icon" src="" alt="" />
+      </div>
 
-    <!-- Search + Category -->
-    <div style="display: flex; gap: 0.5rem; padding: 0 1rem;">
-      <input type="text" id="searchInput" class="channel-search" placeholder="Search channels..." oninput="filterChannels()" />
-      <select id="categorySelect" class="channel-search" onchange="filterChannels()">
-        <option value="All">All Categories</option>
-      </select>
-    </div>
+      <div class="controls">
+        <input type="text" id="searchInput" placeholder="Search channels..." />
+        <select id="categorySelect">
+          <option value="All">All Categories</option>
+        </select>
+      </div>
 
-    <!-- Channel Grid Carousel -->
-    <div id="channelList" class="carousel-container"></div>
+      <div id="channelList" class="channel-carousel"></div>
+    </main>
   </div>
-
-  <script>
-    function togglePassword() {
-      const password = document.getElementById('password');
-      password.type = password.type === 'password' ? 'text' : 'password';
-    }
-  </script>
-
 </body>
 </html>
