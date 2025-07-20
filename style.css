@@ -1,0 +1,156 @@
+/* style.css */
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to bottom right, #1a1a40, #0a0a1a);
+  color: white;
+}
+
+/* 🔐 LOGIN PAGE STYLES */
+.login-body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.login-container {
+  background: #111;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 0 15px #00ffff33;
+  text-align: center;
+  width: 90%;
+  max-width: 350px;
+}
+
+.login-logo {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 1rem;
+  border-radius: 50%;
+  box-shadow: 0 0 20px #00ffff;
+}
+
+.login-container input {
+  width: 100%;
+  padding: 0.75rem;
+  margin: 0.5rem 0;
+  border: none;
+  border-radius: 8px;
+  background: #333;
+  color: white;
+  font-size: 1rem;
+}
+
+.password-wrapper {
+  position: relative;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 12px;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+button {
+  width: 100%;
+  padding: 0.75rem;
+  background: #00f0ff;
+  border: none;
+  border-radius: 8px;
+  color: black;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.toast {
+  margin-top: 1rem;
+  padding: 0.5rem;
+  background: #222;
+  border-left: 4px solid #00f0ff;
+  display: none;
+  border-radius: 4px;
+}
+
+.toast.visible {
+  display: block;
+}
+
+/* 📺 MAIN IPTV PAGE */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem 1rem;
+  background: #111;
+}
+
+.header img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.logout-btn {
+  background: #ff2e63;
+  border: none;
+  padding: 0.5rem 1rem;
+  color: white;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.video-player {
+  width: 100%;
+  max-height: 200px;
+  background: black;
+  margin-top: 0.5rem;
+}
+
+.channel-banner {
+  text-align: center;
+  font-weight: bold;
+  padding: 0.5rem;
+}
+
+.channel-search {
+  margin: 0.8rem;
+  width: calc(100% - 1.6rem);
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: none;
+}
+
+.carousel-container {
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 1rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.channel-card {
+  display: inline-block;
+  width: 120px;
+  background: #222;
+  padding: 0.5rem;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.channel-card img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+.star {
+  font-size: 1.2rem;
+  color: gold;
+  }
