@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IPTV Premium</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- 🔝 Top Bar -->
+  <div class="header">
+    <img src="assets/logo.png" alt="Logo" />
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+
+  <!-- 🎥 Video Player -->
+  <video id="videoPlayer" class="video-player" controls autoplay></video>
+
+  <!-- 🟡 Now Playing Banner -->
+  <div id="nowPlaying" class="channel-banner">Loading...</div>
+
+  <!-- 🔍 Search & Category Filter -->
+  <input type="text" id="searchInput" class="channel-search" placeholder="Search channels..." />
+  <select id="categorySelect" class="channel-search"></select>
+
+  <!-- 📺 Channel Grid Carousel -->
+  <div id="channelGrid" class="carousel-container"></div>
+
+  <!-- 📜 Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="firebase.js"></script>
+  <script src="iptv.js"></script>
+  <script>
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = "login.html";
+      });
+    }
+
+    // Protect route
+    firebase.auth().onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = "login.html";
+      }
+    });
+  </script>
+</body>
+</html>
