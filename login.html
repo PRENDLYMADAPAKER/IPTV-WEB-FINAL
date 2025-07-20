@@ -1,26 +1,11 @@
 <!-- login.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>IPTV Login</title>
-  <link rel="stylesheet" href="style.css">
-  <script defer src="firebase.js"></script>
-</head>
-<body class="login-body">
-  <div class="login-container">
-    <img src="logo.png" alt="Logo" class="login-logo-glow" />
-    <h2>Welcome Back</h2>
+<input type="email" id="email" placeholder="Email" />
+<input type="password" id="password" placeholder="Password" />
+<span class="eye-icon" id="togglePassword">👁️</span>
 
-    <input type="email" id="email" placeholder="Email" />
-    <div class="password-wrapper">
-      <input type="password" id="password" placeholder="Password" />
-      <span id="togglePassword">👁️</span>
-    </div>
+<button id="loginBtn">Login</button>
 
-    <button onclick="login()">Login</button>
-    <p id="error" class="error-text"></p>
-  </div>
-</body>
-</html>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js"></script>
+<script src="login.js" defer></script>
