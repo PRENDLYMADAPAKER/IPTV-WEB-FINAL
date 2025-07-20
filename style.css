@@ -1,4 +1,3 @@
-/* 🌌 Global Styles */
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
@@ -6,7 +5,7 @@ body {
   color: white;
 }
 
-/* 🔝 Header */
+/* 🔝 HEADER */
 .header {
   display: flex;
   justify-content: space-between;
@@ -20,7 +19,8 @@ body {
   border-radius: 50%;
 }
 
-#logoutBtn {
+#logoutBtn,
+.logout-btn {
   background: crimson;
   color: white;
   padding: 8px 16px;
@@ -30,7 +30,7 @@ body {
   font-weight: bold;
 }
 
-/* 📺 Player */
+/* 📺 PLAYER */
 .player-container {
   position: relative;
   padding: 0 16px;
@@ -43,7 +43,7 @@ video {
   outline: none;
 }
 
-/* 🎵 Now Playing */
+/* 🎵 NOW PLAYING */
 .now-playing {
   display: flex;
   align-items: center;
@@ -57,7 +57,7 @@ video {
   margin-right: 10px;
 }
 
-/* 🔍 Search & Category Filter */
+/* 🔍 SEARCH + FILTER */
 #search,
 #categoryFilter {
   width: calc(100% - 32px);
@@ -70,7 +70,45 @@ video {
   font-size: 14px;
 }
 
-/* 🧊 Channel Grid */
+/* ⏩ HORIZONTAL CAROUSEL STYLE */
+.channel-carousel {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  gap: 16px;
+  padding: 10px 16px;
+}
+
+.channel-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.channel-item {
+  flex: 0 0 auto;
+  scroll-snap-align: center;
+  background: #1f1f2e;
+  border-radius: 10px;
+  text-align: center;
+  padding: 10px 6px;
+  transition: transform 0.2s ease, background 0.2s ease;
+  cursor: pointer;
+  width: 90px;
+}
+
+.channel-item:hover {
+  background: #2a2a3d;
+  transform: scale(1.05);
+}
+
+.channel-item img {
+  width: 50px;
+  height: 50px;
+  border-radius: 6px;
+  margin-bottom: 4px;
+}
+
+/* 🔲 LEGACY GRID SUPPORT (if still used somewhere) */
 .channel-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
@@ -78,27 +116,7 @@ video {
   padding: 10px 16px;
 }
 
-.channel-item {
-  background: #1f1f2e;
-  border-radius: 10px;
-  text-align: center;
-  padding: 10px 6px;
-  transition: transform 0.2s ease, background 0.2s ease;
-  cursor: pointer;
-}
-
-.channel-item:hover {
-  background: #2a2a3d;
-  transform: scale(1.03);
-}
-
-.channel-item img {
-  width: 50px;
-  height: 50px;
-  border-radius: 6px;
-}
-
-/* 🔐 Login Page */
+/* 🔐 LOGIN PAGE */
 .login-body {
   background: linear-gradient(to bottom right, #1a1a40, #0a0a1a);
   display: flex;
@@ -123,7 +141,7 @@ video {
   margin-bottom: 12px;
 }
 
-/* 👁 Toggle Password */
+/* 👁 TOGGLE PASSWORD */
 .password-container {
   position: relative;
 }
@@ -135,53 +153,3 @@ video {
   cursor: pointer;
   color: #ccc;
 }
-
-/* ⏩ Horizontal Carousel for Channels */
-#channel-container {
-  display: flex;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  gap: 10px;
-  padding: 10px 16px;
-}
-
-.channel {
-  flex: 0 0 auto;
-  scroll-snap-align: start;
-  width: 100px;
-  background: #222;
-  border-radius: 12px;
-  text-align: center;
-  padding: 10px;
-  color: white;
-  transition: transform 0.2s ease;
-}
-
-.channel:hover {
-  transform: scale(1.05);
-}
-
-.channel img {
-  width: 60px;
-  height: 60px;
-  object-fit: contain;
-  margin-bottom: 5px;
-}
-
-.channel .star {
-  cursor: pointer;
-  font-size: 18px;
-  color: gold;
-  margin-top: 4px;
-}
-
-#channel-container::-webkit-scrollbar {
-  display: none;
-}
-
-#channel-container.dragging {
-  cursor: grabbing;
-  scroll-behavior: auto !important;
-  }
