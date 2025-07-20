@@ -1,14 +1,16 @@
+// iptv.js
+
 const m3uUrl = "https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/refs/heads/main/IPTVPREMIUM.m3u";
 
 let allChannels = [];
 let currentChannelIndex = 0;
-let hls = null; // GLOBAL HLS instance
 
 const video = document.getElementById("videoPlayer");
 const channelGrid = document.getElementById("channelGrid");
 const searchInput = document.getElementById("searchInput");
 const categorySelect = document.getElementById("categorySelect");
 const nowPlaying = document.getElementById("nowPlaying");
+const favoritesOnly = false;
 
 function loadM3U() {
   fetch(m3uUrl)
@@ -16,8 +18,7 @@ function loadM3U() {
     .then(parseM3U)
     .then(channels => {
       allChannels = channels;
-      populateCategories(channels);
-      renderChannels();
+      renderChannels(channels);
       playChannel(0);
     });
 }
@@ -37,63 +38,57 @@ function parseM3U(data) {
       current.group = groupMatch ? groupMatch[1] : "Other";
     } else if (line.startsWith('http')) {
       current.url = line;
-      channels.push({ ...current });
+      channels.push({...current});
       current = {};
     }
   }
   return channels;
 }
 
-function populateCategories(channels) {
-  const uniqueGroups = [...new Set(channels.map(ch => ch.group))];
-  categorySelect.innerHTML = `<option value="">All Categories</option>` +
-    uniqueGroups.map(g => `<option value="${g}">${g}</option>`).join('');
-}
-
-function applyFilters() {
-  const search = searchInput.value.toLowerCase();
-  const group = categorySelect.value;
-
-  return allChannels.filter(ch => {
-    return (!group || ch.group === group) &&
-           (!search || ch.name.toLowerCase().includes(search));
-  });
-}
-
-function renderChannels() {
-  const filtered = applyFilters();
+function renderChannels(channels) {
   channelGrid.innerHTML = '';
+  const filtered = applyFilters(channels);
   filtered.forEach((ch, index) => {
-    const isFav = localStorage.getItem("fav_" + ch.name);
     const div = document.createElement("div");
     div.className = "channel-card";
     div.innerHTML = `
       <img src="${ch.logo}" />
       <div>${ch.name}</div>
-      <div class="star" onclick="event.stopPropagation(); toggleFavorite('${ch.name}')">
-        ${isFav ? '⭐' : '☆'}
-      </div>
+      <div class="star" onclick="toggleFavorite('${ch.name}')">⭐</div>
     `;
     div.onclick = () => playChannel(index);
     channelGrid.appendChild(div);
   });
+
+  // Populate categories
+  const uniqueGroups = [...new Set(channels.map(ch => ch.group))];
+  categorySelect.innerHTML = `<option value="">All Categories</option>` + 
+    uniqueGroups.map(g => `<option value="${g}">${g}</option>`).join('');
+}
+
+function applyFilters(channels) {
+  const search = searchInput.value.toLowerCase();
+  const group = categorySelect.value;
+  let filtered = channels;
+
+  if (search) {
+    filtered = filtered.filter(ch => ch.name.toLowerCase().includes(search));
+  }
+
+  if (group) {
+    filtered = filtered.filter(ch => ch.group === group);
+  }
+
+  return filtered;
 }
 
 function playChannel(index) {
-  const filtered = applyFilters();
-  const channel = filtered[index];
-  if (!channel) return;
-
+  const channel = allChannels[index];
   currentChannelIndex = index;
   nowPlaying.innerHTML = `<img src="${channel.logo}" style="width:30px;vertical-align:middle;margin-right:8px" /> ${channel.name}`;
-
-  if (hls) {
-    hls.destroy();
-    hls = null;
-  }
-
+  
   if (Hls.isSupported()) {
-    hls = new Hls();
+    const hls = new Hls();
     hls.loadSource(channel.url);
     hls.attachMedia(video);
   } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
@@ -111,16 +106,14 @@ function toggleFavorite(name) {
   } else {
     localStorage.setItem(key, "true");
   }
-  renderChannels();
+  renderChannels(allChannels);
 }
 
-// Search and category events
-searchInput.addEventListener("input", renderChannels);
-categorySelect.addEventListener("change", renderChannels);
+searchInput.addEventListener("input", () => renderChannels(allChannels));
+categorySelect.addEventListener("change", () => renderChannels(allChannels));
 
 video.addEventListener("ended", () => {
-  const filtered = applyFilters();
-  let next = (currentChannelIndex + 1) % filtered.length;
+  let next = (currentChannelIndex + 1) % allChannels.length;
   playChannel(next);
 });
 
@@ -129,13 +122,14 @@ let startX = 0;
 video.addEventListener("touchstart", e => startX = e.touches[0].clientX);
 video.addEventListener("touchend", e => {
   const deltaX = e.changedTouches[0].clientX - startX;
-  const filtered = applyFilters();
   if (Math.abs(deltaX) > 50) {
     if (deltaX < 0) {
-      let next = (currentChannelIndex + 1) % filtered.length;
+      // swipe left
+      let next = (currentChannelIndex + 1) % allChannels.length;
       playChannel(next);
     } else {
-      let prev = (currentChannelIndex - 1 + filtered.length) % filtered.length;
+      // swipe right
+      let prev = (currentChannelIndex - 1 + allChannels.length) % allChannels.length;
       playChannel(prev);
     }
   }
