@@ -1,4 +1,4 @@
-// iptv.js (Full Working Version with HLS, Carousel, Logout Fix, and Channel Loader)
+// iptv.js
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -9,11 +9,10 @@ import {
 import {
   getDatabase,
   ref,
-  get,
   set,
-  onValue,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
+// ✅ Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyA0TjMoFSYBIs0VQ9shUilOuDGb1uXHjKI",
   authDomain: "iptv-log-in.firebaseapp.com",
@@ -29,30 +28,35 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-const logoutBtn = document.getElementById("logout-btn");
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", () => {
-    const user = auth.currentUser;
-    if (user) {
-      const deviceKey = localStorage.getItem("deviceKey");
-      if (deviceKey) {
-        set(ref(db, `devices/${user.uid}/${deviceKey}`), null).then(() => {
-          signOut(auth).then(() => {
-            localStorage.removeItem("deviceKey");
-            window.location.href = "index.html";
-          });
-        });
-      } else {
+// ✅ Logout logic
+document.getElementById("logout-btn")?.addEventListener("click", () => {
+  const user = auth.currentUser;
+  if (user) {
+    const deviceKey = localStorage.getItem("deviceKey");
+    if (deviceKey) {
+      set(ref(db, `devices/${user.uid}/${deviceKey}`), null).then(() => {
         signOut(auth).then(() => {
+          localStorage.removeItem("deviceKey");
           window.location.href = "index.html";
         });
-      }
+      });
+    } else {
+      signOut(auth).then(() => {
+        window.location.href = "index.html";
+      });
     }
-  });
-}
+  }
+});
 
-// Load channels
-fetch("https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/refs/heads/main/IPTVPREMIUM.m3u")
+// ✅ Protect page from unauthorized access
+onAuthStateChanged(auth, user => {
+  if (!user) {
+    window.location.href = "index.html";
+  }
+});
+
+// ✅ Fetch and display M3U channels
+fetch("https://corsproxy.io/?https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/refs/heads/main/IPTVPREMIUM.m3u")
   .then(res => res.text())
   .then(data => {
     const lines = data.split("\n");
@@ -74,7 +78,7 @@ fetch("https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/refs/head
       }
     }
 
-    // Group by category
+    // ✅ Group channels by category
     const categories = {};
     channelList.forEach(channel => {
       if (!categories[channel.group]) {
@@ -83,7 +87,7 @@ fetch("https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/refs/head
       categories[channel.group].push(channel);
     });
 
-    // Display channel list
+    // ✅ Create and display carousel-style groups
     Object.keys(categories).forEach(group => {
       const groupDiv = document.createElement("div");
       groupDiv.className = "channel-group";
@@ -111,9 +115,14 @@ fetch("https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/refs/head
       groupDiv.appendChild(carousel);
       channelContainer.appendChild(groupDiv);
     });
+
+    console.log("✅ Channels loaded:", channelList.length);
+  })
+  .catch(err => {
+    console.error("❌ Error loading M3U file:", err);
   });
 
-// HLS Video Playback
+// ✅ Play selected channel with HLS.js support
 function playChannel(channel) {
   const player = document.getElementById("video-player");
   const title = document.getElementById("now-playing-title");
@@ -129,12 +138,6 @@ function playChannel(channel) {
   } else if (player.canPlayType("application/vnd.apple.mpegurl")) {
     player.src = channel.url;
   }
+
   player.play();
 }
-
-// Protect login access
-onAuthStateChanged(auth, user => {
-  if (!user) {
-    window.location.href = "index.html";
-  }
-});
