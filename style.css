@@ -1,0 +1,91 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #0a0a1a;
+  color: white;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+}
+.logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+#logoutBtn {
+  background: crimson;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+}
+.player-container {
+  position: relative;
+}
+video {
+  width: 100%;
+  max-height: 40vh;
+  border-radius: 8px;
+}
+.now-playing {
+  display: flex;
+  align-items: center;
+  margin-top: 6px;
+}
+#channel-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+.channel-carousel {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  padding: 10px;
+}
+.channel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 10px;
+  padding: 10px;
+}
+.channel-item {
+  background: #1f1f2e;
+  border-radius: 10px;
+  text-align: center;
+  padding: 8px;
+}
+.channel-item img {
+  width: 50px;
+  height: 50px;
+}
+.login-body {
+  background: linear-gradient(to bottom right, #1a1a40, #0a0a1a);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.login-container {
+  background: #000000aa;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+}
+.login-logo {
+  width: 80px;
+  margin-bottom: 10px;
+}
+.password-container {
+  position: relative;
+}
+#togglePassword {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  cursor: pointer;
+}
