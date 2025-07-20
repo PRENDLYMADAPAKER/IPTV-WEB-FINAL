@@ -1,26 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
   <title>IPTV Premium</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 </head>
 <body>
   <div class="header">
-    <img src="logo.png" alt="Logo" class="logo" />
+    <img src="logo.png" class="logo" />
     <button id="logoutBtn">Logout</button>
   </div>
+
   <div class="player-container">
     <video id="video" controls autoplay></video>
     <div class="now-playing">
-      <img id="channel-icon" src="" />
+      <img id="channel-icon" />
       <span id="channel-name">Now Playing</span>
     </div>
   </div>
+
   <input type="text" id="search" placeholder="Search channel..." />
   <select id="categoryFilter"></select>
+
   <div class="channel-carousel" id="channelCarousel"></div>
   <div class="channel-grid" id="channelGrid"></div>
 
