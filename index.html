@@ -2,52 +2,49 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IPTV PREMIUM</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IPTV Premium</title>
   <link rel="stylesheet" href="style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <script type="module" src="firebase.js"></script>
-  <script defer src="iptv.js"></script>
 </head>
 <body>
-  <div id="login-screen" class="login-screen">
-    <div class="login-card">
-      <img src="logo.png" alt="IPTV Logo" class="login-logo" />
-      <h2>Welcome Back</h2>
-      <input type="email" id="email" placeholder="Email" required />
-      <div class="password-wrapper">
-        <input type="password" id="password" placeholder="Password" required />
-        <span id="togglePassword" class="toggle-password">👁️</span>
-      </div>
-      <button id="loginBtn">Login</button>
-    </div>
+  <!-- 🔝 Top Bar -->
+  <div class="header">
+    <img src="assets/logo.png" alt="Logo" />
+    <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
 
-  <div id="iptv-app" class="iptv-app hidden">
-    <header class="app-header">
-      <img src="logo.png" alt="IPTV Logo" class="app-logo" />
-      <button id="logoutBtn" class="logout-btn">Logout</button>
-    </header>
+  <!-- 🎥 Video Player -->
+  <video id="videoPlayer" class="video-player" controls autoplay></video>
 
-    <main>
-      <div class="video-container">
-        <video id="videoPlayer" controls autoplay></video>
-      </div>
+  <!-- 🟡 Now Playing Banner -->
+  <div id="nowPlaying" class="channel-banner">Loading...</div>
 
-      <div class="now-playing">
-        <span id="nowPlayingTitle">Now Playing: </span>
-        <img id="nowPlayingIcon" class="channel-icon" src="" alt="" />
-      </div>
+  <!-- 🔍 Search & Category Filter -->
+  <input type="text" id="searchInput" class="channel-search" placeholder="Search channels..." />
+  <select id="categorySelect" class="channel-search"></select>
 
-      <div class="controls">
-        <input type="text" id="searchInput" placeholder="Search channels..." />
-        <select id="categorySelect">
-          <option value="All">All Categories</option>
-        </select>
-      </div>
+  <!-- 📺 Channel Grid Carousel -->
+  <div id="channelGrid" class="carousel-container"></div>
 
-      <div id="channelList" class="channel-carousel"></div>
-    </main>
-  </div>
+  <!-- 📜 Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="firebase.js"></script>
+  <script src="iptv.js"></script>
+  <script>
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = "login.html";
+      });
+    }
+
+    // Protect route
+    firebase.auth().onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = "login.html";
+      }
+    });
+  </script>
 </body>
 </html>
