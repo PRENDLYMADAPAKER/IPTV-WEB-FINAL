@@ -23,7 +23,7 @@
 <body>
   <div class="header">
     <img src="logo.png" class="logo" />
-    <button id="logout-btn">Logout</button>
+    <button id="logoutBtn">Logout</button> <!-- ✅ fixed ID -->
   </div>
 
   <div class="player-container">
@@ -37,7 +37,7 @@
   <input type="text" id="search" placeholder="Search channel..." />
   <select id="categoryFilter"></select>
 
-  <div id="channel-container"></div>
+  <div id="channel-container" class="channel-carousel"></div> <!-- ✅ added class -->
 
   <script src="iptv.js" type="module"></script>
 </body>
