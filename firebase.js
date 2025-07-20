@@ -1,84 +1,66 @@
 // firebase.js
 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+// Your Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyA0TjMoFSYBIs0VQ9shUilOuDGb1uXHjKI",
   authDomain: "iptv-log-in.firebaseapp.com",
   projectId: "iptv-log-in",
-  storageBucket: "iptv-log-in.firebasestorage.app",
+  storageBucket: "iptv-log-in.appspot.com",
   messagingSenderId: "820026131349",
   appId: "1:820026131349:web:417abd6ad9057c55a92c9c",
   measurementId: "G-4Y8T6J595Z",
-  databaseURL: "https://iptv-log-in-default-rtdb.asia-southeast1.firebasedatabase.app/"
+  databaseURL: "https://iptv-log-in-default-rtdb.firebaseio.com/"
 };
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.database();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
 
-async function login() {
+document.getElementById("togglePassword").onclick = () => {
+  const pw = document.getElementById("password");
+  pw.type = pw.type === "password" ? "text" : "password";
+};
+
+window.login = function () {
   const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
+  const password = document.getElementById("password").value.trim();
+  const errorEl = document.getElementById("error");
 
-  try {
-    const userCredential = await auth.signInWithEmailAndPassword(email, password);
-    const userId = userCredential.user.uid;
-    const deviceId = getDeviceId();
-
-    const userRef = db.ref("devices/" + userId);
-    const snapshot = await userRef.once("value");
-    const devices = snapshot.val() || {};
-
-    // If this device is already registered, allow login
-    if (Object.values(devices).includes(deviceId)) {
-      showToast("Login success!");
-      redirectToApp();
-      return;
-    }
-
-    // If less than 2 devices, register this one
-    if (Object.keys(devices).length < 2) {
-      const newKey = userRef.push().key;
-      await userRef.child(newKey).set(deviceId);
-      showToast("Login success!");
-      redirectToApp();
-    } else {
-      showToast("Maximum 2 devices reached!");
-      auth.signOut();
-    }
-  } catch (err) {
-    showToast("Login failed: " + err.message);
+  if (!email || !password) {
+    errorEl.textContent = "Please enter email and password.";
+    return;
   }
-}
 
-function getDeviceId() {
-  let id = localStorage.getItem("device_id");
-  if (!id) {
-    id = generateRandomId();
-    localStorage.setItem("device_id", id);
-  }
-  return id;
-}
+  signInWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      const uid = userCredential.user.uid;
+      const deviceId = navigator.userAgent.replace(/\W/g, "");
 
-function generateRandomId() {
-  return "device-" + Math.random().toString(36).substring(2, 10);
-}
+      const userRef = ref(db, "devices/" + uid);
 
-function showToast(msg) {
-  const toast = document.getElementById("toast");
-  toast.textContent = msg;
-  toast.classList.add("visible");
-  setTimeout(() => toast.classList.remove("visible"), 3000);
-}
+      onValue(userRef, (snapshot) => {
+        let data = snapshot.val() || {};
+        let devices = Object.keys(data);
+        let isKnown = devices.includes(deviceId);
 
-function redirectToApp() {
-  setTimeout(() => {
-    window.location.href = "index.html";
-  }, 1000);
-}
-
-// Auto redirect if already logged in
-auth.onAuthStateChanged((user) => {
-  if (user && window.location.pathname.includes("login")) {
-    redirectToApp();
-  }
-});
+        if (isKnown || devices.length < 2) {
+          if (!isKnown) {
+            data[deviceId] = true;
+            set(userRef, data);
+          }
+          location.href = "iptv.html";
+        } else {
+          errorEl.textContent = "⚠️ Device limit exceeded (max 2).";
+        }
+      }, {
+        onlyOnce: true
+      });
+    })
+    .catch((error) => {
+      errorEl.textContent = "❌ " + error.message;
+    });
+};
