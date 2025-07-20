@@ -4,39 +4,34 @@ async function loadChannels() {
   const res = await fetch(m3uUrl);
   const text = await res.text();
   const entries = text.split('#EXTINF:').slice(1).map((entry, i) => {
-    const lines = entry.trim().split('
-');
+    const lines = entry.trim().split('\n');
     const info = lines[0];
     const url = lines[1];
-    const nameMatch = info.match(/tvg-name="([^"]+)"/);
-    const logoMatch = info.match(/tvg-logo="([^"]+)"/);
-    const groupMatch = info.match(/group-title="([^"]+)"/);
-    return {
-      name: nameMatch ? nameMatch[1] : "Channel " + i,
-      logo: logoMatch ? logoMatch[1] : "",
-      group: groupMatch ? groupMatch[1] : "Others",
-      url: url
-    };
+    const name = (info.match(/tvg-name="([^"]+)"/) || [])[1] || `Channel ${i}`;
+    const logo = (info.match(/tvg-logo="([^"]+)"/) || [])[1] || "";
+    const group = (info.match(/group-title="([^"]+)"/) || [])[1] || "Others";
+    return { name, logo, group, url };
   });
 
-  const carousel = document.getElementById('channelCarousel');
-  const grid = document.getElementById('channelGrid');
-  const catFilter = document.getElementById('categoryFilter');
   const video = document.getElementById('video');
-  const chName = document.getElementById('channel-name');
-  const chIcon = document.getElementById('channel-icon');
+  const grid = document.getElementById('channelGrid');
+  const carousel = document.getElementById('channelCarousel');
+  const search = document.getElementById('search');
+  const filter = document.getElementById('categoryFilter');
+  const nameDisplay = document.getElementById('channel-name');
+  const iconDisplay = document.getElementById('channel-icon');
 
   const categories = [...new Set(entries.map(e => e.group))];
   categories.forEach(cat => {
     const opt = document.createElement('option');
     opt.value = cat;
     opt.textContent = cat;
-    catFilter.appendChild(opt);
+    filter.appendChild(opt);
   });
 
-  function playChannel(channel) {
-    chName.textContent = channel.name;
-    chIcon.src = channel.logo;
+  function play(channel) {
+    nameDisplay.textContent = channel.name;
+    iconDisplay.src = channel.logo;
     if (Hls.isSupported()) {
       const hls = new Hls();
       hls.loadSource(channel.url);
@@ -46,48 +41,39 @@ async function loadChannels() {
     }
   }
 
-  function createItem(channel) {
+  function makeItem(channel) {
     const div = document.createElement('div');
-    div.className = 'channel-item';
-    div.innerHTML = \`
-      <img src="\${channel.logo}" /><br/>
-      <span>\${channel.name}</span><br/>
-      <span class="fav">⭐</span>
-    \`;
-    div.onclick = () => playChannel(channel);
+    div.className = "channel-item";
+    div.innerHTML = `<img src="${channel.logo}" /><br>${channel.name}<br><span>⭐</span>`;
+    div.onclick = () => play(channel);
     return div;
   }
 
-  function filterAndDisplay() {
-    const term = document.getElementById('search').value.toLowerCase();
-    const cat = catFilter.value;
+  function render() {
+    const keyword = search.value.toLowerCase();
+    const category = filter.value;
     grid.innerHTML = "";
     carousel.innerHTML = "";
-    entries.filter(e =>
-      (!cat || e.group === cat) &&
-      e.name.toLowerCase().includes(term)
-    ).forEach(e => {
-      grid.appendChild(createItem(e));
-      carousel.appendChild(createItem(e));
+    entries.filter(c =>
+      (!category || c.group === category) &&
+      c.name.toLowerCase().includes(keyword)
+    ).forEach(channel => {
+      grid.appendChild(makeItem(channel));
+      carousel.appendChild(makeItem(channel));
     });
   }
 
-  document.getElementById('search').oninput = filterAndDisplay;
-  catFilter.onchange = filterAndDisplay;
-
-  filterAndDisplay();
-  playChannel(entries[0]);
+  search.oninput = render;
+  filter.onchange = render;
+  render();
+  play(entries[0]);
 }
 
 document.getElementById('logoutBtn').onclick = () => {
-  firebase.auth().signOut().then(() => {
-    window.location.href = 'login.html';
-  });
+  firebase.auth().signOut().then(() => window.location.href = "login.html");
 };
 
-window.onload = () => {
-  firebase.auth().onAuthStateChanged(user => {
-    if (!user) window.location.href = "login.html";
-    else loadChannels();
-  });
-};
+firebase.auth().onAuthStateChanged(user => {
+  if (!user) window.location.href = "login.html";
+  else loadChannels();
+});
