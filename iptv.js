@@ -69,11 +69,8 @@ async function loadChannels() {
   play(entries[0]);
 }
 
-document.getElementById('logoutBtn').onclick = () => {
-  firebase.auth().signOut().then(() => window.location.href = "login.html");
-};
-
-firebase.auth().onAuthStateChanged(user => {
-  if (!user) window.location.href = "login.html";
-  else loadChannels();
+// 👉 Only setup after DOM is fully loaded
+document.addEventListener("DOMContentLoaded", () => {
+  // 🔐 No auth check here (handled in index.html)
+  loadChannels();
 });
