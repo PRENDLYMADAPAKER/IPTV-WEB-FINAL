@@ -2,57 +2,54 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>Login - IPTV</title>
+  <title>Login | IPTV Premium</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="style.css" />
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="firebase.js"></script>
 </head>
 <body class="login-body">
   <div class="login-container">
     <img src="logo.png" class="login-logo" />
-    <h2>Welcome to IPTV</h2>
-    <input type="email" id="email" placeholder="Email" />
+    <h2>IPTV Premium</h2>
+    <input type="email" id="email" placeholder="Email" /><br><br>
     <div class="password-container">
       <input type="password" id="password" placeholder="Password" />
       <span id="togglePassword">👁️</span>
     </div>
+    <br>
     <button id="loginBtn">Login</button>
-    <p id="loginMessage"></p>
+    <p id="errorMsg" style="color: red; margin-top: 10px;"></p>
   </div>
 
-  <script src="firebase.js"></script>
   <script>
-    const emailInput = document.getElementById('email');
-    const pwInput = document.getElementById('password');
-    const toggle = document.getElementById('togglePassword');
-    const msg = document.getElementById('loginMessage');
+    // Redirect if already logged in
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) window.location.href = "index.html";
+    });
 
-    toggle.onclick = () => {
-      pwInput.type = pwInput.type === 'password' ? 'text' : 'password';
+    // Toggle password visibility
+    const togglePassword = document.getElementById("togglePassword");
+    const passwordInput = document.getElementById("password");
+    togglePassword.onclick = () => {
+      const type = passwordInput.type === "password" ? "text" : "password";
+      passwordInput.type = type;
+      togglePassword.textContent = type === "password" ? "👁️" : "🙈";
     };
 
-    document.getElementById('loginBtn').onclick = async () => {
-      try {
-        const userCred = await firebase.auth().signInWithEmailAndPassword(emailInput.value, pwInput.value);
-        const uid = userCred.user.uid;
-        const deviceId = navigator.userAgent + new Date().getTime();
-        const ref = firebase.database().ref('devices/' + uid);
+    // Login button
+    document.getElementById("loginBtn").onclick = () => {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
 
-        ref.once('value', snap => {
-          let devices = snap.val() || [];
-          if (!devices.includes(deviceId)) {
-            if (devices.length >= 2) throw new Error('Device limit reached');
-            devices.push(deviceId);
-            ref.set(devices).then(() => window.location.href = "index.html");
-          } else {
-            window.location.href = "index.html";
-          }
+      firebase.auth().signInWithEmailAndPassword(email, password)
+        .then(() => {
+          window.location.href = "index.html";
+        })
+        .catch(err => {
+          document.getElementById("errorMsg").textContent = "❌ " + err.message;
         });
-      } catch (err) {
-        msg.innerText = err.message;
-      }
     };
   </script>
 </body>
