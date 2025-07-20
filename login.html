@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8" />
+  <title>Login - IPTV</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login - IPTV Premium</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 </head>
 <body class="login-body">
   <div class="login-container">
@@ -21,31 +24,33 @@
 
   <script src="firebase.js"></script>
   <script>
-    document.getElementById('togglePassword').onclick = function () {
-      const pw = document.getElementById('password');
-      pw.type = pw.type === 'password' ? 'text' : 'password';
+    const emailInput = document.getElementById('email');
+    const pwInput = document.getElementById('password');
+    const toggle = document.getElementById('togglePassword');
+    const msg = document.getElementById('loginMessage');
+
+    toggle.onclick = () => {
+      pwInput.type = pwInput.type === 'password' ? 'text' : 'password';
     };
-    document.getElementById('loginBtn').onclick = async function () {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const msg = document.getElementById('loginMessage');
+
+    document.getElementById('loginBtn').onclick = async () => {
       try {
-        const userCred = await firebase.auth().signInWithEmailAndPassword(email, password);
+        const userCred = await firebase.auth().signInWithEmailAndPassword(emailInput.value, pwInput.value);
         const uid = userCred.user.uid;
         const deviceId = navigator.userAgent + new Date().getTime();
         const ref = firebase.database().ref('devices/' + uid);
         ref.once('value', snap => {
-          let data = snap.val() || [];
-          if (!data.includes(deviceId)) {
-            if (data.length >= 2) throw new Error('Device limit reached');
-            data.push(deviceId);
-            ref.set(data).then(() => window.location.href = "index.html");
+          let devices = snap.val() || [];
+          if (!devices.includes(deviceId)) {
+            if (devices.length >= 2) throw new Error('Device limit reached');
+            devices.push(deviceId);
+            ref.set(devices).then(() => window.location.href = "index.html");
           } else {
             window.location.href = "index.html";
           }
         });
-      } catch (e) {
-        msg.textContent = e.message;
+      } catch (err) {
+        msg.innerText = err.message;
       }
     };
   </script>
