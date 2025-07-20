@@ -3,6 +3,8 @@ const m3uUrl = "https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/
 async function loadChannels() {
   const res = await fetch(m3uUrl);
   const text = await res.text();
+
+  const seen = new Set();
   const entries = text.split('#EXTINF:').slice(1).map((entry, i) => {
     const lines = entry.trim().split('\n');
     const info = lines[0];
@@ -11,6 +13,11 @@ async function loadChannels() {
     const logo = (info.match(/tvg-logo="([^"]+)"/) || [])[1] || "";
     const group = (info.match(/group-title="([^"]+)"/) || [])[1] || "Others";
     return { name, logo, group, url };
+  }).filter(channel => {
+    const key = `${channel.name}-${channel.url}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
   });
 
   const video = document.getElementById('video');
@@ -54,6 +61,7 @@ async function loadChannels() {
     const category = filter.value;
     grid.innerHTML = "";
     carousel.innerHTML = "";
+
     entries.filter(c =>
       (!category || c.group === category) &&
       c.name.toLowerCase().includes(keyword)
