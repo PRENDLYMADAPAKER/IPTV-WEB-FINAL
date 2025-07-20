@@ -2,31 +2,43 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login - IPTV Premium</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IPTV App</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.0/firebase-database.js"></script>
 </head>
-<body class="login-body">
-  <div class="login-container">
-    <img src="assets/logo.png" alt="IPTV Logo" class="login-logo" />
-    <h2>Welcome Back</h2>
-    <input type="email" id="email" placeholder="Email" />
-    <div class="password-wrapper">
-      <input type="password" id="password" placeholder="Password" />
-      <span class="toggle-password" onclick="togglePassword()">👁️</span>
+<body>
+  <div id="login-screen" class="screen">
+    <div class="login-box">
+      <img src="logo.png" alt="IPTV Logo" class="login-logo" onerror="this.style.display='none'">
+      <h2>Welcome To IPTV PREMIUM</h2>
+      <input type="email" id="email" placeholder="Email" />
+      <div class="password-wrap">
+        <input type="password" id="password" placeholder="Password" />
+        <span id="togglePassword">👁️</span>
+      </div>
+      <button id="loginBtn">Login</button>
     </div>
-    <button onclick="login()">Login</button>
-    <div id="toast" class="toast hidden"></div>
   </div>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+  <div id="iptv-screen" class="screen hidden">
+    <div class="top-bar">
+      <img src="logo.png" alt="Logo" class="top-logo" onerror="this.style.display='none'">
+      <button id="logoutBtn">Logout</button>
+    </div>
+    <video id="videoPlayer" controls autoplay></video>
+    <div id="nowPlaying">Now Playing: <span id="currentChannel"></span></div>
+    <input type="text" id="searchInput" placeholder="Search channels...">
+    <select id="categoryFilter">
+      <option value="All">All Categories</option>
+    </select>
+    <div id="channelList" class="carousel"></div>
+  </div>
+
   <script src="firebase.js"></script>
-  <script>
-    function togglePassword() {
-      const pw = document.getElementById("password");
-      pw.type = pw.type === "password" ? "text" : "password";
-    }
-  </script>
+  <script src="iptv.js"></script>
 </body>
 </html>
