@@ -23,23 +23,22 @@
 <body>
   <div class="header">
     <img src="logo.png" class="logo" />
-    <button id="logoutBtn">Logout</button>
+    <button id="logout-btn">Logout</button>
   </div>
 
   <div class="player-container">
-    <video id="video" controls autoplay></video>
+    <video id="video-player" controls autoplay></video>
     <div class="now-playing">
-      <img id="channel-icon" />
-      <span id="channel-name">Now Playing</span>
+      <img id="now-playing-icon" />
+      <span id="now-playing-title">Now Playing</span>
     </div>
   </div>
 
   <input type="text" id="search" placeholder="Search channel..." />
   <select id="categoryFilter"></select>
 
-  <div class="channel-carousel" id="channelCarousel"></div>
-  <div class="channel-grid" id="channelGrid"></div>
+  <div id="channel-container"></div>
 
-  <script src="iptv.js"></script>
+  <script src="iptv.js" type="module"></script>
 </body>
 </html>
