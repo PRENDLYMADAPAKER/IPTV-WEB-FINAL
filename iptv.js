@@ -12,7 +12,6 @@ import {
   set,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-// ✅ Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyA0TjMoFSYBIs0VQ9shUilOuDGb1uXHjKI",
   authDomain: "iptv-log-in.firebaseapp.com",
@@ -28,8 +27,9 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-// ✅ Logout logic
-document.getElementById("logout-btn")?.addEventListener("click", () => {
+// ✅ Logout
+const logoutBtn = document.getElementById("logout-btn");
+logoutBtn?.addEventListener("click", () => {
   const user = auth.currentUser;
   if (user) {
     const deviceKey = localStorage.getItem("deviceKey");
@@ -48,20 +48,21 @@ document.getElementById("logout-btn")?.addEventListener("click", () => {
   }
 });
 
-// ✅ Protect page from unauthorized access
+// ✅ Protect route
 onAuthStateChanged(auth, user => {
   if (!user) {
     window.location.href = "index.html";
   }
 });
 
-// ✅ Fetch and display M3U channels
+let allChannels = [];
+
+// ✅ Load M3U playlist
 fetch("https://corsproxy.io/?https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/refs/heads/main/IPTVPREMIUM.m3u")
   .then(res => res.text())
   .then(data => {
     const lines = data.split("\n");
-    const channelContainer = document.getElementById("channel-container");
-    const channelList = [];
+    allChannels = [];
 
     for (let i = 0; i < lines.length; i++) {
       if (lines[i].startsWith("#EXTINF")) {
@@ -73,56 +74,17 @@ fetch("https://corsproxy.io/?https://raw.githubusercontent.com/PRENDLYMADAPAKER/
           const name = nameMatch ? nameMatch[1] : "Unknown";
           const logo = logoMatch ? logoMatch[1] : "";
           const group = groupMatch ? groupMatch[1] : "Other";
-          channelList.push({ name, logo, group, url });
+          allChannels.push({ name, logo, group, url });
         }
       }
     }
 
-    // ✅ Group channels by category
-    const categories = {};
-    channelList.forEach(channel => {
-      if (!categories[channel.group]) {
-        categories[channel.group] = [];
-      }
-      categories[channel.group].push(channel);
-    });
-
-    // ✅ Create and display carousel-style groups
-    Object.keys(categories).forEach(group => {
-      const groupDiv = document.createElement("div");
-      groupDiv.className = "channel-group";
-
-      const title = document.createElement("h3");
-      title.textContent = group;
-      groupDiv.appendChild(title);
-
-      const carousel = document.createElement("div");
-      carousel.className = "channel-carousel";
-
-      categories[group].forEach(channel => {
-        const item = document.createElement("div");
-        item.className = "channel-item";
-        item.innerHTML = `
-          <img src="${channel.logo}" alt="logo">
-          <span>${channel.name}</span>
-        `;
-        item.addEventListener("click", () => {
-          playChannel(channel);
-        });
-        carousel.appendChild(item);
-      });
-
-      groupDiv.appendChild(carousel);
-      channelContainer.appendChild(groupDiv);
-    });
-
-    console.log("✅ Channels loaded:", channelList.length);
+    populateCategories();
+    renderChannels(allChannels);
   })
-  .catch(err => {
-    console.error("❌ Error loading M3U file:", err);
-  });
+  .catch(err => console.error("❌ M3U load error:", err));
 
-// ✅ Play selected channel with HLS.js support
+// ✅ Play with HLS
 function playChannel(channel) {
   const player = document.getElementById("video-player");
   const title = document.getElementById("now-playing-title");
@@ -138,6 +100,69 @@ function playChannel(channel) {
   } else if (player.canPlayType("application/vnd.apple.mpegurl")) {
     player.src = channel.url;
   }
-
   player.play();
 }
+
+// ✅ Render channel grid
+function renderChannels(channelList) {
+  const container = document.getElementById("channel-container");
+  container.innerHTML = "";
+
+  const grouped = {};
+  channelList.forEach(ch => {
+    if (!grouped[ch.group]) grouped[ch.group] = [];
+    grouped[ch.group].push(ch);
+  });
+
+  for (const group in grouped) {
+    const groupDiv = document.createElement("div");
+    groupDiv.className = "channel-group";
+
+    const title = document.createElement("h3");
+    title.textContent = group;
+    groupDiv.appendChild(title);
+
+    const carousel = document.createElement("div");
+    carousel.className = "channel-carousel";
+
+    grouped[group].forEach(ch => {
+      const item = document.createElement("div");
+      item.className = "channel-item";
+      item.innerHTML = `
+        <img src="${ch.logo}" alt="logo">
+        <span>${ch.name}</span>
+      `;
+      item.addEventListener("click", () => playChannel(ch));
+      carousel.appendChild(item);
+    });
+
+    groupDiv.appendChild(carousel);
+    container.appendChild(groupDiv);
+  }
+}
+
+// ✅ Populate dropdown filter
+function populateCategories() {
+  const dropdown = document.getElementById("category-dropdown");
+  const categories = [...new Set(allChannels.map(c => c.group))];
+  dropdown.innerHTML = `<option value="All">All</option>` +
+    categories.map(c => `<option value="${c}">${c}</option>`).join("");
+}
+
+// ✅ Category filter
+const dropdown = document.getElementById("category-dropdown");
+dropdown?.addEventListener("change", () => {
+  const selected = dropdown.value;
+  const filtered = selected === "All"
+    ? allChannels
+    : allChannels.filter(c => c.group === selected);
+  renderChannels(filtered);
+});
+
+// ✅ Search filter
+const searchBar = document.getElementById("search-bar");
+searchBar?.addEventListener("input", () => {
+  const keyword = searchBar.value.toLowerCase();
+  const filtered = allChannels.filter(c => c.name.toLowerCase().includes(keyword));
+  renderChannels(filtered);
+});
