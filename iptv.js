@@ -1,5 +1,3 @@
-// iptv.js
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getAuth,
@@ -12,6 +10,7 @@ import {
   set,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
+// ✅ Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyA0TjMoFSYBIs0VQ9shUilOuDGb1uXHjKI",
   authDomain: "iptv-log-in.firebaseapp.com",
@@ -27,9 +26,8 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-// ✅ Logout
-const logoutBtn = document.getElementById("logout-btn");
-logoutBtn?.addEventListener("click", () => {
+// ✅ Logout button
+document.getElementById("logout-btn")?.addEventListener("click", () => {
   const user = auth.currentUser;
   if (user) {
     const deviceKey = localStorage.getItem("deviceKey");
@@ -48,22 +46,20 @@ logoutBtn?.addEventListener("click", () => {
   }
 });
 
-// ✅ Protect route
+// ✅ Protect IPTV page
 onAuthStateChanged(auth, user => {
   if (!user) {
     window.location.href = "index.html";
   }
 });
 
+// ✅ Channel fetch logic
 let allChannels = [];
 
-// ✅ Load M3U playlist
 fetch("https://corsproxy.io/?https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/refs/heads/main/IPTVPREMIUM.m3u")
   .then(res => res.text())
   .then(data => {
     const lines = data.split("\n");
-    allChannels = [];
-
     for (let i = 0; i < lines.length; i++) {
       if (lines[i].startsWith("#EXTINF")) {
         const nameMatch = lines[i].match(/,(.*)$/);
@@ -79,42 +75,43 @@ fetch("https://corsproxy.io/?https://raw.githubusercontent.com/PRENDLYMADAPAKER/
       }
     }
 
-    populateCategories();
     renderChannels(allChannels);
+    populateCategories(allChannels);
   })
-  .catch(err => console.error("❌ M3U load error:", err));
+  .catch(err => console.error("❌ Failed to fetch M3U:", err));
 
-// ✅ Play with HLS
+// ✅ Play selected channel
 function playChannel(channel) {
   const player = document.getElementById("video-player");
   const title = document.getElementById("now-playing-title");
   const icon = document.getElementById("now-playing-icon");
 
   title.textContent = channel.name;
-  icon.src = channel.logo;
+  icon.src = channel.logo || "";
 
   if (Hls.isSupported()) {
     const hls = new Hls();
     hls.loadSource(channel.url);
     hls.attachMedia(player);
-  } else if (player.canPlayType("application/vnd.apple.mpegurl")) {
+  } else {
     player.src = channel.url;
   }
+
   player.play();
 }
 
-// ✅ Render channel grid
-function renderChannels(channelList) {
+// ✅ Render channels (carousel)
+function renderChannels(channels) {
   const container = document.getElementById("channel-container");
-  container.innerHTML = "";
+  container.innerHTML = ""; // Clear existing
 
   const grouped = {};
-  channelList.forEach(ch => {
-    if (!grouped[ch.group]) grouped[ch.group] = [];
-    grouped[ch.group].push(ch);
+  channels.forEach(channel => {
+    if (!grouped[channel.group]) grouped[channel.group] = [];
+    grouped[channel.group].push(channel);
   });
 
-  for (const group in grouped) {
+  Object.keys(grouped).forEach(group => {
     const groupDiv = document.createElement("div");
     groupDiv.className = "channel-group";
 
@@ -125,34 +122,39 @@ function renderChannels(channelList) {
     const carousel = document.createElement("div");
     carousel.className = "channel-carousel";
 
-    grouped[group].forEach(ch => {
+    grouped[group].forEach(channel => {
       const item = document.createElement("div");
       item.className = "channel-item";
       item.innerHTML = `
-        <img src="${ch.logo}" alt="logo">
-        <span>${ch.name}</span>
+        <img src="${channel.logo}" alt="${channel.name}">
+        <span>${channel.name}</span>
       `;
-      item.addEventListener("click", () => playChannel(ch));
+      item.addEventListener("click", () => playChannel(channel));
       carousel.appendChild(item);
     });
 
     groupDiv.appendChild(carousel);
     container.appendChild(groupDiv);
-  }
+  });
 }
 
-// ✅ Populate dropdown filter
-function populateCategories() {
-  const dropdown = document.getElementById("category-dropdown");
-  const categories = [...new Set(allChannels.map(c => c.group))];
-  dropdown.innerHTML = `<option value="All">All</option>` +
-    categories.map(c => `<option value="${c}">${c}</option>`).join("");
+// ✅ Populate category filter
+function populateCategories(channels) {
+  const categoryFilter = document.getElementById("categoryFilter");
+  const uniqueGroups = [...new Set(channels.map(c => c.group))];
+
+  categoryFilter.innerHTML = `<option value="All">All Categories</option>`;
+  uniqueGroups.forEach(group => {
+    const option = document.createElement("option");
+    option.value = group;
+    option.textContent = group;
+    categoryFilter.appendChild(option);
+  });
 }
 
-// ✅ Category filter
-const dropdown = document.getElementById("category-dropdown");
-dropdown?.addEventListener("change", () => {
-  const selected = dropdown.value;
+// ✅ Filter by category
+document.getElementById("categoryFilter")?.addEventListener("change", e => {
+  const selected = e.target.value;
   const filtered = selected === "All"
     ? allChannels
     : allChannels.filter(c => c.group === selected);
@@ -160,9 +162,10 @@ dropdown?.addEventListener("change", () => {
 });
 
 // ✅ Search filter
-const searchBar = document.getElementById("search-bar");
-searchBar?.addEventListener("input", () => {
-  const keyword = searchBar.value.toLowerCase();
-  const filtered = allChannels.filter(c => c.name.toLowerCase().includes(keyword));
+document.getElementById("search")?.addEventListener("input", e => {
+  const keyword = e.target.value.toLowerCase();
+  const filtered = allChannels.filter(c =>
+    c.name.toLowerCase().includes(keyword)
+  );
   renderChannels(filtered);
 });
