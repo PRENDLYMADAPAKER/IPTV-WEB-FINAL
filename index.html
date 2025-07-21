@@ -5,27 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IPTV Premium</title>
   <link rel="stylesheet" href="style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
 <body>
   <header>
-    <img src="logo.png" alt="Logo" id="app-logo" />
+    <img src="https://i.imgur.com/LDfUvHt.png" alt="IPTV Premium Logo" class="logo" />
     <button id="logoutBtn">Logout</button>
   </header>
 
   <main>
-    <video id="videoPlayer" controls autoplay></video>
-
-    <div class="search-container">
-      <input type="text" id="searchInput" placeholder="Search channels..." />
-      <select id="categoryFilter">
-        <option value="all">All</option>
-      </select>
+    <div id="videoContainer">
+      <video id="videoPlayer" controls autoplay></video>
     </div>
 
-    <div id="channelList" class="channel-carousel"></div>
+    <div class="controls">
+      <input type="text" id="searchInput" placeholder="Search channels..." />
+      <select id="categorySelect"><option value="All">All</option></select>
+      <label class="toggle">
+        <input type="checkbox" id="useProxy" /> Use Proxy
+      </label>
+    </div>
+
+    <div id="channelList" class="channel-grid"></div>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <script src="iptv.js"></script>
 </body>
 </html>
