@@ -9,26 +9,22 @@
 </head>
 <body>
   <header>
-    <img src="logo.png" alt="Logo" class="logo" />
+    <img src="logo.png" alt="IPTV Logo" class="logo" />
     <h1>IPTV Premium</h1>
   </header>
-
   <main>
     <div class="video-container">
-      <video id="videoPlayer" controls autoplay></video>
+      <video id="videoPlayer" controls poster="https://upload.wikimedia.org/wikipedia/commons/7/75/Black_video_placeholder.jpg"></video>
     </div>
-
+    <div class="now-playing">Now Playing: <span id="nowPlaying">None</span></div>
     <div class="controls">
-      <div class="now-playing">Now Playing: <span id="nowPlaying">None</span></div>
       <input type="text" id="searchInput" placeholder="Search channels..." />
-      <select id="categorySelect">
-        <option value="All">All Categories</option>
+      <select id="categoryFilter">
+        <option value="All">All</option>
       </select>
     </div>
-
-    <div id="channelList" class="channel-list"></div>
+    <div id="channelList" class="channel-grid"></div>
   </main>
-
   <script src="iptv.js"></script>
 </body>
 </html>
