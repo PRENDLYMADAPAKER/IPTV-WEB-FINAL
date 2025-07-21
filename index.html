@@ -2,35 +2,35 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IPTV Premium</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
 <body>
   <header>
-    <img src="https://via.placeholder.com/80x40?text=IPTV" alt="Logo" class="logo">
+    <img src="logo.png" alt="Logo" class="logo" />
+    <h1>IPTV Premium</h1>
   </header>
 
-  <main>
-    <div class="player-container">
-      <video id="videoPlayer" controls></video>
-    </div>
+  <section class="now-playing">
+    <img id="nowLogo" class="now-logo" src="" alt="Now Playing Logo">
+    <span id="nowPlaying">Now Playing: </span>
+  </section>
 
-    <div class="controls">
-      <input type="text" id="searchInput" placeholder="Search channels..."/>
-      <select id="categoryFilter">
-        <option value="All">All</option>
-      </select>
-    </div>
+  <div class="player-container">
+    <video id="videoPlayer" controls autoplay></video>
+  </div>
 
-    <label class="proxy-toggle">
-      <input type="checkbox" id="proxyToggle" />
-      Use Proxy
-    </label>
+  <div class="controls">
+    <input type="text" id="searchInput" placeholder="Search channel...">
+    <select id="categorySelect">
+      <option value="All">All Channels</option>
+    </select>
+    <button onclick="updatePlaylist()">Update Playlist</button>
+  </div>
 
-    <div id="channelList" class="channel-grid"></div>
-  </main>
+  <div id="channelGrid" class="channel-carousel"></div>
 
   <script src="iptv.js"></script>
 </body>
