@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IPTV Premium</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
@@ -14,22 +14,19 @@
   </header>
 
   <main>
-    <div class="player-container">
+    <div class="video-container">
       <video id="videoPlayer" controls autoplay></video>
     </div>
 
-    <div class="channel-info">
-      <span id="nowPlaying">Now Playing: </span>
-    </div>
-
     <div class="controls">
+      <div class="now-playing">Now Playing: <span id="nowPlaying">None</span></div>
       <input type="text" id="searchInput" placeholder="Search channels..." />
-      <select id="categoryFilter">
+      <select id="categorySelect">
         <option value="All">All Categories</option>
       </select>
     </div>
 
-    <div class="carousel" id="channelCarousel"></div>
+    <div id="channelList" class="channel-list"></div>
   </main>
 
   <script src="iptv.js"></script>
