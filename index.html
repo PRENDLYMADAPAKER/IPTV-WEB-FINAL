@@ -2,33 +2,36 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>IPTV Premium</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
 <body>
   <header>
-    <img src="https://i.imgur.com/LDfUvHt.png" alt="IPTV Premium Logo" class="logo" />
-    <button id="logoutBtn">Logout</button>
+    <img src="https://via.placeholder.com/80x40?text=IPTV" alt="Logo" class="logo">
   </header>
 
   <main>
-    <div id="videoContainer">
-      <video id="videoPlayer" controls autoplay></video>
+    <div class="player-container">
+      <video id="videoPlayer" controls></video>
     </div>
 
     <div class="controls">
-      <input type="text" id="searchInput" placeholder="Search channels..." />
-      <select id="categorySelect"><option value="All">All</option></select>
-      <label class="toggle">
-        <input type="checkbox" id="useProxy" /> Use Proxy
-      </label>
+      <input type="text" id="searchInput" placeholder="Search channels..."/>
+      <select id="categoryFilter">
+        <option value="All">All</option>
+      </select>
     </div>
+
+    <label class="proxy-toggle">
+      <input type="checkbox" id="proxyToggle" />
+      Use Proxy
+    </label>
 
     <div id="channelList" class="channel-grid"></div>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <script src="iptv.js"></script>
 </body>
 </html>
