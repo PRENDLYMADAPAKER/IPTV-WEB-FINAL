@@ -6,36 +6,16 @@ body {
 }
 
 header {
+  background-color: #1a1a40;
+  padding: 10px 16px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 10px 16px;
-  background-color: #1a1a40;
-  flex-wrap: wrap;
 }
 
-#logo {
+#appLogo {
   height: 40px;
   width: 40px;
   border-radius: 50%;
-}
-
-#nowPlaying {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 16px;
-  background-color: #2a2a50;
-  padding: 8px 12px;
-  border-radius: 10px;
-  margin-top: 8px;
-}
-
-#nowPlayingLogo {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  object-fit: contain;
 }
 
 main {
@@ -48,6 +28,26 @@ main {
   background: #000;
   border-radius: 12px;
   margin-bottom: 10px;
+}
+
+#nowPlaying {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  background-color: #2a2a50;
+  padding: 8px 12px;
+  border-radius: 10px;
+  margin: 10px 0;
+  width: fit-content;
+  max-width: 95%;
+}
+
+#nowPlayingLogo {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  object-fit: contain;
 }
 
 .controls {
