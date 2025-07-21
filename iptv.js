@@ -3,6 +3,7 @@ const m3uUrl = "https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/
 const video = document.getElementById('videoPlayer');
 const channelGrid = document.getElementById('channelCarousel');
 const nowPlayingName = document.getElementById('nowPlayingName');
+const nowPlayingLogo = document.getElementById('nowPlayingLogo');
 const searchInput = document.getElementById('searchInput');
 const categorySelect = document.getElementById('categorySelect');
 const favToggle = document.getElementById('favToggle');
@@ -93,6 +94,7 @@ function renderChannels() {
 
 function playChannel(channel) {
   nowPlayingName.textContent = channel.name;
+  nowPlayingLogo.src = channel.logo || "https://via.placeholder.com/40";
 
   if (Hls.isSupported()) {
     const hls = new Hls();
