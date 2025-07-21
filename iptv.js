@@ -1,4 +1,4 @@
-const M3U_URL = "https://iptv-cors-proxy.onrender.com/https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/refs/heads/main/IPTVPREMIUM.m3u";
+const M3U_URL = "https://cors-proxy.iptv-unblock.workers.dev/?https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/refs/heads/main/IPTVPREMIUM.m3u";
 
 const video = document.getElementById("videoPlayer");
 const nowPlaying = document.getElementById("nowPlaying");
