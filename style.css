@@ -1,195 +1,179 @@
-/* Reset and base styles */
+/* Reset + Base */
 * {
-  box-sizing: border-box;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
-
 body {
   font-family: 'Segoe UI', sans-serif;
   background: #111;
   color: #fff;
-  line-height: 1.4;
-  overflow-x: hidden;
 }
 
+/* Header */
 header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #1a1a1a;
+  background: #1a1a1a;
   padding: 10px 15px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.6);
 }
-
 .logo {
   width: 32px;
   height: 32px;
   border-radius: 50%;
 }
-
-header h1 {
-  font-size: 16px;
+h1 {
+  font-size: 1rem;
   margin-left: 10px;
   flex: 1;
 }
-
 .settings-btn {
+  font-size: 22px;
   background: none;
   border: none;
-  color: white;
-  font-size: 20px;
+  color: #fff;
   cursor: pointer;
 }
 
-/* Main player */
-main {
-  padding: 10px;
-}
-
-video {
+/* Video Player */
+#videoPlayer {
   width: 100%;
-  max-height: 220px;
+  max-height: 300px;
   background: #000;
-  border-radius: 8px;
 }
 
 /* Now Playing */
 .now-playing {
   text-align: center;
-  margin: 8px 0;
-  font-weight: 500;
+  font-size: 1rem;
+  padding: 8px 0;
+  background: #222;
 }
 
-/* Search + Category Filter */
+/* Controls */
 .controls {
   display: flex;
-  gap: 8px;
-  margin: 10px 0;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
   flex-wrap: wrap;
+  padding: 10px;
+  background: #1c1c1c;
 }
-
-#searchInput,
-#categoryFilter {
-  flex: 1;
-  padding: 8px;
+.controls input,
+.controls select {
+  padding: 8px 12px;
   border-radius: 8px;
   border: none;
-  font-size: 14px;
+  font-size: 0.9rem;
+  width: 45%;
+  max-width: 240px;
 }
 
-/* Channel carousel */
+/* Channel Carousel */
 .channel-carousel {
   display: flex;
-  gap: 10px;
   overflow-x: auto;
-  padding-bottom: 10px;
-  scroll-snap-type: x mandatory;
+  padding: 10px;
+  gap: 10px;
+  scroll-behavior: smooth;
 }
 
+/* Channel Card */
 .channel-card {
-  flex: 0 0 auto;
-  background: #1e1e1e;
-  padding: 8px;
+  background: #1f1f1f;
   border-radius: 12px;
-  width: 90px;
-  scroll-snap-align: start;
+  min-width: 100px;
+  width: 100px;
+  padding: 8px;
   text-align: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  flex-shrink: 0;
+  transition: transform 0.2s;
 }
-
+.channel-card:hover {
+  transform: scale(1.05);
+}
 .channel-card img {
-  width: 100%;
-  height: 55px;
+  width: 60px;
+  height: 60px;
   object-fit: contain;
   border-radius: 8px;
-  margin-bottom: 5px;
 }
-
-.channel-card p {
-  font-size: 13px;
-  margin-bottom: 4px;
+.channel-card .channel-name {
+  margin-top: 6px;
+  font-size: 0.75rem;
+  line-height: 1.1;
 }
-
-.favorite-icon {
-  font-size: 18px;
+.channel-card .favorite {
   color: red;
-  cursor: pointer;
+  font-size: 16px;
+  margin-top: 4px;
+}
+
+/* Scrollbar styling */
+.channel-carousel::-webkit-scrollbar {
+  height: 6px;
+}
+.channel-carousel::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 6px;
+}
+.channel-carousel::-webkit-scrollbar-track {
+  background: #222;
 }
 
 /* Modal */
 .modal {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 99;
+  z-index: 999;
 }
-
+.modal.hidden {
+  display: none;
+}
 .modal-content {
   background: #222;
   padding: 20px;
   border-radius: 12px;
-  text-align: center;
+  text-align: left;
   width: 90%;
-  max-width: 350px;
+  max-width: 400px;
 }
-
 .modal-content h2 {
   margin-bottom: 15px;
-  font-size: 20px;
+  font-size: 1.2rem;
 }
-
 .modal-content label {
   display: block;
-  margin: 10px 0;
-  font-size: 14px;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
 }
-
 .modal-content button {
-  margin-top: 15px;
+  margin-top: 10px;
   padding: 8px 16px;
+  background: #444;
+  color: #fff;
   border: none;
   border-radius: 8px;
-  background: #444;
-  color: white;
   cursor: pointer;
 }
 
-/* Utility */
-.hidden {
-  display: none;
-}
-
-/* Scrollbar customization */
-.channel-carousel::-webkit-scrollbar {
-  height: 6px;
-}
-
-.channel-carousel::-webkit-scrollbar-thumb {
-  background-color: #444;
-  border-radius: 10px;
-}
-
-/* Responsive tweaks */
-@media (min-width: 768px) {
+/* Responsive Tweaks */
+@media (min-width: 600px) {
   .channel-card {
+    min-width: 110px;
     width: 110px;
   }
-
-  #searchInput,
-  #categoryFilter {
-    font-size: 15px;
-    padding: 10px;
+  .channel-card img {
+    width: 70px;
+    height: 70px;
   }
-
-  .now-playing {
-    font-size: 18px;
+  .channel-card .channel-name {
+    font-size: 0.8rem;
   }
-
-  .modal-content {
-    font-size: 16px;
-  }
-  }
+}
