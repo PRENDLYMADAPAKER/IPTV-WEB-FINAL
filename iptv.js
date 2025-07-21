@@ -4,14 +4,26 @@ let channels = [];
 let favorites = new Set();
 let currentChannelIndex = 0;
 let filteredChannels = [];
+let userCountry = '';
+let proxyEnabled = localStorage.getItem('useProxy') === 'true';
 
 const videoPlayer = document.getElementById('videoPlayer');
 const nowPlaying = document.getElementById('nowPlaying');
 const searchInput = document.getElementById('searchInput');
 const categoryFilter = document.getElementById('categoryFilter');
 const channelCarousel = document.getElementById('channelCarousel');
+const nowPlayingThumb = document.querySelector('#nowPlayingThumbnail img');
+const proxyToggle = document.getElementById('proxyToggle');
 
 let currentHls = null;
+
+// ---------------- GeoCheck ----------------
+fetch('https://ipinfo.io/json?token=5b6d16609bce1c')
+  .then(res => res.json())
+  .then(data => {
+    userCountry = data.country;
+    console.log("User country:", userCountry);
+  });
 
 // ---------------- Parse Playlist ----------------
 function parseM3U(content) {
@@ -67,18 +79,21 @@ function loadChannels(list = []) {
 // ---------------- Play Channel ----------------
 function playChannel(channel) {
   nowPlaying.innerText = `Now Playing: ${channel.name}`;
-  currentChannelIndex = filteredChannels.findIndex(c => c.url === channel.url);
+  nowPlayingThumb.src = channel.logo || 'https://via.placeholder.com/120x90?text=No+Logo';
 
+  currentChannelIndex = filteredChannels.findIndex(c => c.url === channel.url);
   stopCurrentStream();
 
-  // Try native playback first
-  videoPlayer.src = channel.url;
+  let streamUrl = proxyEnabled
+    ? `https://iptv-cors-proxy.onrender.com/${encodeURIComponent(channel.url)}`
+    : channel.url;
+
+  videoPlayer.src = streamUrl;
   videoPlayer.load();
   videoPlayer.play().catch(() => {
-    // If native playback fails, try HLS.js
     if (Hls.isSupported()) {
       currentHls = new Hls();
-      currentHls.loadSource(channel.url);
+      currentHls.loadSource(streamUrl);
       currentHls.attachMedia(videoPlayer);
 
       currentHls.on(Hls.Events.ERROR, (event, data) => {
@@ -87,7 +102,6 @@ function playChannel(channel) {
         }
       });
     } else {
-      // fallback fail
       nowPlaying.innerText = `Playback failed: ${channel.name}`;
       if (document.getElementById('autoplayToggle').checked) {
         autoPlayNext();
@@ -183,10 +197,20 @@ document.getElementById('themeToggle').addEventListener('change', (e) => {
 
 document.getElementById('favOnlyToggle').addEventListener('change', filterChannels);
 
+proxyToggle.addEventListener('change', (e) => {
+  proxyEnabled = e.target.checked;
+  localStorage.setItem('useProxy', proxyEnabled);
+  console.log("Proxy mode:", proxyEnabled ? 'ON' : 'OFF');
+});
+
 // ---------------- App Init ----------------
 if (localStorage.getItem('theme') === 'light') {
   document.body.classList.add('light');
   document.getElementById('themeToggle').checked = true;
+}
+
+if (proxyEnabled) {
+  proxyToggle.checked = true;
 }
 
 searchInput.addEventListener('input', filterChannels);
