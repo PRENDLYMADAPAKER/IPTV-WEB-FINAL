@@ -1,79 +1,110 @@
 const m3uUrl = "https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/refs/heads/main/IPTVPREMIUM.m3u";
-const proxyPrefix = "https://iptv-cors-proxy.onrender.com/"; // optional CORS proxy
-
-const video = document.getElementById("videoPlayer");
+const player = document.getElementById("videoPlayer");
 const searchInput = document.getElementById("searchInput");
-const categoryFilter = document.getElementById("categoryFilter");
+const categorySelect = document.getElementById("categorySelect");
 const channelList = document.getElementById("channelList");
+const useProxyCheckbox = document.getElementById("useProxy");
+const logoutBtn = document.getElementById("logoutBtn");
 
 let channels = [];
 
-function parseM3U(m3u) {
-  const lines = m3u.split('\n');
-  let parsed = [];
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i].startsWith('#EXTINF')) {
-      const nameMatch = lines[i].match(/,(.*)/);
-      const name = nameMatch ? nameMatch[1].trim() : `Channel ${i}`;
-      const logoMatch = lines[i].match(/tvg-logo="(.*?)"/);
-      const logo = logoMatch ? logoMatch[1] : "";
-      const groupMatch = lines[i].match(/group-title="(.*?)"/);
-      const group = groupMatch ? groupMatch[1] : "Other";
-      const url = lines[i + 1]?.trim();
-      if (url && url.startsWith("http")) {
-        parsed.push({ name, logo, group, url });
-      }
+async function fetchM3U() {
+  try {
+    const response = await fetch(m3uUrl);
+    const text = await response.text();
+    parseM3U(text);
+    renderChannels();
+    populateCategories();
+  } catch (error) {
+    console.error("Failed to fetch M3U:", error);
+  }
+}
+
+function parseM3U(data) {
+  const lines = data.split("\n");
+  let current = {};
+  channels = [];
+
+  for (let line of lines) {
+    line = line.trim();
+    if (line.startsWith("#EXTINF")) {
+      const logoMatch = line.match(/tvg-logo="(.*?)"/);
+      const groupMatch = line.match(/group-title="(.*?)"/);
+      const name = line.split(",").pop().trim();
+
+      current = {
+        name,
+        logo: logoMatch ? logoMatch[1] : "",
+        group: groupMatch ? groupMatch[1] : "Other"
+      };
+    } else if (line && !line.startsWith("#")) {
+      current.url = line;
+      channels.push({ ...current });
     }
   }
-  return parsed;
 }
 
-function loadChannel(channel) {
-  if (Hls.isSupported()) {
-    const hls = new Hls();
-    hls.loadSource(proxyPrefix + channel.url);
-    hls.attachMedia(video);
-  } else {
-    video.src = channel.url;
-  }
-}
+function renderChannels() {
+  const search = searchInput.value.toLowerCase();
+  const category = categorySelect.value;
 
-function renderChannels(list) {
   channelList.innerHTML = "";
-  list.forEach((channel, index) => {
-    const card = document.createElement("div");
-    card.className = "channel-card";
-    card.innerHTML = `
-      <img src="${channel.logo}" alt="${channel.name}" onerror="this.src='https://via.placeholder.com/60'" />
-      <div>${channel.name}</div>
-    `;
-    card.onclick = () => loadChannel(channel);
-    channelList.appendChild(card);
+
+  channels
+    .filter(ch => ch.name.toLowerCase().includes(search))
+    .filter(ch => category === "All" || ch.group === category)
+    .forEach(ch => {
+      const div = document.createElement("div");
+      div.className = "channel";
+
+      const img = document.createElement("img");
+      img.src = ch.logo || "https://via.placeholder.com/60x40?text=Logo";
+      img.alt = ch.name;
+
+      const label = document.createElement("span");
+      label.textContent = ch.name;
+
+      div.appendChild(img);
+      div.appendChild(label);
+      div.onclick = () => playChannel(ch.url);
+
+      channelList.appendChild(div);
+    });
+}
+
+function populateCategories() {
+  const unique = Array.from(new Set(channels.map(c => c.group))).sort();
+  categorySelect.innerHTML = `<option value="All">All</option>`;
+  unique.forEach(group => {
+    const opt = document.createElement("option");
+    opt.value = group;
+    opt.textContent = group;
+    categorySelect.appendChild(opt);
   });
 }
 
-function updateFilters() {
-  const keyword = searchInput.value.toLowerCase();
-  const category = categoryFilter.value;
-  let filtered = channels.filter(c => c.name.toLowerCase().includes(keyword));
-  if (category !== "all") {
-    filtered = filtered.filter(c => c.group === category);
+function playChannel(url) {
+  const finalUrl = useProxyCheckbox.checked
+    ? `https://iptv-cors-proxy.onrender.com/proxy/${encodeURIComponent(url)}`
+    : url;
+
+  if (Hls.isSupported()) {
+    const hls = new Hls();
+    hls.loadSource(finalUrl);
+    hls.attachMedia(player);
+  } else if (player.canPlayType("application/vnd.apple.mpegurl")) {
+    player.src = finalUrl;
+  } else {
+    alert("This browser does not support HLS.");
   }
-  renderChannels(filtered);
 }
 
-async function init() {
-  const res = await fetch(m3uUrl);
-  const text = await res.text();
-  channels = parseM3U(text);
-  const categories = [...new Set(channels.map(c => c.group))];
-  categoryFilter.innerHTML += categories.map(cat => `<option value="${cat}">${cat}</option>`).join("");
-  renderChannels(channels);
-  loadChannel(channels[0]);
-}
+// Event Listeners
+searchInput.addEventListener("input", renderChannels);
+categorySelect.addEventListener("change", renderChannels);
+logoutBtn.addEventListener("click", () => {
+  alert("Logged out!");
+  // Optional: Firebase sign out
+});
 
-searchInput.addEventListener("input", updateFilters);
-categoryFilter.addEventListener("change", updateFilters);
-document.getElementById("logoutBtn").addEventListener("click", () => alert("Logout not implemented yet."));
-
-init();
+fetchM3U();
