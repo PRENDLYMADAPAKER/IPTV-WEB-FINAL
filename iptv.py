@@ -1,110 +1,107 @@
 const m3uUrl = "https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/refs/heads/main/IPTVPREMIUM.m3u";
-const player = document.getElementById("videoPlayer");
-const searchInput = document.getElementById("searchInput");
-const categorySelect = document.getElementById("categorySelect");
-const channelList = document.getElementById("channelList");
-const useProxyCheckbox = document.getElementById("useProxy");
-const logoutBtn = document.getElementById("logoutBtn");
 
 let channels = [];
+let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
 
-async function fetchM3U() {
-  try {
-    const response = await fetch(m3uUrl);
-    const text = await response.text();
-    parseM3U(text);
-    renderChannels();
-    populateCategories();
-  } catch (error) {
-    console.error("Failed to fetch M3U:", error);
-  }
+const video = document.getElementById("videoPlayer");
+const searchInput = document.getElementById("searchInput");
+const categorySelect = document.getElementById("categorySelect");
+const channelGrid = document.getElementById("channelGrid");
+const nowPlaying = document.getElementById("nowPlaying");
+const nowLogo = document.getElementById("nowLogo");
+
+async function fetchM3U(url) {
+  const res = await fetch(url);
+  const text = await res.text();
+  parseM3U(text);
 }
 
 function parseM3U(data) {
-  const lines = data.split("\n");
-  let current = {};
   channels = [];
+  let lines = data.split("\n");
+  let current = {};
 
-  for (let line of lines) {
-    line = line.trim();
+  lines.forEach(line => {
     if (line.startsWith("#EXTINF")) {
+      const nameMatch = line.match(/,(.*)/);
       const logoMatch = line.match(/tvg-logo="(.*?)"/);
       const groupMatch = line.match(/group-title="(.*?)"/);
-      const name = line.split(",").pop().trim();
 
       current = {
-        name,
+        name: nameMatch ? nameMatch[1].trim() : "Unknown",
         logo: logoMatch ? logoMatch[1] : "",
         group: groupMatch ? groupMatch[1] : "Other"
       };
-    } else if (line && !line.startsWith("#")) {
-      current.url = line;
+    } else if (line.startsWith("http")) {
+      current.url = line.trim();
       channels.push({ ...current });
     }
-  }
+  });
+
+  populateCategories();
+  renderChannels();
+}
+
+function populateCategories() {
+  const categories = ["All", ...new Set(channels.map(ch => ch.group))];
+  categorySelect.innerHTML = categories.map(cat =>
+    `<option value="${cat}">${cat}</option>`).join("");
 }
 
 function renderChannels() {
   const search = searchInput.value.toLowerCase();
   const category = categorySelect.value;
+  channelGrid.innerHTML = "";
 
-  channelList.innerHTML = "";
+  channels.forEach(ch => {
+    if (
+      ch.name.toLowerCase().includes(search) &&
+      (category === "All" || ch.group === category)
+    ) {
+      const card = document.createElement("div");
+      card.className = "channel-card";
+      if (favorites.includes(ch.name)) card.classList.add("favorited");
 
-  channels
-    .filter(ch => ch.name.toLowerCase().includes(search))
-    .filter(ch => category === "All" || ch.group === category)
-    .forEach(ch => {
-      const div = document.createElement("div");
-      div.className = "channel";
+      card.innerHTML = `
+        <img src="${ch.logo}" alt="${ch.name}" onerror="this.src='https://via.placeholder.com/80x40?text=No+Logo'" />
+        <div>${ch.name}</div>
+        <div class="star" onclick="toggleFavorite(event, '${ch.name}')">★</div>
+      `;
 
-      const img = document.createElement("img");
-      img.src = ch.logo || "https://via.placeholder.com/60x40?text=Logo";
-      img.alt = ch.name;
-
-      const label = document.createElement("span");
-      label.textContent = ch.name;
-
-      div.appendChild(img);
-      div.appendChild(label);
-      div.onclick = () => playChannel(ch.url);
-
-      channelList.appendChild(div);
-    });
-}
-
-function populateCategories() {
-  const unique = Array.from(new Set(channels.map(c => c.group))).sort();
-  categorySelect.innerHTML = `<option value="All">All</option>`;
-  unique.forEach(group => {
-    const opt = document.createElement("option");
-    opt.value = group;
-    opt.textContent = group;
-    categorySelect.appendChild(opt);
+      card.onclick = () => playChannel(ch);
+      channelGrid.appendChild(card);
+    }
   });
 }
 
-function playChannel(url) {
-  const finalUrl = useProxyCheckbox.checked
-    ? `https://iptv-cors-proxy.onrender.com/proxy/${encodeURIComponent(url)}`
-    : url;
-
+function playChannel(channel) {
+  nowPlaying.innerText = "Now Playing: " + channel.name;
+  nowLogo.src = channel.logo;
   if (Hls.isSupported()) {
     const hls = new Hls();
-    hls.loadSource(finalUrl);
-    hls.attachMedia(player);
-  } else if (player.canPlayType("application/vnd.apple.mpegurl")) {
-    player.src = finalUrl;
+    hls.loadSource(channel.url);
+    hls.attachMedia(video);
   } else {
-    alert("This browser does not support HLS.");
+    video.src = channel.url;
   }
 }
 
-// Event Listeners
+function toggleFavorite(e, name) {
+  e.stopPropagation();
+  if (favorites.includes(name)) {
+    favorites = favorites.filter(f => f !== name);
+  } else {
+    favorites.push(name);
+  }
+  localStorage.setItem("favorites", JSON.stringify(favorites));
+  renderChannels();
+}
+
+function updatePlaylist() {
+  fetchM3U(m3uUrl);
+}
+
 searchInput.addEventListener("input", renderChannels);
 categorySelect.addEventListener("change", renderChannels);
-logoutBtn.addEventListener("click", () => {
-  alert("Logged out!");
-  // Optional: Firebase sign out
-});
 
-fetchM3U();
+updatePlaylist();
