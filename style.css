@@ -1,84 +1,96 @@
-body {
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background-color: #0c0c1d;
-  color: #fff;
-  overflow-x: hidden;
+const m3uUrl = "https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/refs/heads/main/IPTVPREMIUM.m3u";
+const proxyUrl = "https://iptv-cors-proxy.onrender.com/";
+
+const video = document.getElementById("videoPlayer");
+const channelList = document.getElementById("channelList");
+const searchInput = document.getElementById("searchInput");
+const categoryFilter = document.getElementById("categoryFilter");
+const proxyToggle = document.getElementById("proxyToggle");
+
+let channels = [];
+
+async function fetchM3U(url) {
+  const res = await fetch(url);
+  const text = await res.text();
+  return parseM3U(text);
 }
 
-header {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  background-color: #111;
-  padding: 10px 20px;
+function parseM3U(data) {
+  const lines = data.split("\n");
+  const parsed = [];
+  let current = {};
+
+  for (let line of lines) {
+    line = line.trim();
+    if (line.startsWith("#EXTINF:")) {
+      const name = line.split(",").pop();
+      const logo = /tvg-logo="(.*?)"/.exec(line)?.[1] || "";
+      const group = /group-title="(.*?)"/.exec(line)?.[1] || "Other";
+      current = { name, logo, group };
+    } else if (line && !line.startsWith("#")) {
+      current.url = line;
+      parsed.push({ ...current });
+    }
+  }
+
+  return parsed;
 }
 
-.logo {
-  height: 40px;
-  width: auto;
+function renderChannels(list) {
+  channelList.innerHTML = "";
+  const categorySet = new Set(["All"]);
+
+  list.forEach(channel => {
+    categorySet.add(channel.group);
+
+    const div = document.createElement("div");
+    div.className = "channel";
+    div.innerHTML = `
+      <img src="${channel.logo || "https://via.placeholder.com/80x40?text=No+Logo"}" />
+      <div>${channel.name}</div>
+    `;
+    div.onclick = () => playChannel(channel.url);
+    channelList.appendChild(div);
+  });
+
+  categoryFilter.innerHTML = "";
+  categorySet.forEach(cat => {
+    const opt = document.createElement("option");
+    opt.value = cat;
+    opt.textContent = cat;
+    categoryFilter.appendChild(opt);
+  });
 }
 
-.player-container {
-  display: flex;
-  justify-content: center;
-  background-color: #000;
-  margin: 10px;
+function playChannel(url) {
+  const useProxy = proxyToggle.checked;
+  const finalUrl = useProxy ? proxyUrl + encodeURIComponent(url) : url;
+
+  if (Hls.isSupported()) {
+    const hls = new Hls();
+    hls.loadSource(finalUrl);
+    hls.attachMedia(video);
+  } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+    video.src = finalUrl;
+  } else {
+    alert("Your browser doesn't support HLS");
+  }
+  video.play();
 }
 
-video {
-  width: 100%;
-  max-width: 100%;
-  height: auto;
-  background-color: #000;
-}
+searchInput.addEventListener("input", () => {
+  const q = searchInput.value.toLowerCase();
+  const filtered = channels.filter(c => c.name.toLowerCase().includes(q));
+  renderChannels(filtered);
+});
 
-.controls {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  padding: 10px;
-}
+categoryFilter.addEventListener("change", () => {
+  const cat = categoryFilter.value;
+  const filtered = cat === "All" ? channels : channels.filter(c => c.group === cat);
+  renderChannels(filtered);
+});
 
-.controls input,
-.controls select {
-  padding: 10px;
-  font-size: 1em;
-  border-radius: 5px;
-  border: none;
-}
-
-.proxy-toggle {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 20px;
-}
-
-.channel-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-  gap: 10px;
-  padding: 10px;
-}
-
-.channel {
-  background: #1a1a2e;
-  border-radius: 10px;
-  padding: 10px;
-  text-align: center;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.channel:hover {
-  transform: scale(1.05);
-  background-color: #272742;
-}
-
-.channel img {
-  width: 100%;
-  height: 50px;
-  object-fit: contain;
-  margin-bottom: 5px;
-}
+(async () => {
+  channels = await fetchM3U(m3uUrl);
+  renderChannels(channels);
+})();
