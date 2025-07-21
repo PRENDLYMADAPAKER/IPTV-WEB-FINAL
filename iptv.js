@@ -1,4 +1,5 @@
 const M3U_URL = "https://iptv-cors-proxy.onrender.com/https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/refs/heads/main/IPTVPREMIUM.m3u";
+
 const video = document.getElementById("videoPlayer");
 const nowPlaying = document.getElementById("nowPlaying");
 const searchInput = document.getElementById("searchInput");
@@ -6,22 +7,25 @@ const categoryFilter = document.getElementById("categoryFilter");
 const carousel = document.getElementById("channelCarousel");
 
 let allChannels = [];
-let favorites = [];
 
 function parseM3U(data) {
   const lines = data.split("\n");
   const channels = [];
   let current = {};
 
-  for (let line of lines) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+
     if (line.startsWith("#EXTINF")) {
       const name = line.match(/,(.*)/)?.[1]?.trim();
       const logo = line.match(/tvg-logo="(.*?)"/)?.[1] || "";
       const group = line.match(/group-title="(.*?)"/)?.[1] || "Others";
       current = { name, logo, group };
     } else if (line.startsWith("http")) {
-      current.url = line.trim();
-      channels.push({ ...current });
+      current.url = line;
+      if (current.name) {
+        channels.push({ ...current });
+      }
     }
   }
 
@@ -42,7 +46,15 @@ function renderChannels(channels) {
   carousel.innerHTML = "";
   const categories = new Set(["All"]);
 
-  channels.forEach((ch, i) => {
+  if (channels.length === 0) {
+    const msg = document.createElement("div");
+    msg.style.padding = "20px";
+    msg.textContent = "No channels found.";
+    carousel.appendChild(msg);
+    return;
+  }
+
+  channels.forEach((ch) => {
     categories.add(ch.group);
 
     const card = document.createElement("div");
@@ -60,9 +72,9 @@ function renderChannels(channels) {
     carousel.appendChild(card);
   });
 
-  // Update categories dropdown
+  // Update categories
   categoryFilter.innerHTML = "";
-  [...categories].forEach(cat => {
+  [...categories].forEach((cat) => {
     const opt = document.createElement("option");
     opt.value = cat;
     opt.textContent = cat;
@@ -84,10 +96,20 @@ function filterChannels() {
 }
 
 async function init() {
-  const res = await fetch(M3U_URL);
-  const txt = await res.text();
-  allChannels = parseM3U(txt);
-  renderChannels(allChannels);
+  try {
+    const res = await fetch(M3U_URL);
+    const txt = await res.text();
+    allChannels = parseM3U(txt);
+
+    if (allChannels.length === 0) {
+      console.warn("⚠️ No channels were parsed from the M3U file.");
+    }
+
+    renderChannels(allChannels);
+  } catch (err) {
+    console.error("❌ Failed to load M3U playlist:", err);
+    carousel.innerHTML = `<div style="padding: 20px;">Failed to load playlist.</div>`;
+  }
 }
 
 searchInput.addEventListener("input", filterChannels);
