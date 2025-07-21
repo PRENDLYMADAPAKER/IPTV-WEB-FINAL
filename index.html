@@ -9,28 +9,32 @@
 </head>
 <body>
   <header>
-    <img src="logo.png" alt="Logo" class="logo" />
+    <img src="logo.png" alt="Logo" id="logo" />
     <h1>IPTV Premium</h1>
+    <button id="logoutBtn">Logout</button>
   </header>
 
   <section class="now-playing">
-    <img id="nowLogo" class="now-logo" src="" alt="Now Playing Logo">
-    <span id="nowPlaying">Now Playing: </span>
+    <div id="nowPlaying">
+      <img id="nowLogo" src="" alt="Logo" />
+      <span id="nowTitle">Now Playing:</span>
+    </div>
   </section>
 
   <div class="player-container">
-    <video id="videoPlayer" controls autoplay></video>
+    <video id="videoPlayer" controls autoplay muted playsinline></video>
   </div>
 
-  <div class="controls">
-    <input type="text" id="searchInput" placeholder="Search channel...">
-    <select id="categorySelect">
-      <option value="All">All Channels</option>
+  <section class="controls">
+    <input type="text" id="searchInput" placeholder="Search channels..." />
+    <select id="categoryFilter">
+      <option value="All">All Categories</option>
     </select>
-    <button onclick="updatePlaylist()">Update Playlist</button>
-  </div>
+  </section>
 
-  <div id="channelGrid" class="channel-carousel"></div>
+  <section id="channelCarousel" class="channel-carousel">
+    <!-- Channels will be injected here -->
+  </section>
 
   <script src="iptv.js"></script>
 </body>
