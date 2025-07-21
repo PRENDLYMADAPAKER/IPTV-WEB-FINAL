@@ -44,12 +44,26 @@ video {
 }
 
 /* Now Playing Banner */
-.now-playing {
-  padding: 8px 15px;
-  font-size: 0.95rem;
+.now-playing-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 15px;
   background: #1a1a1a;
   border-bottom: 1px solid #222;
-  text-align: center;
+}
+
+.now-playing {
+  font-size: 0.95rem;
+  flex-grow: 1;
+}
+
+.now-playing-thumb {
+  width: 60px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #333;
 }
 
 /* Search + Filter */
@@ -190,4 +204,15 @@ video {
   h1 {
     font-size: 1rem;
   }
+  
+  .now-playing-container {
+    flex-direction: column;
+    align-items: flex-start;
   }
+
+  .now-playing-thumb {
+    width: 100%;
+    height: auto;
+    margin-bottom: 5px;
+  }
+}
