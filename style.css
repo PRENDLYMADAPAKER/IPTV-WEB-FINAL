@@ -1,167 +1,195 @@
-/* === Reset & Base Styles === */
+/* Reset and base styles */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
+
 body {
   font-family: 'Segoe UI', sans-serif;
-  background-color: #111;
+  background: #111;
   color: #fff;
+  line-height: 1.4;
   overflow-x: hidden;
 }
 
-/* === Header === */
 header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  background-color: #1a1a1a;
   padding: 10px 15px;
-  background-color: #1f1f1f;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.6);
 }
+
 .logo {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
 }
+
 header h1 {
-  font-size: 1.1rem;
+  font-size: 16px;
   margin-left: 10px;
   flex: 1;
 }
+
 .settings-btn {
-  font-size: 1.2rem;
   background: none;
   border: none;
-  color: #fff;
+  color: white;
+  font-size: 20px;
   cursor: pointer;
 }
 
-/* === Video Player === */
-#videoPlayer {
-  width: 100%;
-  max-height: 40vh;
-  background: #000;
+/* Main player */
+main {
+  padding: 10px;
 }
 
-/* === Now Playing === */
+video {
+  width: 100%;
+  max-height: 220px;
+  background: #000;
+  border-radius: 8px;
+}
+
+/* Now Playing */
 .now-playing {
   text-align: center;
-  font-size: 1rem;
-  margin: 10px 0;
+  margin: 8px 0;
+  font-weight: 500;
 }
 
-/* === Controls (Search + Category) === */
+/* Search + Category Filter */
 .controls {
   display: flex;
-  gap: 10px;
-  padding: 0 15px;
-  margin-bottom: 10px;
+  gap: 8px;
+  margin: 10px 0;
+  flex-wrap: wrap;
 }
-#searchInput, #categoryFilter {
+
+#searchInput,
+#categoryFilter {
   flex: 1;
   padding: 8px;
-  font-size: 0.9rem;
-  border-radius: 6px;
+  border-radius: 8px;
   border: none;
-  outline: none;
+  font-size: 14px;
 }
 
-/* === Channel Carousel === */
+/* Channel carousel */
 .channel-carousel {
   display: flex;
-  overflow-x: auto;
-  padding: 10px 15px;
   gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 10px;
   scroll-snap-type: x mandatory;
 }
+
 .channel-card {
   flex: 0 0 auto;
-  width: 100px;
+  background: #1e1e1e;
+  padding: 8px;
+  border-radius: 12px;
+  width: 90px;
   scroll-snap-align: start;
-  background: #1f1f1f;
-  border-radius: 10px;
-  padding: 5px;
   text-align: center;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-.channel-card:hover {
-  transform: scale(1.05);
-  background: #333;
-}
-.channel-card img {
-  width: 60px;
-  height: 60px;
-  border-radius: 8px;
-  object-fit: cover;
-}
-.channel-name {
-  font-size: 0.75rem;
-  margin-top: 5px;
-}
-.favorite-icon {
-  color: red;
-  font-size: 1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
 }
 
-/* === Modal === */
+.channel-card img {
+  width: 100%;
+  height: 55px;
+  object-fit: contain;
+  border-radius: 8px;
+  margin-bottom: 5px;
+}
+
+.channel-card p {
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.favorite-icon {
+  font-size: 18px;
+  color: red;
+  cursor: pointer;
+}
+
+/* Modal */
 .modal {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
-  justify-content: center;
   align-items: center;
-  z-index: 20;
+  justify-content: center;
+  z-index: 99;
 }
-.modal.hidden {
-  display: none;
-}
+
 .modal-content {
-  background: #1f1f1f;
+  background: #222;
   padding: 20px;
-  border-radius: 10px;
-  width: 80%;
-  max-width: 300px;
+  border-radius: 12px;
+  text-align: center;
+  width: 90%;
+  max-width: 350px;
 }
+
 .modal-content h2 {
   margin-bottom: 15px;
+  font-size: 20px;
 }
+
 .modal-content label {
   display: block;
-  margin-bottom: 10px;
-  font-size: 0.9rem;
+  margin: 10px 0;
+  font-size: 14px;
 }
+
 .modal-content button {
-  margin-top: 10px;
-  padding: 8px 12px;
+  margin-top: 15px;
+  padding: 8px 16px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   background: #444;
-  color: #fff;
+  color: white;
   cursor: pointer;
 }
 
-/* === Responsive Fixes === */
-@media screen and (max-width: 600px) {
-  .channel-card {
-    width: 80px;
-  }
-  .channel-card img {
-    width: 50px;
-    height: 50px;
-  }
-  header h1 {
-    font-size: 1rem;
-  }
-  .modal-content {
-    width: 90%;
-  }
+/* Utility */
+.hidden {
+  display: none;
 }
+
+/* Scrollbar customization */
+.channel-carousel::-webkit-scrollbar {
+  height: 6px;
+}
+
+.channel-carousel::-webkit-scrollbar-thumb {
+  background-color: #444;
+  border-radius: 10px;
+}
+
+/* Responsive tweaks */
+@media (min-width: 768px) {
+  .channel-card {
+    width: 110px;
+  }
+
+  #searchInput,
+  #categoryFilter {
+    font-size: 15px;
+    padding: 10px;
+  }
+
+  .now-playing {
+    font-size: 18px;
+  }
+
+  .modal-content {
+    font-size: 16px;
+  }
+  }
