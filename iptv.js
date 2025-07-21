@@ -1,5 +1,5 @@
 const m3uUrl = 'https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/refs/heads/main/IPTVPREMIUM.m3u';
-const corsProxy = 'https://iptv-cors-proxy.onrender.com/?url=';
+const corsProxy = 'https://iptv-cors-proxy.onrender.com/proxy/';
 
 let channels = [];
 let favorites = new Set();
@@ -31,7 +31,13 @@ function parseM3U(content) {
       logo = logoMatch ? logoMatch[1] : '';
       group = groupMatch ? groupMatch[1] : 'Other';
     } else if (line.startsWith('http')) {
-      parsed.push({ name, logo, group, url: corsProxy + encodeURIComponent(line.trim()) });
+      const rawUrl = line.trim();
+
+      // ✅ Apply proxy only to .m3u8 and if not already proxied
+      const needsProxy = rawUrl.includes('.m3u8') && !rawUrl.includes('localhost') && !rawUrl.includes('127.0.0.1');
+      const proxiedUrl = needsProxy ? `${corsProxy}${rawUrl}` : rawUrl;
+
+      parsed.push({ name, logo, group, url: proxiedUrl });
     }
   }
 
