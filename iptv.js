@@ -1,5 +1,4 @@
 const m3uUrl = 'https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/refs/heads/main/IPTVPREMIUM.m3u';
-const corsProxy = 'https://iptv-cors-proxy.onrender.com/proxy/';
 
 let channels = [];
 let favorites = new Set();
@@ -11,6 +10,8 @@ const nowPlaying = document.getElementById('nowPlaying');
 const searchInput = document.getElementById('searchInput');
 const categoryFilter = document.getElementById('categoryFilter');
 const channelCarousel = document.getElementById('channelCarousel');
+
+let currentHls = null;
 
 // ---------------- Parse Playlist ----------------
 function parseM3U(content) {
@@ -31,13 +32,7 @@ function parseM3U(content) {
       logo = logoMatch ? logoMatch[1] : '';
       group = groupMatch ? groupMatch[1] : 'Other';
     } else if (line.startsWith('http')) {
-      const rawUrl = line.trim();
-
-      // ✅ Apply proxy only to .m3u8 and if not already proxied
-      const needsProxy = rawUrl.includes('.m3u8') && !rawUrl.includes('localhost') && !rawUrl.includes('127.0.0.1');
-      const proxiedUrl = needsProxy ? `${corsProxy}${rawUrl}` : rawUrl;
-
-      parsed.push({ name, logo, group, url: proxiedUrl });
+      parsed.push({ name, logo, group, url: line.trim() });
     }
   }
 
@@ -69,26 +64,46 @@ function loadChannels(list = []) {
   });
 }
 
+// ---------------- Play Channel ----------------
 function playChannel(channel) {
   nowPlaying.innerText = `Now Playing: ${channel.name}`;
   currentChannelIndex = filteredChannels.findIndex(c => c.url === channel.url);
 
-  if (Hls.isSupported()) {
-    const hls = new Hls();
-    hls.loadSource(channel.url);
-    hls.attachMedia(videoPlayer);
-    hls.on(Hls.Events.ERROR, (event, data) => {
-      if (data.fatal && document.getElementById('autoplayToggle').checked) {
-        autoPlayNext();
-      }
-    });
-  } else {
-    videoPlayer.src = channel.url;
-    videoPlayer.onerror = () => {
+  stopCurrentStream();
+
+  // Try native playback first
+  videoPlayer.src = channel.url;
+  videoPlayer.load();
+  videoPlayer.play().catch(() => {
+    // If native playback fails, try HLS.js
+    if (Hls.isSupported()) {
+      currentHls = new Hls();
+      currentHls.loadSource(channel.url);
+      currentHls.attachMedia(videoPlayer);
+
+      currentHls.on(Hls.Events.ERROR, (event, data) => {
+        if (data.fatal && document.getElementById('autoplayToggle').checked) {
+          autoPlayNext();
+        }
+      });
+    } else {
+      // fallback fail
+      nowPlaying.innerText = `Playback failed: ${channel.name}`;
       if (document.getElementById('autoplayToggle').checked) {
         autoPlayNext();
       }
-    };
+    }
+  });
+}
+
+function stopCurrentStream() {
+  videoPlayer.pause();
+  videoPlayer.removeAttribute('src');
+  videoPlayer.load();
+
+  if (currentHls) {
+    currentHls.destroy();
+    currentHls = null;
   }
 }
 
@@ -138,6 +153,7 @@ function filterChannels() {
 
 function populateCategories() {
   const uniqueGroups = ['All', ...new Set(channels.map(c => c.group))];
+  categoryFilter.innerHTML = '';
   uniqueGroups.forEach(group => {
     const opt = document.createElement('option');
     opt.value = group;
