@@ -1,179 +1,193 @@
-/* Reset + Base */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/* Base layout */
 body {
+  margin: 0;
   font-family: 'Segoe UI', sans-serif;
-  background: #111;
+  background-color: #111;
   color: #fff;
 }
 
-/* Header */
 header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  background: #1a1a1a;
   padding: 10px 15px;
+  background: #1a1a1a;
+  position: relative;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.5);
 }
+
 .logo {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
+  margin-right: 10px;
   border-radius: 50%;
 }
+
 h1 {
-  font-size: 1rem;
-  margin-left: 10px;
-  flex: 1;
+  font-size: 1.1rem;
+  flex-grow: 1;
 }
+
 .settings-btn {
-  font-size: 22px;
   background: none;
   border: none;
-  color: #fff;
+  font-size: 22px;
+  color: white;
   cursor: pointer;
 }
 
-/* Video Player */
-#videoPlayer {
+/* Video */
+video {
   width: 100%;
-  max-height: 300px;
-  background: #000;
+  height: auto;
+  background: black;
+  border-bottom: 2px solid #222;
 }
 
-/* Now Playing */
+/* Now Playing Banner */
 .now-playing {
+  padding: 8px 15px;
+  font-size: 0.95rem;
+  background: #1a1a1a;
+  border-bottom: 1px solid #222;
   text-align: center;
-  font-size: 1rem;
-  padding: 8px 0;
-  background: #222;
 }
 
-/* Controls */
+/* Search + Filter */
 .controls {
   display: flex;
-  justify-content: center;
-  align-items: center;
   gap: 10px;
+  padding: 10px 15px;
+  background: #1a1a1a;
   flex-wrap: wrap;
-  padding: 10px;
-  background: #1c1c1c;
-}
-.controls input,
-.controls select {
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: none;
-  font-size: 0.9rem;
-  width: 45%;
-  max-width: 240px;
 }
 
-/* Channel Carousel */
+.controls input,
+.controls select {
+  flex: 1;
+  padding: 10px;
+  font-size: 0.9rem;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  background: #fff;
+  color: #000;
+}
+
+/* Channel carousel layout */
 .channel-carousel {
   display: flex;
   overflow-x: auto;
   padding: 10px;
   gap: 10px;
-  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
 }
 
-/* Channel Card */
 .channel-card {
-  background: #1f1f1f;
-  border-radius: 12px;
-  min-width: 100px;
-  width: 100px;
-  padding: 8px;
+  background: #1a1a1a;
+  border-radius: 16px;
+  padding: 10px 10px 8px;
   text-align: center;
+  min-width: 110px;
+  max-width: 110px;
   flex-shrink: 0;
-  transition: transform 0.2s;
+  scroll-snap-align: start;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+  transition: transform 0.2s ease;
 }
+
 .channel-card:hover {
-  transform: scale(1.05);
+  transform: scale(1.04);
 }
+
 .channel-card img {
-  width: 60px;
+  width: 100%;
   height: 60px;
   object-fit: contain;
   border-radius: 8px;
 }
-.channel-card .channel-name {
-  margin-top: 6px;
-  font-size: 0.75rem;
-  line-height: 1.1;
-}
-.channel-card .favorite {
-  color: red;
-  font-size: 16px;
-  margin-top: 4px;
+
+.channel-card .title {
+  font-size: 0.85rem;
+  margin: 8px 0 5px;
+  line-height: 1.2em;
 }
 
-/* Scrollbar styling */
-.channel-carousel::-webkit-scrollbar {
-  height: 6px;
-}
-.channel-carousel::-webkit-scrollbar-thumb {
-  background: #555;
-  border-radius: 6px;
-}
-.channel-carousel::-webkit-scrollbar-track {
-  background: #222;
+.channel-card .favorite {
+  font-size: 1.1rem;
+  color: red;
+  cursor: pointer;
 }
 
 /* Modal */
 .modal {
   position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.7);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   z-index: 999;
 }
-.modal.hidden {
-  display: none;
-}
+
 .modal-content {
   background: #222;
   padding: 20px;
   border-radius: 12px;
-  text-align: left;
-  width: 90%;
+  width: 80%;
   max-width: 400px;
+  color: white;
+  box-shadow: 0 0 10px #000;
 }
+
 .modal-content h2 {
-  margin-bottom: 15px;
-  font-size: 1.2rem;
+  margin-top: 0;
 }
+
 .modal-content label {
   display: block;
-  margin-bottom: 10px;
-  font-size: 0.9rem;
+  margin: 10px 0;
 }
+
 .modal-content button {
-  margin-top: 10px;
-  padding: 8px 16px;
-  background: #444;
-  color: #fff;
+  margin-top: 15px;
+  padding: 10px 15px;
   border: none;
+  background: #444;
+  color: white;
   border-radius: 8px;
   cursor: pointer;
 }
 
-/* Responsive Tweaks */
-@media (min-width: 600px) {
-  .channel-card {
-    min-width: 110px;
-    width: 110px;
-  }
-  .channel-card img {
-    width: 70px;
-    height: 70px;
-  }
-  .channel-card .channel-name {
-    font-size: 0.8rem;
-  }
+.hidden {
+  display: none;
 }
+
+/* Scrollbar for channel list (optional) */
+.channel-carousel::-webkit-scrollbar {
+  height: 6px;
+}
+
+.channel-carousel::-webkit-scrollbar-thumb {
+  background-color: #444;
+  border-radius: 3px;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .channel-card {
+    min-width: 95px;
+    max-width: 95px;
+    padding: 8px;
+  }
+
+  .channel-card img {
+    height: 50px;
+  }
+
+  h1 {
+    font-size: 1rem;
+  }
+  }
