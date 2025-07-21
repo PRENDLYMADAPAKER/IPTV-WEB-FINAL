@@ -16,8 +16,14 @@
 
   <main>
     <video id="videoPlayer" controls autoplay></video>
+
+    <!-- ✅ Thumbnail + Buffering Indicator -->
+    <div id="nowPlayingThumbWrapper">
+      <img id="nowPlayingThumb" src="" alt="Now Playing Thumbnail" />
+      <div id="bufferSpinner" class="hidden">⏳ Loading...</div>
+    </div>
+
     <div class="now-playing-container">
-      <img id="nowPlayingThumbnail" class="now-playing-thumb" src="" alt="Thumbnail" />
       <div class="now-playing" id="nowPlaying">Now Playing: —</div>
     </div>
 
@@ -26,6 +32,8 @@
       <select id="categoryFilter">
         <option value="All">All Categories</option>
       </select>
+      
+      <!-- ✅ CORS Proxy Toggle -->
       <label class="proxy-toggle">
         <input type="checkbox" id="proxyToggle" /> Use CORS Proxy
       </label>
@@ -41,6 +49,7 @@
       <label><input type="checkbox" id="themeToggle"> Light Theme</label><br/>
       <label><input type="checkbox" id="favOnlyToggle"> Show Favorites Only</label><br/>
       <label><input type="checkbox" id="autoplayToggle"> Auto-Play Next</label><br/>
+      <label><input type="checkbox" id="proxyToggleSettings"> Use CORS Proxy</label><br/>
       <button onclick="closeSettings()">Close</button>
     </div>
   </div>
