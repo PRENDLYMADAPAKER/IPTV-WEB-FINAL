@@ -11,6 +11,7 @@ header {
   justify-content: space-between;
   padding: 10px 16px;
   background-color: #1a1a40;
+  flex-wrap: wrap;
 }
 
 #logo {
@@ -20,7 +21,21 @@ header {
 }
 
 #nowPlaying {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-size: 16px;
+  background-color: #2a2a50;
+  padding: 8px 12px;
+  border-radius: 10px;
+  margin-top: 8px;
+}
+
+#nowPlayingLogo {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  object-fit: contain;
 }
 
 main {
