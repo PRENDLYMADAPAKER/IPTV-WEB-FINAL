@@ -2,39 +2,35 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IPTV Premium</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
 <body>
   <header>
-    <img src="logo.png" alt="Logo" id="logo" />
+    <img src="logo.png" alt="IPTV Premium" class="logo" />
     <h1>IPTV Premium</h1>
-    <button id="logoutBtn">Logout</button>
   </header>
 
   <section class="now-playing">
-    <div id="nowPlaying">
-      <img id="nowLogo" src="" alt="Logo" />
-      <span id="nowTitle">Now Playing:</span>
+    <img id="now-icon" src="" alt="Now Playing" />
+    <span>Now Playing: <strong id="now-title">-</strong></span>
+  </section>
+
+  <main>
+    <video id="video" controls autoplay></video>
+
+    <div class="controls">
+      <input type="text" id="search" placeholder="Search channel..." />
+      <select id="categoryFilter">
+        <option value="All">All Channels</option>
+      </select>
+      <button onclick="loadPlaylist()">Update Playlist</button>
     </div>
-  </section>
 
-  <div class="player-container">
-    <video id="videoPlayer" controls autoplay muted playsinline></video>
-  </div>
-
-  <section class="controls">
-    <input type="text" id="searchInput" placeholder="Search channels..." />
-    <select id="categoryFilter">
-      <option value="All">All Categories</option>
-    </select>
-  </section>
-
-  <section id="channelCarousel" class="channel-carousel">
-    <!-- Channels will be injected here -->
-  </section>
+    <div id="channel-carousel" class="channel-carousel"></div>
+  </main>
 
   <script src="iptv.js"></script>
 </body>
