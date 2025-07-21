@@ -1,97 +1,91 @@
-const playlistUrl = "https://iptv-cors-proxy.onrender.com?url=https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/IPTVPREMIUM.m3u";
+const video = document.getElementById('videoPlayer');
+const channelList = document.getElementById('channelList');
+const categorySelect = document.getElementById('categorySelect');
+const searchInput = document.getElementById('searchInput');
+const nowPlaying = document.getElementById('nowPlaying');
 
-const video = document.getElementById("videoPlayer");
-const channelList = document.getElementById("channelList");
-const nowPlaying = document.getElementById("nowPlaying");
-const searchInput = document.getElementById("searchInput");
-const categoryFilter = document.getElementById("categoryFilter");
+const M3U_URL = 'https://iptv-cors-proxy.onrender.com/https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/refs/heads/main/IPTVPREMIUM.m3u';
 
 let channels = [];
+let categories = new Set();
 
-fetch(playlistUrl)
-  .then((res) => res.text())
-  .then((data) => {
-    const lines = data.split("\n");
-    let currentChannel = {};
+async function loadChannels() {
+  const res = await fetch(M3U_URL);
+  const data = await res.text();
 
-    lines.forEach((line) => {
-      if (line.startsWith("#EXTINF")) {
-        const nameMatch = line.match(/,(.*)$/);
-        const tvgMatch = line.match(/tvg-logo="(.*?)"/);
-        const groupMatch = line.match(/group-title="(.*?)"/);
+  const lines = data.split('\n');
+  let currentChannel = {};
 
-        currentChannel = {
-          name: nameMatch ? nameMatch[1] : "Unknown",
-          logo: tvgMatch ? tvgMatch[1] : "",
-          group: groupMatch ? groupMatch[1] : "Other",
-        };
-      } else if (line && !line.startsWith("#")) {
-        currentChannel.url = line;
-        channels.push(currentChannel);
-      }
-    });
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
 
-    displayCategories();
-    displayChannels(channels);
-  })
-  .catch((err) => {
-    document.getElementById("channelList").innerHTML =
-      '<p style="color:red">Failed to load playlist.</p>';
-    console.error(err);
-  });
+    if (line.startsWith('#EXTINF')) {
+      const nameMatch = line.match(/,(.*)/);
+      const logoMatch = line.match(/tvg-logo="(.*?)"/);
+      const groupMatch = line.match(/group-title="(.*?)"/);
 
-function displayCategories() {
-  const categories = ["All", ...new Set(channels.map((ch) => ch.group))];
-  categories.forEach((cat) => {
-    const option = document.createElement("option");
+      currentChannel = {
+        name: nameMatch ? nameMatch[1] : 'No Name',
+        logo: logoMatch ? logoMatch[1] : '',
+        group: groupMatch ? groupMatch[1] : 'Other',
+        url: ''
+      };
+    } else if (line.startsWith('http')) {
+      currentChannel.url = line.trim();
+      channels.push(currentChannel);
+      categories.add(currentChannel.group);
+    }
+  }
+
+  updateCategorySelect();
+  displayChannels();
+}
+
+function updateCategorySelect() {
+  categorySelect.innerHTML = '<option value="All">All</option>';
+  categories.forEach(cat => {
+    const option = document.createElement('option');
     option.value = cat;
     option.textContent = cat;
-    categoryFilter.appendChild(option);
+    categorySelect.appendChild(option);
   });
 }
 
-function displayChannels(list) {
-  channelList.innerHTML = "";
-  list.forEach((ch, index) => {
-    const card = document.createElement("div");
-    card.className = "channel-card";
-    card.innerHTML = `
-      <img src="${ch.logo}" onerror="this.src='https://via.placeholder.com/100x60?text=No+Logo'">
-      <span>${ch.name}</span>
-    `;
-    card.onclick = () => playChannel(ch);
-    channelList.appendChild(card);
+function displayChannels() {
+  const searchTerm = searchInput.value.toLowerCase();
+  const selectedCategory = categorySelect.value;
+
+  channelList.innerHTML = '';
+
+  channels.forEach(channel => {
+    if (
+      (selectedCategory === 'All' || channel.group === selectedCategory) &&
+      channel.name.toLowerCase().includes(searchTerm)
+    ) {
+      const card = document.createElement('div');
+      card.className = 'channel-card';
+      card.innerHTML = `
+        <img src="${channel.logo || 'https://via.placeholder.com/100x60?text=No+Logo'}" alt="${channel.name}" />
+        <p>${channel.name}</p>
+      `;
+      card.onclick = () => playChannel(channel);
+      channelList.appendChild(card);
+    }
   });
 }
 
 function playChannel(channel) {
-  nowPlaying.textContent = channel.name;
+  nowPlaying.textContent = `Now Playing: ${channel.name}`;
   if (Hls.isSupported()) {
     const hls = new Hls();
     hls.loadSource(channel.url);
     hls.attachMedia(video);
-    hls.on(Hls.Events.MANIFEST_PARSED, function () {
-      video.play();
-    });
-  } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+  } else {
     video.src = channel.url;
-    video.addEventListener("loadedmetadata", () => {
-      video.play();
-    });
   }
 }
 
-searchInput.addEventListener("input", () => {
-  const term = searchInput.value.toLowerCase();
-  const filtered = channels.filter((ch) =>
-    ch.name.toLowerCase().includes(term)
-  );
-  displayChannels(filtered);
-});
+searchInput.addEventListener('input', displayChannels);
+categorySelect.addEventListener('change', displayChannels);
 
-categoryFilter.addEventListener("change", () => {
-  const value = categoryFilter.value;
-  const filtered =
-    value === "All" ? channels : channels.filter((ch) => ch.group === value);
-  displayChannels(filtered);
-});
+loadChannels();
