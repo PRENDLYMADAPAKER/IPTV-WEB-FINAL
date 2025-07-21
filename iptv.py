@@ -1,82 +1,43 @@
+// iptv.js
+
 const m3uUrl = "https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/IPTVPREMIUM.m3u";
 
-let channels = [];
-let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
-
 const video = document.getElementById("videoPlayer");
-const searchInput = document.getElementById("searchInput");
-const categorySelect = document.getElementById("categorySelect");
-const channelGrid = document.getElementById("channelGrid");
-const nowPlaying = document.getElementById("nowPlaying");
-const nowLogo = document.getElementById("nowLogo");
+const channelList = document.getElementById("channelList");
+const currentChannelName = document.getElementById("currentChannelName");
+const search = document.getElementById("search");
+const categoryFilter = document.getElementById("categoryFilter");
 
-async function fetchM3U(url) {
-  const res = await fetch(url);
-  const text = await res.text();
-  parseM3U(text);
-}
+let channels = [];
+let currentCategory = "All";
 
-function parseM3U(data) {
-  channels = [];
-  let lines = data.split("\n");
+function parseM3U(content) {
+  const lines = content.split("\n");
+  const parsed = [];
   let current = {};
 
-  lines.forEach(line => {
+  for (let line of lines) {
+    line = line.trim();
     if (line.startsWith("#EXTINF")) {
-      const nameMatch = line.match(/,(.*)/);
+      const nameMatch = line.match(/,(.*)$/);
       const logoMatch = line.match(/tvg-logo="(.*?)"/);
       const groupMatch = line.match(/group-title="(.*?)"/);
-
       current = {
-        name: nameMatch ? nameMatch[1].trim() : "Unknown",
+        name: nameMatch ? nameMatch[1] : "Unknown",
         logo: logoMatch ? logoMatch[1] : "",
         group: groupMatch ? groupMatch[1] : "Other"
       };
-    } else if (line.startsWith("http")) {
-      current.url = line.trim();
-      channels.push({ ...current });
+    } else if (line && !line.startsWith("#")) {
+      current.url = line;
+      parsed.push(current);
+      current = {};
     }
-  });
-
-  populateCategories();
-  renderChannels();
+  }
+  return parsed;
 }
 
-function populateCategories() {
-  const categories = ["All", ...new Set(channels.map(ch => ch.group))];
-  categorySelect.innerHTML = categories.map(cat =>
-    `<option value="${cat}">${cat}</option>`).join("");
-}
-
-function renderChannels() {
-  const search = searchInput.value.toLowerCase();
-  const category = categorySelect.value;
-  channelGrid.innerHTML = "";
-
-  channels.forEach(ch => {
-    if (
-      ch.name.toLowerCase().includes(search) &&
-      (category === "All" || ch.group === category)
-    ) {
-      const card = document.createElement("div");
-      card.className = "channel-card";
-      if (favorites.includes(ch.name)) card.classList.add("favorited");
-
-      card.innerHTML = `
-        <img src="${ch.logo}" alt="${ch.name}" onerror="this.src='https://via.placeholder.com/80x40?text=No+Logo'" />
-        <div>${ch.name}</div>
-        <div class="star" onclick="toggleFavorite(event, '${ch.name}')">★</div>
-      `;
-
-      card.onclick = () => playChannel(ch);
-      channelGrid.appendChild(card);
-    }
-  });
-}
-
-function playChannel(channel) {
-  nowPlaying.innerText = "Now Playing: " + channel.name;
-  nowLogo.src = channel.logo;
+function loadChannel(channel) {
+  currentChannelName.textContent = channel.name;
   if (Hls.isSupported()) {
     const hls = new Hls();
     hls.loadSource(channel.url);
@@ -84,24 +45,56 @@ function playChannel(channel) {
   } else {
     video.src = channel.url;
   }
+  video.play();
 }
 
-function toggleFavorite(e, name) {
-  e.stopPropagation();
-  if (favorites.includes(name)) {
-    favorites = favorites.filter(f => f !== name);
-  } else {
-    favorites.push(name);
-  }
-  localStorage.setItem("favorites", JSON.stringify(favorites));
-  renderChannels();
+function displayChannels(list) {
+  channelList.innerHTML = "";
+  list.forEach((channel, i) => {
+    const card = document.createElement("div");
+    card.className = "channel-card";
+    card.innerHTML = `
+      <img src="${channel.logo}" alt="${channel.name}" onerror="this.src='default.png'">
+      <span>${channel.name}</span>
+    `;
+    card.onclick = () => loadChannel(channel);
+    channelList.appendChild(card);
+  });
 }
 
-function updatePlaylist() {
-  fetchM3U(m3uUrl);
+function updateCategoryFilter() {
+  const categories = ["All", ...new Set(channels.map(c => c.group))];
+  categoryFilter.innerHTML = categories.map(cat => `<option value="${cat}">${cat}</option>`).join("");
 }
 
-searchInput.addEventListener("input", renderChannels);
-categorySelect.addEventListener("change", renderChannels);
+function applyFilters() {
+  const keyword = search.value.toLowerCase();
+  const filtered = channels.filter(c =>
+    (currentCategory === "All" || c.group === currentCategory) &&
+    c.name.toLowerCase().includes(keyword)
+  );
+  displayChannels(filtered);
+}
 
-updatePlaylist();
+search.addEventListener("input", applyFilters);
+categoryFilter.addEventListener("change", e => {
+  currentCategory = e.target.value;
+  applyFilters();
+});
+
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  alert("Logout clicked");
+});
+
+fetch(m3uUrl)
+  .then(res => res.text())
+  .then(data => {
+    channels = parseM3U(data);
+    updateCategoryFilter();
+    applyFilters();
+    if (channels.length > 0) loadChannel(channels[0]);
+  })
+  .catch(err => {
+    console.error("Failed to fetch or parse M3U:", err);
+    alert("Error loading channel list.");
+  });
