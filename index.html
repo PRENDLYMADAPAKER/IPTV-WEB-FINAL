@@ -16,13 +16,19 @@
 
   <main>
     <video id="videoPlayer" controls autoplay></video>
-    <div class="now-playing" id="nowPlaying">Now Playing: —</div>
+    <div class="now-playing-container">
+      <img id="nowPlayingThumbnail" class="now-playing-thumb" src="" alt="Thumbnail" />
+      <div class="now-playing" id="nowPlaying">Now Playing: —</div>
+    </div>
 
     <div class="controls">
       <input type="text" id="searchInput" placeholder="🔍 Search channels..." />
       <select id="categoryFilter">
         <option value="All">All Categories</option>
       </select>
+      <label class="proxy-toggle">
+        <input type="checkbox" id="proxyToggle" /> Use CORS Proxy
+      </label>
     </div>
 
     <div class="channel-carousel" id="channelCarousel"></div>
