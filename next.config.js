@@ -1,3 +1,6 @@
-git add next.config.js
-git commit -m "Add Next.js config for Vercel deployment"
-git push
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+};
+
+module.exports = nextConfig;
