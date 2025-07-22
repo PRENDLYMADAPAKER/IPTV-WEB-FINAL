@@ -1,73 +1,67 @@
 body {
   margin: 0;
+  font-family: sans-serif;
   background: #111;
-  font-family: 'Segoe UI', sans-serif;
   color: white;
 }
 
 header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  padding: 10px 15px;
-  background: #222;
+  padding: 10px;
+  background: #000;
 }
 
 .logo {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  margin-right: 10px;
-}
-
-h1 {
-  font-size: 1.4em;
-  margin: 0;
-}
-
-.now-playing {
-  display: flex;
-  align-items: center;
-  padding: 10px 15px;
-  background: #333;
-}
-
-.now-playing img {
-  width: 30px;
   height: 30px;
-  margin-right: 10px;
+}
+
+.time {
+  font-size: 14px;
+  color: #ccc;
+}
+
+.player-container {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
 }
 
 video {
   width: 100%;
-  height: auto;
-  max-height: 300px;
+  height: 100%;
   background: black;
-  display: block;
+}
+
+.now-playing {
+  text-align: center;
+  padding: 10px;
+  font-weight: bold;
+  background: #222;
 }
 
 .controls {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  padding: 10px 15px;
-  justify-content: center;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px;
 }
 
 .controls input,
 .controls select,
 .controls button {
-  padding: 8px;
-  border-radius: 5px;
+  padding: 10px;
   border: none;
-  font-size: 0.9em;
+  border-radius: 5px;
+  font-size: 14px;
 }
 
-.channel-carousel {
-  display: flex;
-  overflow-x: auto;
-  padding: 10px;
+#channelList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 10px;
-  scroll-snap-type: x mandatory;
+  padding: 10px;
 }
 
 .channel-card {
@@ -75,20 +69,31 @@ video {
   border-radius: 10px;
   padding: 10px;
   text-align: center;
-  min-width: 120px;
-  scroll-snap-align: start;
-  flex-shrink: 0;
   cursor: pointer;
+  position: relative;
 }
 
 .channel-card img {
   width: 100%;
-  height: 70px;
+  height: 80px;
   object-fit: contain;
-  margin-bottom: 5px;
 }
 
-.channel-card p {
-  font-size: 0.85em;
-  margin: 0;
+.channel-card span {
+  display: block;
+  margin-top: 5px;
+  font-size: 14px;
+}
+
+.fav {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+  font-size: 18px;
+  color: gray;
+  user-select: none;
+}
+
+.fav.on {
+  color: gold;
 }
