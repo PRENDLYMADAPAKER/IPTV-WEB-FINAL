@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>IPTV Premium</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</head>
+<body>
+  <header>
+    <img src="https://i.imgur.com/Q5kG0MZ.png" alt="IPTV Premium" class="logo" />
+    <div class="time" id="clock">--:-- --</div>
+  </header>
+
+  <main>
+    <div class="player-container">
+      <video id="video" controls autoplay></video>
+    </div>
+
+    <div class="now-playing" id="nowPlaying">Now Playing: -</div>
+
+    <div class="controls">
+      <select id="categoryFilter"></select>
+      <input type="text" id="searchInput" placeholder="Search channel..." />
+      <input type="text" id="customM3U" placeholder="Paste custom M3U URL here" />
+      <button id="importBtn">Import</button>
+    </div>
+
+    <div class="channel-list" id="channelList"></div>
+  </main>
+
+  <script src="iptv.js"></script>
+</body>
+</html>
