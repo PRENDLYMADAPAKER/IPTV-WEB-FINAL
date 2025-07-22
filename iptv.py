@@ -1,146 +1,154 @@
-const m3uUrl = "https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/refs/heads/main/IPTVPREMIUM.m3u";
-
+const m3uUrl =
+  "https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/refs/heads/main/IPTVPREMIUM.m3u";
 let channels = [];
-let filteredChannels = [];
-let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-let currentCategory = "All Channels";
 let currentIndex = 0;
 
 const video = document.getElementById("video");
-const channelList = document.getElementById("channel-list");
-const searchInput = document.getElementById("search");
-const categorySelect = document.getElementById("category");
-const nowPlaying = document.getElementById("now-playing");
+const channelList = document.getElementById("channelList");
+const nowPlaying = document.getElementById("nowPlaying");
+const searchInput = document.getElementById("searchInput");
+const categoryFilter = document.getElementById("categoryFilter");
+const importBtn = document.getElementById("importBtn");
+const customM3U = document.getElementById("customM3U");
 
-document.getElementById("update").addEventListener("click", fetchAndParseM3U);
-searchInput.addEventListener("input", () => filterChannels());
-categorySelect.addEventListener("change", () => {
-  currentCategory = categorySelect.value;
-  filterChannels();
-});
+const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
 
-function fetchAndParseM3U() {
-  fetch(m3uUrl)
-    .then(res => res.text())
-    .then(data => {
-      const lines = data.split("\n");
-      channels = [];
-      for (let i = 0; i < lines.length; i++) {
-        if (lines[i].startsWith("#EXTINF")) {
-          const name = lines[i].split(",")[1] || "Unnamed";
-          const logoMatch = lines[i].match(/tvg-logo="(.*?)"/);
-          const logo = logoMatch ? logoMatch[1] : "";
-          const groupMatch = lines[i].match(/group-title="(.*?)"/);
-          const category = groupMatch ? groupMatch[1] : "Others";
-          const url = lines[i + 1];
-          if (url && url.startsWith("http")) {
-            channels.push({ name, logo, category, url });
-          }
-        }
-      }
-      populateCategories();
-      filterChannels();
-    })
-    .catch(err => {
-      alert("Failed to load playlist.");
-      console.error(err);
-    });
+function setClock() {
+  setInterval(() => {
+    const now = new Date();
+    document.getElementById("clock").textContent = now.toLocaleTimeString();
+  }, 1000);
 }
 
-function populateCategories() {
-  const uniqueCategories = [...new Set(channels.map(c => c.category))];
-  categorySelect.innerHTML = `<option>All Channels</option><option>Favorites</option>`;
-  uniqueCategories.forEach(cat => {
-    categorySelect.innerHTML += `<option>${cat}</option>`;
-  });
-}
+function parseM3U(content) {
+  const lines = content.split("\n");
+  const parsed = [];
+  let current = {};
 
-function filterChannels() {
-  const searchTerm = searchInput.value.toLowerCase();
-  filteredChannels = channels.filter(c => {
-    const matchesSearch = c.name.toLowerCase().includes(searchTerm);
-    const matchesCategory =
-      currentCategory === "All Channels" ||
-      (currentCategory === "Favorites" && favorites.includes(c.url)) ||
-      c.category === currentCategory;
-    return matchesSearch && matchesCategory;
-  });
-  currentIndex = 0;
-  renderChannelGrid();
-}
-
-function renderChannelGrid() {
-  channelList.innerHTML = "";
-  filteredChannels.forEach((ch, index) => {
-    const div = document.createElement("div");
-    div.className = "channel-card";
-    div.innerHTML = `
-      <img src="${ch.logo}" alt="${ch.name}" />
-      <p>${ch.name}</p>
-      <button class="fav-btn">${favorites.includes(ch.url) ? "★" : "☆"}</button>
-    `;
-    div.onclick = () => {
-      playChannel(index);
-    };
-    div.querySelector(".fav-btn").onclick = e => {
-      e.stopPropagation();
-      toggleFavorite(ch.url);
-    };
-    channelList.appendChild(div);
-  });
-}
-
-function toggleFavorite(url) {
-  if (favorites.includes(url)) {
-    favorites = favorites.filter(fav => fav !== url);
-  } else {
-    favorites.push(url);
+  for (let line of lines) {
+    if (line.startsWith("#EXTINF:")) {
+      const nameMatch = line.match(/,(.+)$/);
+      const logoMatch = line.match(/tvg-logo="(.*?)"/);
+      const groupMatch = line.match(/group-title="(.*?)"/);
+      current = {
+        name: nameMatch ? nameMatch[1].trim() : "Unnamed",
+        logo: logoMatch ? logoMatch[1] : "",
+        group: groupMatch ? groupMatch[1] : "Others",
+        url: "",
+      };
+    } else if (line.startsWith("http")) {
+      current.url = line.trim();
+      parsed.push({ ...current });
+    }
   }
-  localStorage.setItem("favorites", JSON.stringify(favorites));
-  filterChannels();
+
+  return parsed;
+}
+
+async function loadM3U(url) {
+  try {
+    const res = await fetch(url);
+    const text = await res.text();
+    channels = parseM3U(text);
+    renderCategories();
+    renderChannels();
+    playChannel(0);
+  } catch (err) {
+    alert("Failed to load M3U. Please check the URL.");
+    console.error(err);
+  }
+}
+
+function renderCategories() {
+  const groups = ["All", "Favorites", ...new Set(channels.map(c => c.group))];
+  categoryFilter.innerHTML = groups
+    .map(g => `<option value="${g}">${g}</option>`)
+    .join("");
+}
+
+function renderChannels() {
+  const keyword = searchInput.value.toLowerCase();
+  const group = categoryFilter.value;
+  channelList.innerHTML = "";
+
+  channels.forEach((ch, index) => {
+    const isFav = favorites.includes(ch.name);
+    if (
+      (group === "All" || ch.group === group || (group === "Favorites" && isFav)) &&
+      ch.name.toLowerCase().includes(keyword)
+    ) {
+      const div = document.createElement("div");
+      div.className = "channel-card";
+      div.innerHTML = `
+        <img src="${ch.logo || "https://via.placeholder.com/150"}" alt="${ch.name}">
+        <span>${ch.name}</span>
+        <div class="fav ${isFav ? "on" : ""}" data-index="${index}">★</div>
+      `;
+      div.onclick = () => playChannel(index);
+      channelList.appendChild(div);
+    }
+  });
 }
 
 function playChannel(index) {
-  const channel = filteredChannels[index];
-  currentIndex = index;
-  nowPlaying.innerText = channel.name;
+  const ch = channels[index];
+  if (!ch) return;
 
-  if (video.canPlayType("application/vnd.apple.mpegurl")) {
-    video.src = channel.url;
-    video.play();
-  } else if (Hls.isSupported()) {
+  currentIndex = index;
+  nowPlaying.textContent = "Now Playing: " + ch.name;
+
+  if (Hls.isSupported()) {
     const hls = new Hls();
-    hls.loadSource(channel.url);
+    hls.loadSource(ch.url);
     hls.attachMedia(video);
-    video.play();
   } else {
-    alert("This browser cannot play the stream.");
+    video.src = ch.url;
   }
 }
 
-function nextChannel() {
-  if (filteredChannels.length === 0) return;
-  currentIndex = (currentIndex + 1) % filteredChannels.length;
-  playChannel(currentIndex);
+function toggleFavorite(index) {
+  const ch = channels[index];
+  if (!ch) return;
+  const i = favorites.indexOf(ch.name);
+  if (i === -1) {
+    favorites.push(ch.name);
+  } else {
+    favorites.splice(i, 1);
+  }
+  localStorage.setItem("favorites", JSON.stringify(favorites));
+  renderChannels();
 }
 
-function prevChannel() {
-  if (filteredChannels.length === 0) return;
-  currentIndex = (currentIndex - 1 + filteredChannels.length) % filteredChannels.length;
-  playChannel(currentIndex);
+channelList.addEventListener("click", (e) => {
+  if (e.target.classList.contains("fav")) {
+    e.stopPropagation();
+    toggleFavorite(e.target.dataset.index);
+  }
+});
+
+searchInput.addEventListener("input", renderChannels);
+categoryFilter.addEventListener("change", renderChannels);
+importBtn.addEventListener("click", () => {
+  const url = customM3U.value.trim();
+  if (url) loadM3U(url);
+});
+
+document.addEventListener("touchstart", handleSwipeStart, false);
+document.addEventListener("touchend", handleSwipeEnd, false);
+
+let xStart = null;
+
+function handleSwipeStart(evt) {
+  xStart = evt.touches[0].clientX;
 }
 
-// Swipe detection
-let touchStartX = 0;
-channelList.addEventListener("touchstart", e => {
-  touchStartX = e.touches[0].clientX;
-});
+function handleSwipeEnd(evt) {
+  if (!xStart) return;
+  let xEnd = evt.changedTouches[0].clientX;
+  if (xEnd - xStart > 50) playChannel((currentIndex - 1 + channels.length) % channels.length);
+  else if (xStart - xEnd > 50) playChannel((currentIndex + 1) % channels.length);
+  xStart = null;
+}
 
-channelList.addEventListener("touchend", e => {
-  const dx = e.changedTouches[0].clientX - touchStartX;
-  if (dx > 50) prevChannel();
-  else if (dx < -50) nextChannel();
-});
-
-// Load on page start
-fetchAndParseM3U();
+setClock();
+loadM3U(m3uUrl);
