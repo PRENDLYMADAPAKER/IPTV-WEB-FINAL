@@ -121,7 +121,7 @@ function startFreezeMonitor() {
 }
 
 function fetchDefaultM3U() {
-  const defaultUrl = 'https://iptv-org.github.io/iptv/countries/ph.m3u';
+  const defaultUrl = 'https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/IPTVPREMIUM.m3u';
   fetch(defaultUrl)
     .then(res => res.text())
     .then(data => {
