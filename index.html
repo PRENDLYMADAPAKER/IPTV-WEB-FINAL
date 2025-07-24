@@ -13,7 +13,6 @@
     }
     .hidden { display: none; }
 
-    /* Login UI */
     #loginPage {
       height: 100vh;
       display: flex;
@@ -30,7 +29,9 @@
     }
     .loginBox img {
       width: 60px;
-      margin-bottom: 15px;
+      height: 60px;
+      border-radius: 50%;
+      margin-bottom: 10px;
     }
     .loginBox input {
       display: block;
@@ -53,21 +54,8 @@
       margin-top: 10px;
     }
 
-    /* Loading screen (after login only) */
-    #loading {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: #000;
-      color: white;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      z-index: 1000;
-    }
-
-    /* IPTV UI */
     #iptvPage.hidden { display: none; }
+
     header {
       display: flex;
       align-items: center;
@@ -171,13 +159,11 @@
   </style>
 </head>
 <body>
-  <!-- Loading screen (after login) -->
-  <div id="loading">Loading IPTV Interface...</div>
 
-  <!-- Login Page -->
+  <!-- LOGIN PAGE -->
   <div id="loginPage">
     <div class="loginBox">
-      <img src="logo.png" alt="Logo"/>
+      <img src="logo.png">
       <h2>NZM IPTV</h2>
       <input type="email" id="email" placeholder="Email">
       <input type="password" id="password" placeholder="Password">
@@ -185,11 +171,11 @@
     </div>
   </div>
 
-  <!-- IPTV Interface Page -->
+  <!-- IPTV INTERFACE -->
   <div id="iptvPage" class="hidden">
     <header>
       <div style="display:flex; align-items:center; gap:10px">
-        <img src="logo.png" alt="Logo" />
+        <img src="logo.png">
         <h3>NZM IPTV</h3>
       </div>
       <button id="logoutBtn" onclick="logout()">Logout</button>
@@ -202,7 +188,7 @@
     <div id="reconnecting">Reconnecting…</div>
   </div>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase + Logic -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -214,13 +200,17 @@
       projectId: "iptv-log-in",
       storageBucket: "iptv-log-in.appspot.com",
       messagingSenderId: "820026131349",
-      appId: "1:820026131349:web:417abd6ad9057c55a92c9c"
+      appId: "1:820026131349:web:417abd6ad9057c55a92c9c",
+      measurementId: "G-4Y8T6J595Z"
     };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
     const deviceId = localStorage.getItem('deviceId') || Math.random().toString(36).substring(2);
     localStorage.setItem('deviceId', deviceId);
+
+    const loginPage = document.getElementById('loginPage');
+    const iptvPage = document.getElementById('iptvPage');
 
     async function login() {
       const email = document.getElementById('email').value;
@@ -239,14 +229,9 @@
 
         await ref.child(deviceId).set({ timestamp: Date.now() });
 
-        // Show loading then IPTV
-        document.getElementById('loginPage').classList.add('hidden');
-        document.getElementById('loading').style.display = 'flex';
-        setTimeout(() => {
-          document.getElementById('loading').style.display = 'none';
-          document.getElementById('iptvPage').classList.remove('hidden');
-          initApp();
-        }, 1500);
+        loginPage.classList.add('hidden');
+        iptvPage.classList.remove('hidden');
+        initApp();
 
       } catch (e) {
         alert(e.message);
@@ -266,18 +251,13 @@
         if (!sessions[deviceId]) {
           logout();
         } else {
-          document.getElementById('loginPage').classList.add('hidden');
-          document.getElementById('loading').style.display = 'flex';
-          setTimeout(() => {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('iptvPage').classList.remove('hidden');
-            initApp();
-          }, 1500);
+          loginPage.classList.add('hidden');
+          iptvPage.classList.remove('hidden');
+          initApp();
         }
       }
     });
 
-    // IPTV Functions
     const M3U_URL = 'https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/IPTVPREMIUM.m3u';
     const video = document.getElementById('player');
     const channelList = document.getElementById('channelList');
@@ -379,7 +359,7 @@
       video.addEventListener('play', startFreezeMonitor);
       search.addEventListener('input', renderChannels);
       loadPlaylist();
-      setInterval(loadPlaylist, 180000); // every 3 mins
+      setInterval(loadPlaylist, 180000);
     }
   </script>
 </body>
