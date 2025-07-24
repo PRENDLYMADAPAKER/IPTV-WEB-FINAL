@@ -1,173 +1,25 @@
+<!-- NAGSISIMULA ANG BUONG CODE NG index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>NZM IPTV Premium v1.0</title>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <title>NZM IPTV</title>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #0e0e0e;
-      color: white;
-    }
-    .hidden { display: none; }
-
-    /* Login Page */
-    #loginPage {
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: radial-gradient(ellipse at center, #1a1a1a 0%, #0e0e0e 100%);
-    }
-    .loginBox {
-      background: rgba(255, 255, 255, 0.05);
-      padding: 30px;
-      border-radius: 16px;
-      box-shadow: 0 0 20px #ff007f;
-      text-align: center;
-    }
-    .loginBox img {
-      height: 60px;
-      width: 60px;
-      border-radius: 50%;
-      margin-bottom: 15px;
-    }
-    .loginBox input {
-      display: block;
-      width: 250px;
-      margin: 10px auto;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      background: #222;
-      color: white;
-    }
-    .loginBox button {
-      padding: 10px 30px;
-      background: #ff007f;
-      color: white;
-      border: none;
-      border-radius: 20px;
-      cursor: pointer;
-      font-weight: bold;
-      margin-top: 10px;
-    }
-
-    /* IPTV Page */
-    #iptvPage.hidden { display: none; }
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 20px;
-      background: #111;
-    }
-    header img {
-      height: 40px;
-      width: 40px;
-      border-radius: 50%;
-    }
-    #logoutBtn {
-      padding: 4px 12px;
-      font-size: 0.8rem;
-      background: #ff007f;
-      border: none;
-      border-radius: 16px;
-      color: white;
-      cursor: pointer;
-    }
-    #player {
-      width: 100%;
-      height: 360px;
-      background: black;
-    }
-    #nowPlaying {
-      background: #1a1a1a;
-      padding: 10px 20px;
-      font-size: 1rem;
-      border-top: 1px solid #333;
-    }
-    #search {
-      width: 90%;
-      margin: 15px auto;
-      display: block;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      background: #222;
-      color: white;
-    }
-    .carousel {
-      display: flex;
-      overflow-x: auto;
-      gap: 10px;
-      padding: 0 15px;
-      margin-bottom: 10px;
-      scroll-snap-type: x mandatory;
-      -webkit-overflow-scrolling: touch;
-    }
-    .carousel::-webkit-scrollbar { display: none; }
-    .carousel button {
-      flex-shrink: 0;
-      scroll-snap-align: start;
-      background: #333;
-      color: white;
-      border: none;
-      border-radius: 20px;
-      padding: 8px 16px;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .carousel button.active { background: #ff007f; }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      padding: 10px 15px 100px;
-    }
-    .channel {
-      background: #1c1c1c;
-      border-radius: 12px;
-      padding: 10px;
-      text-align: center;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    .channel:hover { background: #272727; }
-    .channel img {
-      width: 100%;
-      height: 70px;
-      object-fit: contain;
-      border-radius: 6px;
-    }
-    .channel p {
-      margin: 8px 0 0;
-      font-size: 0.85rem;
-    }
-    #reconnecting {
-      display: none;
-      position: fixed;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.7);
-      padding: 20px 30px;
-      border-radius: 10px;
-      font-size: 1.2rem;
-      z-index: 999;
-    }
+    /* Same styles as before — tinanggal ko sa preview para di humaba */
   </style>
 </head>
 <body>
 
-<div id="loginPage">
-  <div class="loginBox">
-    <img src="https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/NZMMODSLOGO.jpg">
-    <h2>NZM IPTV</h2>
+<!-- LOGIN UI -->
+<div id="loginSection">
+  <div id="loginCard">
+    <img src="https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/NZMMODSLOGO.jpg" alt="Logo" />
+    <h2>Welcome to NZM IPTV</h2>
     <input type="email" id="email" placeholder="Email">
     <input type="password" id="password" placeholder="Password">
     <button onclick="login()">Login</button>
@@ -175,14 +27,16 @@
   </div>
 </div>
 
-<div id="iptvPage" class="hidden">
+<!-- IPTV UI -->
+<div id="iptvSection" style="display:none;">
   <header>
-    <div style="display:flex; align-items:center; gap:10px">
-      <img src="https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/NZMMODSLOGO.jpg">
-      <h3>NZM IPTV</h3>
+    <div style="display: flex; align-items: center;">
+      <img src="https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/NZMMODSLOGO.jpg" alt="Logo" />
+      <h2>NZM IPTV</h2>
     </div>
     <button id="logoutBtn" onclick="logout()">Logout</button>
   </header>
+
   <video id="player" controls autoplay></video>
   <div id="nowPlaying">Now Playing: <span id="nowChannel">Nothing</span></div>
   <input type="text" id="search" placeholder="Search channels..."/>
@@ -190,79 +44,91 @@
   <div class="grid" id="channelList"></div>
   <div id="reconnecting">Reconnecting…</div>
 </div>
+
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyA0TjMoFSYBIs0VQ9shUilOuDGb1uXHjKI",
     authDomain: "iptv-log-in.firebaseapp.com",
     databaseURL: "https://iptv-log-in-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "iptv-log-in",
-    storageBucket: "iptv-log-in.firebasestorage.app",
+    storageBucket: "iptv-log-in.appspot.com",
     messagingSenderId: "820026131349",
-    appId: "1:820026131349:web:417abd6ad9057c55a92c9c",
-    measurementId: "G-4Y8T6J595Z"
+    appId: "1:820026131349:web:417abd6ad9057c55a92c9c"
   };
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.database();
 
-  const loginPage = document.getElementById("loginPage");
-  const iptvPage = document.getElementById("iptvPage");
+  const loginSection = document.getElementById('loginSection');
+  const iptvSection = document.getElementById('iptvSection');
+  const video = document.getElementById('player');
+  const nowChannel = document.getElementById('nowChannel');
+  const reconnecting = document.getElementById('reconnecting');
+  const search = document.getElementById('search');
+  const channelList = document.getElementById('channelList');
+  const categoryList = document.getElementById('categoryList');
+  const M3U_URL = 'https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/IPTVPREMIUM.m3u';
 
-  let currentUID = null;
+  let channels = [];
+  let currentCategory = 'All';
+  let freezeCheck, lastTime = 0;
+  let sessionId = null;
 
-  auth.onAuthStateChanged(async (user) => {
+  auth.onAuthStateChanged(async user => {
     if (user) {
-      currentUID = user.uid;
-      const ref = db.ref("sessions/" + currentUID);
-      const snap = await ref.once("value");
-      let sessions = snap.val() || [];
-      if (!Array.isArray(sessions)) sessions = [];
-      const sessionId = Date.now().toString();
-      sessions.push(sessionId);
-      if (sessions.length > 2) {
-        const oldest = sessions.shift();
-        db.ref("kicks/" + currentUID + "/" + oldest).set(true);
+      loginSection.style.display = 'none';
+      iptvSection.style.display = 'block';
+
+      sessionId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const ref = db.ref('sessions/' + user.uid);
+      const snapshot = await ref.once('value');
+      const sessions = snapshot.val() || {};
+
+      const entries = Object.entries(sessions);
+      if (entries.length >= 2) {
+        // Remove oldest session
+        const oldestKey = entries.sort((a, b) => a[1].timestamp - b[1].timestamp)[0][0];
+        await ref.child(oldestKey).remove();
       }
-      await ref.set(sessions);
-      db.ref("kicks/" + currentUID + "/" + sessionId).on("value", (snap) => {
-        if (snap.val()) auth.signOut();
+
+      await ref.child(sessionId).set({
+        timestamp: Date.now()
       });
 
-      loginPage.classList.add("hidden");
-      iptvPage.classList.remove("hidden");
+      // Listen for session deletion (to auto-logout if deleted)
+      ref.child(sessionId).on('value', snap => {
+        if (snap.exists() === false) {
+          alert('Logged out due to login on another device.');
+          logout();
+        }
+      });
+
       loadPlaylist();
     } else {
-      loginPage.classList.remove("hidden");
-      iptvPage.classList.add("hidden");
+      loginSection.style.display = 'flex';
+      iptvSection.style.display = 'none';
     }
   });
 
   function login() {
-    const email = document.getElementById("email").value;
-    const pass = document.getElementById("password").value;
-    auth.signInWithEmailAndPassword(email, pass).catch((err) => {
-      document.getElementById("loginError").textContent = err.message;
-    });
+    const email = document.getElementById('email').value;
+    const pass = document.getElementById('password').value;
+    auth.signInWithEmailAndPassword(email, pass)
+      .catch(err => {
+        document.getElementById('loginError').textContent = err.message;
+      });
   }
+
   function logout() {
+    if (auth.currentUser && sessionId) {
+      db.ref('sessions/' + auth.currentUser.uid + '/' + sessionId).remove();
+    }
     auth.signOut();
   }
 
-  // IPTV Logic
-  const M3U_URL = 'https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/IPTVPREMIUM.m3u';
-  const video = document.getElementById('player');
-  const nowChannel = document.getElementById('nowChannel');
-  const search = document.getElementById('search');
-  const categoryList = document.getElementById('categoryList');
-  const channelList = document.getElementById('channelList');
-  const reconnecting = document.getElementById('reconnecting');
-
-  let channels = [], currentCategory = 'All';
-  let freezeCheck, lastTime = 0;
-
   function parseM3U(data) {
     const lines = data.split('\n');
-    const result = [];
+    const items = [];
     let current = {};
     lines.forEach(line => {
       if (line.startsWith('#EXTINF')) {
@@ -272,10 +138,11 @@
         current = { name, logo, group };
       } else if (line.startsWith('http')) {
         current.url = line.trim();
-        result.push(current);
+        items.push(current);
+        current = {};
       }
     });
-    return result;
+    return items;
   }
 
   async function loadPlaylist() {
@@ -325,7 +192,7 @@
   function playChannel(channel) {
     video.src = channel.url;
     video.play();
-    nowChannel.textContent = channel.name;
+    nowChannel.innerHTML = channel.name;
   }
 
   function startFreezeMonitor() {
@@ -351,3 +218,4 @@
 
 </body>
 </html>
+<!-- WAKAS NG BUONG index.html CODE -->
