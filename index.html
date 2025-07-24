@@ -11,9 +11,9 @@
       background: #0e0e0e;
       color: white;
     }
-    .hidden { display: none !important; }
+    .hidden { display: none; }
 
-    /* Login UI */
+    /* Login Page UI */
     #loginPage {
       height: 100vh;
       display: flex;
@@ -29,8 +29,13 @@
       text-align: center;
     }
     .loginBox img {
+      width: 60px;
       height: 60px;
+      border-radius: 50%;
       margin-bottom: 10px;
+    }
+    .loginBox h2 {
+      margin-bottom: 15px;
     }
     .loginBox input {
       display: block;
@@ -53,8 +58,9 @@
       margin-top: 10px;
     }
 
-    /* IPTV UI */
-    #iptvPage { display: none; }
+    /* IPTV Interface */
+    #iptvPage.hidden { display: none; }
+
     header {
       display: flex;
       align-items: center;
@@ -158,11 +164,10 @@
   </style>
 </head>
 <body>
-
-  <!-- LOGIN PAGE -->
+  <!-- Login Page -->
   <div id="loginPage">
     <div class="loginBox">
-      <img src="https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/NZMMODSLOGO.jpg" />
+      <img src="https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/NZMMODSLOGO.jpg">
       <h2>NZM IPTV</h2>
       <input type="email" id="email" placeholder="Email">
       <input type="password" id="password" placeholder="Password">
@@ -170,8 +175,8 @@
     </div>
   </div>
 
-  <!-- IPTV PAGE -->
-  <div id="iptvPage">
+  <!-- IPTV Interface -->
+  <div id="iptvPage" class="hidden">
     <header>
       <div style="display:flex; align-items:center; gap:10px">
         <img src="https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/NZMMODSLOGO.jpg">
@@ -187,7 +192,7 @@
     <div id="reconnecting">Reconnecting…</div>
   </div>
 
-  <!-- Firebase + Script -->
+  <!-- Firebase Auth & IPTV Logic -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -214,16 +219,16 @@
       auth.signInWithEmailAndPassword(email, password)
         .then(async ({ user }) => {
           const ref = db.ref(`sessions/${user.uid}`);
-          const snap = await ref.once('value');
-          const sessions = snap.val() || {};
+          const sessions = (await ref.get()).val() || {};
           const keys = Object.keys(sessions);
-
           if (keys.length >= 2 && !sessions[deviceId]) {
-            const oldestKey = keys.sort((a,b)=>sessions[a].timestamp - sessions[b].timestamp)[0];
-            await ref.child(oldestKey).remove();
+            const oldest = keys.sort((a, b) => sessions[a].timestamp - sessions[b].timestamp)[0];
+            await ref.child(oldest).remove();
           }
           await ref.child(deviceId).set({ timestamp: Date.now() });
-          showIPTV();
+          document.getElementById('loginPage').classList.add('hidden');
+          document.getElementById('iptvPage').classList.remove('hidden');
+          initApp();
         })
         .catch(err => alert(err.message));
     }
@@ -236,25 +241,20 @@
       }
     }
 
-    function showIPTV() {
-      document.getElementById('loginPage').classList.add('hidden');
-      document.getElementById('iptvPage').style.display = 'block';
-      initApp();
-    }
-
     auth.onAuthStateChanged(async user => {
       if (user) {
-        const snap = await db.ref(`sessions/${user.uid}`).once('value');
-        const sessions = snap.val() || {};
+        const sessions = (await db.ref(`sessions/${user.uid}`).get()).val() || {};
         if (sessions[deviceId]) {
-          showIPTV();
+          document.getElementById('loginPage').classList.add('hidden');
+          document.getElementById('iptvPage').classList.remove('hidden');
+          initApp();
         } else {
           logout();
         }
       }
     });
 
-    // IPTV Logic
+    // IPTV Functions
     const M3U_URL = 'https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/IPTVPREMIUM.m3u';
     const video = document.getElementById('player');
     const channelList = document.getElementById('channelList');
@@ -264,15 +264,24 @@
     const search = document.getElementById('search');
     let channels = [], currentCategory = 'All', freezeCheck, lastTime = 0;
 
+    async function loadPlaylist() {
+      const res = await fetch(M3U_URL);
+      const text = await res.text();
+      channels = parseM3U(text);
+      renderCategories();
+      renderChannels();
+    }
+
     function parseM3U(data) {
-      const lines = data.split('\n');
-      const items = []; let current = {};
+      const lines = data.split('\n'), items = [];
+      let current = {};
       lines.forEach(line => {
         if (line.startsWith('#EXTINF')) {
-          const name = line.match(/,(.*)/)?.[1] || 'Unknown';
-          const logo = line.match(/tvg-logo="(.*?)"/)?.[1] || '';
-          const group = line.match(/group-title="(.*?)"/)?.[1] || 'Other';
-          current = { name, logo, group };
+          current = {
+            name: line.match(/,(.*)/)?.[1] || 'Unknown',
+            logo: line.match(/tvg-logo="(.*?)"/)?.[1] || '',
+            group: line.match(/group-title="(.*?)"/)?.[1] || 'Other'
+          };
         } else if (line.startsWith('http')) {
           current.url = line.trim();
           items.push(current);
@@ -280,14 +289,6 @@
         }
       });
       return items;
-    }
-
-    async function loadPlaylist() {
-      const res = await fetch(M3U_URL);
-      const text = await res.text();
-      channels = parseM3U(text);
-      renderCategories();
-      renderChannels();
     }
 
     function renderCategories() {
@@ -317,7 +318,10 @@
       filtered.forEach(c => {
         const div = document.createElement('div');
         div.className = 'channel';
-        div.innerHTML = `<img src="${c.logo}" onerror="this.src='https://via.placeholder.com/150x70?text=No+Logo'"/><p>${c.name}</p>`;
+        div.innerHTML = `
+          <img src="${c.logo}" onerror="this.src='https://via.placeholder.com/150x70?text=No+Logo'"/>
+          <p>${c.name}</p>
+        `;
         div.onclick = () => playChannel(c);
         channelList.appendChild(div);
       });
