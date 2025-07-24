@@ -12,8 +12,6 @@
       color: white;
     }
     .hidden { display: none; }
-
-    /* Loading screen */
     #loading {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -25,8 +23,6 @@
       font-size: 1.5rem;
       z-index: 1000;
     }
-
-    /* Login UI */
     #loginPage {
       height: 100vh;
       display: flex;
@@ -67,8 +63,6 @@
       font-weight: bold;
       margin-top: 10px;
     }
-
-    /* IPTV UI */
     #iptvPage.hidden { display: none; }
     header {
       display: flex;
@@ -76,11 +70,6 @@
       justify-content: space-between;
       padding: 10px 20px;
       background: #111;
-    }
-    header .left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
     }
     header img {
       height: 40px;
@@ -180,32 +169,33 @@
 <body>
   <div id="loading">Loading IPTV Interface...</div>
 
-  <div id="loginPage">
+  <div id="loginPage" class="hidden">
     <div class="loginBox">
-      <img src="logo.png" alt="Logo">
+      <img src="logo.png" alt="logo" />
       <h2>NZM IPTV</h2>
-      <input type="email" id="email" placeholder="Email">
-      <input type="password" id="password" placeholder="Password">
+      <input type="email" id="email" placeholder="Email" />
+      <input type="password" id="password" placeholder="Password" />
       <button onclick="login()">Login</button>
     </div>
   </div>
 
   <div id="iptvPage" class="hidden">
     <header>
-      <div class="left">
-        <img src="logo.png" alt="Logo">
+      <div style="display:flex; align-items:center; gap:10px">
+        <img src="logo.png" />
         <h3>NZM IPTV</h3>
       </div>
       <button id="logoutBtn" onclick="logout()">Logout</button>
     </header>
     <video id="player" controls autoplay></video>
     <div id="nowPlaying">Now Playing: <span id="nowChannel">Nothing</span></div>
-    <input type="text" id="search" placeholder="Search channels..."/>
+    <input type="text" id="search" placeholder="Search channels..." />
     <div class="carousel" id="categoryList"></div>
     <div class="grid" id="channelList"></div>
     <div id="reconnecting">Reconnecting…</div>
   </div>
 
+  <!-- Firebase Auth -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -226,30 +216,49 @@
     const deviceId = localStorage.getItem('deviceId') || Math.random().toString(36).substring(2);
     localStorage.setItem('deviceId', deviceId);
 
+    const loading = document.getElementById("loading");
+    const loginPage = document.getElementById("loginPage");
+    const iptvPage = document.getElementById("iptvPage");
+
+    function showPage(page) {
+      loading.style.display = "none";
+      loginPage.classList.add("hidden");
+      iptvPage.classList.add("hidden");
+      page.classList.remove("hidden");
+    }
+
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        showPage(loginPage);
+        return;
+      }
+      const ref = db.ref(`sessions/${user.uid}`);
+      const snapshot = await ref.once('value');
+      const sessions = snapshot.val() || {};
+      if (!sessions[deviceId]) {
+        logout();
+        return;
+      }
+      showPage(iptvPage);
+      initApp();
+    });
+
     async function login() {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
       try {
         const { user } = await auth.signInWithEmailAndPassword(email, password);
         const ref = db.ref(`sessions/${user.uid}`);
         const snapshot = await ref.once('value');
         const sessions = snapshot.val() || {};
         const keys = Object.keys(sessions);
-
         if (keys.length >= 2 && !sessions[deviceId]) {
           const oldestKey = keys.sort((a, b) => sessions[a].timestamp - sessions[b].timestamp)[0];
           await ref.child(oldestKey).remove();
         }
-
         await ref.child(deviceId).set({ timestamp: Date.now() });
-        showLoading();
-        setTimeout(() => {
-          document.getElementById('loginPage').classList.add('hidden');
-          document.getElementById('iptvPage').classList.remove('hidden');
-          document.getElementById('loading').style.display = 'none';
-          initApp();
-        }, 1500);
-
+        showPage(iptvPage);
+        initApp();
       } catch (e) {
         alert(e.message);
       }
@@ -262,20 +271,6 @@
       auth.signOut().then(() => location.reload());
     }
 
-    auth.onAuthStateChanged(async user => {
-      if (user) {
-        const sessions = (await db.ref(`sessions/${user.uid}`).once('value')).val() || {};
-        if (!sessions[deviceId]) {
-          logout();
-        } else {
-          document.getElementById('loginPage').classList.add('hidden');
-          document.getElementById('iptvPage').classList.remove('hidden');
-          document.getElementById('loading').style.display = 'none';
-          initApp();
-        }
-      }
-    });
-
     const M3U_URL = 'https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/IPTVPREMIUM.m3u';
     const video = document.getElementById('player');
     const channelList = document.getElementById('channelList');
@@ -287,6 +282,14 @@
     let channels = [];
     let currentCategory = 'All';
     let freezeCheck, lastTime = 0;
+
+    async function loadPlaylist() {
+      const res = await fetch(M3U_URL);
+      const text = await res.text();
+      channels = parseM3U(text);
+      renderCategories();
+      renderChannels();
+    }
 
     function parseM3U(data) {
       const lines = data.split('\n');
@@ -305,14 +308,6 @@
         }
       });
       return items;
-    }
-
-    async function loadPlaylist() {
-      const res = await fetch(M3U_URL);
-      const text = await res.text();
-      channels = parseM3U(text);
-      renderCategories();
-      renderChannels();
     }
 
     function renderCategories() {
@@ -343,7 +338,7 @@
         const div = document.createElement('div');
         div.className = 'channel';
         div.innerHTML = `
-          <img src="${c.logo}" onerror="this.src='https://via.placeholder.com/150x70?text=No+Logo'"/>
+          <img src="${c.logo}" onerror="this.src='https://via.placeholder.com/150x70?text=No+Logo'" />
           <p>${c.name}</p>
         `;
         div.onclick = () => playChannel(c);
@@ -354,7 +349,7 @@
     function playChannel(channel) {
       video.src = channel.url;
       video.play();
-      nowChannel.innerHTML = `${channel.name}`;
+      nowChannel.textContent = channel.name;
     }
 
     function startFreezeMonitor() {
@@ -377,12 +372,8 @@
       video.addEventListener('play', startFreezeMonitor);
       search.addEventListener('input', renderChannels);
       loadPlaylist();
-      setInterval(loadPlaylist, 180000); // every 3 mins
-    }
-
-    function showLoading() {
-      document.getElementById('loading').style.display = 'flex';
+      setInterval(loadPlaylist, 180000); // update every 3 minutes
     }
   </script>
 </body>
-  </html>
+</html>
