@@ -260,19 +260,21 @@
       const user = auth.currentUser;
       if (!user) return;
       db.ref(`sessions/${user.uid}/${deviceId}`).remove();
-      auth.signOut().then(() => location.reload());
+      auth.onAuthStateChanged(async user => {
+  if (user) {
+    const sessions = (await db.ref(`sessions/${user.uid}`).once('value')).val() || {};
+    if (!sessions[deviceId]) {
+      logout();
+    } else {
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('iptvPage').classList.remove('hidden');
+      document.getElementById('loading').classList.add('hidden');
+      initApp();
     }
-
-    auth.onAuthStateChanged(async user => {
-      if (user) {
-        const sessions = (await db.ref(`sessions/${user.uid}`).once('value')).val() || {};
-        if (!sessions[deviceId]) {
-          logout();
-        } else {
-          document.getElementById('loginPage').classList.add('hidden');
-          document.getElementById('iptvPage').classList.remove('hidden');
-          document.getElementById('loading').classList.add('hidden');
-          initApp();
+  } else {
+    // ✅ Pag walang naka-login, ipakita ang login page
+    document.getElementById('loginPage').classList.remove('hidden');
+    document.getElementById('iptvPage').classList.add('hidden')
         }
       }
     });
