@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>NZM IPTV</title>
   <style>
-    * {margin:0; padding:0; box-sizing: border-box;}
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Segoe UI', sans-serif;
       background: #0e0e0e;
@@ -13,27 +13,13 @@
     }
     .hidden { display: none; }
 
-    /* Loading Screen */
-    #loading {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: black;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      z-index: 9999;
-    }
-
     /* Login UI */
     #loginPage {
       height: 100vh;
-      background: radial-gradient(ellipse at center, #1a1a1a 0%, #0e0e0e 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-direction: column;
+      background: radial-gradient(ellipse at center, #1a1a1a 0%, #0e0e0e 100%);
     }
     .loginBox {
       background: rgba(255, 255, 255, 0.05);
@@ -43,10 +29,8 @@
       text-align: center;
     }
     .loginBox img {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      margin-bottom: 10px;
+      width: 60px;
+      margin-bottom: 15px;
     }
     .loginBox input {
       display: block;
@@ -69,8 +53,21 @@
       margin-top: 10px;
     }
 
+    /* Loading screen (after login only) */
+    #loading {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #000;
+      color: white;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      z-index: 1000;
+    }
+
     /* IPTV UI */
-    #iptvPage { display: none; }
+    #iptvPage.hidden { display: none; }
     header {
       display: flex;
       align-items: center;
@@ -174,7 +171,7 @@
   </style>
 </head>
 <body>
-  <!-- Loading -->
+  <!-- Loading screen (after login) -->
   <div id="loading">Loading IPTV Interface...</div>
 
   <!-- Login Page -->
@@ -188,11 +185,11 @@
     </div>
   </div>
 
-  <!-- IPTV Page -->
-  <div id="iptvPage">
+  <!-- IPTV Interface Page -->
+  <div id="iptvPage" class="hidden">
     <header>
       <div style="display:flex; align-items:center; gap:10px">
-        <img src="logo.png" />
+        <img src="logo.png" alt="Logo" />
         <h3>NZM IPTV</h3>
       </div>
       <button id="logoutBtn" onclick="logout()">Logout</button>
@@ -209,7 +206,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyA0TjMoFSYBIs0VQ9shUilOuDGb1uXHjKI",
@@ -218,8 +214,7 @@
       projectId: "iptv-log-in",
       storageBucket: "iptv-log-in.appspot.com",
       messagingSenderId: "820026131349",
-      appId: "1:820026131349:web:417abd6ad9057c55a92c9c",
-      measurementId: "G-4Y8T6J595Z"
+      appId: "1:820026131349:web:417abd6ad9057c55a92c9c"
     };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
@@ -236,12 +231,23 @@
         const snapshot = await ref.once('value');
         const sessions = snapshot.val() || {};
         const keys = Object.keys(sessions);
+
         if (keys.length >= 2 && !sessions[deviceId]) {
-          const oldest = keys.sort((a,b) => sessions[a].timestamp - sessions[b].timestamp)[0];
-          await ref.child(oldest).remove();
+          const oldestKey = keys.sort((a, b) => sessions[a].timestamp - sessions[b].timestamp)[0];
+          await ref.child(oldestKey).remove();
         }
+
         await ref.child(deviceId).set({ timestamp: Date.now() });
-        transitionToIPTV();
+
+        // Show loading then IPTV
+        document.getElementById('loginPage').classList.add('hidden');
+        document.getElementById('loading').style.display = 'flex';
+        setTimeout(() => {
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('iptvPage').classList.remove('hidden');
+          initApp();
+        }, 1500);
+
       } catch (e) {
         alert(e.message);
       }
@@ -249,10 +255,9 @@
 
     function logout() {
       const user = auth.currentUser;
-      if (user) {
-        db.ref(`sessions/${user.uid}/${deviceId}`).remove();
-        auth.signOut().then(() => location.reload());
-      }
+      if (!user) return;
+      db.ref(`sessions/${user.uid}/${deviceId}`).remove();
+      auth.signOut().then(() => location.reload());
     }
 
     auth.onAuthStateChanged(async user => {
@@ -261,22 +266,18 @@
         if (!sessions[deviceId]) {
           logout();
         } else {
-          transitionToIPTV();
+          document.getElementById('loginPage').classList.add('hidden');
+          document.getElementById('loading').style.display = 'flex';
+          setTimeout(() => {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('iptvPage').classList.remove('hidden');
+            initApp();
+          }, 1500);
         }
       }
     });
 
-    function transitionToIPTV() {
-      document.getElementById('loading').style.display = 'flex';
-      document.getElementById('loginPage').style.display = 'none';
-      setTimeout(() => {
-        document.getElementById('iptvPage').style.display = 'block';
-        document.getElementById('loading').style.display = 'none';
-        initApp();
-      }, 1500);
-    }
-
-    // IPTV Logic
+    // IPTV Functions
     const M3U_URL = 'https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/IPTVPREMIUM.m3u';
     const video = document.getElementById('player');
     const channelList = document.getElementById('channelList');
