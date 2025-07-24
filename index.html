@@ -13,12 +13,14 @@
     }
     .hidden { display: none; }
 
+    /* Login Page */
     #loginPage {
       height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       background: radial-gradient(ellipse at center, #1a1a1a 0%, #0e0e0e 100%);
+      flex-direction: column;
     }
     .loginBox {
       background: rgba(255, 255, 255, 0.05);
@@ -28,10 +30,10 @@
       text-align: center;
     }
     .loginBox img {
-      width: 60px;
-      height: 60px;
+      width: 80px;
+      height: 80px;
       border-radius: 50%;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
     }
     .loginBox input {
       display: block;
@@ -54,8 +56,8 @@
       margin-top: 10px;
     }
 
+    /* IPTV Interface */
     #iptvPage.hidden { display: none; }
-
     header {
       display: flex;
       align-items: center;
@@ -160,18 +162,18 @@
 </head>
 <body>
 
-  <!-- LOGIN PAGE -->
+  <!-- Login Page -->
   <div id="loginPage">
     <div class="loginBox">
-      <img src="logo.png">
+      <img src="logo.png" alt="Logo" />
       <h2>NZM IPTV</h2>
-      <input type="email" id="email" placeholder="Email">
-      <input type="password" id="password" placeholder="Password">
+      <input type="email" id="email" placeholder="Email" />
+      <input type="password" id="password" placeholder="Password" />
       <button onclick="login()">Login</button>
     </div>
   </div>
 
-  <!-- IPTV INTERFACE -->
+  <!-- IPTV Interface -->
   <div id="iptvPage" class="hidden">
     <header>
       <div style="display:flex; align-items:center; gap:10px">
@@ -182,13 +184,13 @@
     </header>
     <video id="player" controls autoplay></video>
     <div id="nowPlaying">Now Playing: <span id="nowChannel">Nothing</span></div>
-    <input type="text" id="search" placeholder="Search channels..."/>
+    <input type="text" id="search" placeholder="Search channels..." />
     <div class="carousel" id="categoryList"></div>
     <div class="grid" id="channelList"></div>
     <div id="reconnecting">Reconnecting…</div>
   </div>
 
-  <!-- Firebase + Logic -->
+  <!-- Firebase Scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -200,17 +202,13 @@
       projectId: "iptv-log-in",
       storageBucket: "iptv-log-in.appspot.com",
       messagingSenderId: "820026131349",
-      appId: "1:820026131349:web:417abd6ad9057c55a92c9c",
-      measurementId: "G-4Y8T6J595Z"
+      appId: "1:820026131349:web:417abd6ad9057c55a92c9c"
     };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
     const deviceId = localStorage.getItem('deviceId') || Math.random().toString(36).substring(2);
     localStorage.setItem('deviceId', deviceId);
-
-    const loginPage = document.getElementById('loginPage');
-    const iptvPage = document.getElementById('iptvPage');
 
     async function login() {
       const email = document.getElementById('email').value;
@@ -228,11 +226,7 @@
         }
 
         await ref.child(deviceId).set({ timestamp: Date.now() });
-
-        loginPage.classList.add('hidden');
-        iptvPage.classList.remove('hidden');
-        initApp();
-
+        showInterface();
       } catch (e) {
         alert(e.message);
       }
@@ -248,15 +242,19 @@
     auth.onAuthStateChanged(async user => {
       if (user) {
         const sessions = (await db.ref(`sessions/${user.uid}`).once('value')).val() || {};
-        if (!sessions[deviceId]) {
-          logout();
+        if (sessions[deviceId]) {
+          showInterface();
         } else {
-          loginPage.classList.add('hidden');
-          iptvPage.classList.remove('hidden');
-          initApp();
+          logout();
         }
       }
     });
+
+    function showInterface() {
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('iptvPage').classList.remove('hidden');
+      initApp();
+    }
 
     const M3U_URL = 'https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/IPTVPREMIUM.m3u';
     const video = document.getElementById('player');
@@ -325,7 +323,7 @@
         const div = document.createElement('div');
         div.className = 'channel';
         div.innerHTML = `
-          <img src="${c.logo}" onerror="this.src='https://via.placeholder.com/150x70?text=No+Logo'"/>
+          <img src="${c.logo}" onerror="this.src='https://via.placeholder.com/150x70?text=No+Logo'" />
           <p>${c.name}</p>
         `;
         div.onclick = () => playChannel(c);
@@ -359,7 +357,7 @@
       video.addEventListener('play', startFreezeMonitor);
       search.addEventListener('input', renderChannels);
       loadPlaylist();
-      setInterval(loadPlaylist, 180000);
+      setInterval(loadPlaylist, 180000); // refresh every 3 minutes
     }
   </script>
 </body>
