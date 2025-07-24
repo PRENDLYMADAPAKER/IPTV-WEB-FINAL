@@ -11,16 +11,15 @@
       background: #0e0e0e;
       color: white;
     }
-    .hidden { display: none; }
+    .hidden { display: none !important; }
 
-    /* Login Page */
+    /* Login UI */
     #loginPage {
       height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       background: radial-gradient(ellipse at center, #1a1a1a 0%, #0e0e0e 100%);
-      flex-direction: column;
     }
     .loginBox {
       background: rgba(255, 255, 255, 0.05);
@@ -30,10 +29,8 @@
       text-align: center;
     }
     .loginBox img {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      margin-bottom: 15px;
+      height: 60px;
+      margin-bottom: 10px;
     }
     .loginBox input {
       display: block;
@@ -56,8 +53,8 @@
       margin-top: 10px;
     }
 
-    /* IPTV Interface */
-    #iptvPage.hidden { display: none; }
+    /* IPTV UI */
+    #iptvPage { display: none; }
     header {
       display: flex;
       align-items: center;
@@ -162,35 +159,35 @@
 </head>
 <body>
 
-  <!-- Login Page -->
+  <!-- LOGIN PAGE -->
   <div id="loginPage">
     <div class="loginBox">
-      <img src="logo.png" alt="Logo" />
+      <img src="https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/NZMMODSLOGO.jpg" />
       <h2>NZM IPTV</h2>
-      <input type="email" id="email" placeholder="Email" />
-      <input type="password" id="password" placeholder="Password" />
+      <input type="email" id="email" placeholder="Email">
+      <input type="password" id="password" placeholder="Password">
       <button onclick="login()">Login</button>
     </div>
   </div>
 
-  <!-- IPTV Interface -->
-  <div id="iptvPage" class="hidden">
+  <!-- IPTV PAGE -->
+  <div id="iptvPage">
     <header>
       <div style="display:flex; align-items:center; gap:10px">
-        <img src="logo.png">
+        <img src="https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/NZMMODSLOGO.jpg">
         <h3>NZM IPTV</h3>
       </div>
       <button id="logoutBtn" onclick="logout()">Logout</button>
     </header>
     <video id="player" controls autoplay></video>
     <div id="nowPlaying">Now Playing: <span id="nowChannel">Nothing</span></div>
-    <input type="text" id="search" placeholder="Search channels..." />
+    <input type="text" id="search" placeholder="Search channels..."/>
     <div class="carousel" id="categoryList"></div>
     <div class="grid" id="channelList"></div>
     <div id="reconnecting">Reconnecting…</div>
   </div>
 
-  <!-- Firebase Scripts -->
+  <!-- Firebase + Script -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -202,7 +199,8 @@
       projectId: "iptv-log-in",
       storageBucket: "iptv-log-in.appspot.com",
       messagingSenderId: "820026131349",
-      appId: "1:820026131349:web:417abd6ad9057c55a92c9c"
+      appId: "1:820026131349:web:417abd6ad9057c55a92c9c",
+      measurementId: "G-4Y8T6J595Z"
     };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
@@ -210,52 +208,53 @@
     const deviceId = localStorage.getItem('deviceId') || Math.random().toString(36).substring(2);
     localStorage.setItem('deviceId', deviceId);
 
-    async function login() {
+    function login() {
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
-      try {
-        const { user } = await auth.signInWithEmailAndPassword(email, password);
-        const ref = db.ref(`sessions/${user.uid}`);
-        const snapshot = await ref.once('value');
-        const sessions = snapshot.val() || {};
-        const keys = Object.keys(sessions);
+      auth.signInWithEmailAndPassword(email, password)
+        .then(async ({ user }) => {
+          const ref = db.ref(`sessions/${user.uid}`);
+          const snap = await ref.once('value');
+          const sessions = snap.val() || {};
+          const keys = Object.keys(sessions);
 
-        if (keys.length >= 2 && !sessions[deviceId]) {
-          const oldestKey = keys.sort((a, b) => sessions[a].timestamp - sessions[b].timestamp)[0];
-          await ref.child(oldestKey).remove();
-        }
-
-        await ref.child(deviceId).set({ timestamp: Date.now() });
-        showInterface();
-      } catch (e) {
-        alert(e.message);
-      }
+          if (keys.length >= 2 && !sessions[deviceId]) {
+            const oldestKey = keys.sort((a,b)=>sessions[a].timestamp - sessions[b].timestamp)[0];
+            await ref.child(oldestKey).remove();
+          }
+          await ref.child(deviceId).set({ timestamp: Date.now() });
+          showIPTV();
+        })
+        .catch(err => alert(err.message));
     }
 
     function logout() {
       const user = auth.currentUser;
-      if (!user) return;
-      db.ref(`sessions/${user.uid}/${deviceId}`).remove();
-      auth.signOut().then(() => location.reload());
+      if (user) {
+        db.ref(`sessions/${user.uid}/${deviceId}`).remove();
+        auth.signOut().then(() => location.reload());
+      }
+    }
+
+    function showIPTV() {
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('iptvPage').style.display = 'block';
+      initApp();
     }
 
     auth.onAuthStateChanged(async user => {
       if (user) {
-        const sessions = (await db.ref(`sessions/${user.uid}`).once('value')).val() || {};
+        const snap = await db.ref(`sessions/${user.uid}`).once('value');
+        const sessions = snap.val() || {};
         if (sessions[deviceId]) {
-          showInterface();
+          showIPTV();
         } else {
           logout();
         }
       }
     });
 
-    function showInterface() {
-      document.getElementById('loginPage').classList.add('hidden');
-      document.getElementById('iptvPage').classList.remove('hidden');
-      initApp();
-    }
-
+    // IPTV Logic
     const M3U_URL = 'https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/IPTVPREMIUM.m3u';
     const video = document.getElementById('player');
     const channelList = document.getElementById('channelList');
@@ -263,15 +262,11 @@
     const nowChannel = document.getElementById('nowChannel');
     const reconnecting = document.getElementById('reconnecting');
     const search = document.getElementById('search');
-
-    let channels = [];
-    let currentCategory = 'All';
-    let freezeCheck, lastTime = 0;
+    let channels = [], currentCategory = 'All', freezeCheck, lastTime = 0;
 
     function parseM3U(data) {
       const lines = data.split('\n');
-      const items = [];
-      let current = {};
+      const items = []; let current = {};
       lines.forEach(line => {
         if (line.startsWith('#EXTINF')) {
           const name = line.match(/,(.*)/)?.[1] || 'Unknown';
@@ -322,10 +317,7 @@
       filtered.forEach(c => {
         const div = document.createElement('div');
         div.className = 'channel';
-        div.innerHTML = `
-          <img src="${c.logo}" onerror="this.src='https://via.placeholder.com/150x70?text=No+Logo'" />
-          <p>${c.name}</p>
-        `;
+        div.innerHTML = `<img src="${c.logo}" onerror="this.src='https://via.placeholder.com/150x70?text=No+Logo'"/><p>${c.name}</p>`;
         div.onclick = () => playChannel(c);
         channelList.appendChild(div);
       });
@@ -343,8 +335,7 @@
         if (!video.paused && !video.ended) {
           if (video.currentTime === lastTime) {
             reconnecting.style.display = 'block';
-            video.load();
-            video.play();
+            video.load(); video.play();
           } else {
             reconnecting.style.display = 'none';
           }
@@ -357,7 +348,7 @@
       video.addEventListener('play', startFreezeMonitor);
       search.addEventListener('input', renderChannels);
       loadPlaylist();
-      setInterval(loadPlaylist, 180000); // refresh every 3 minutes
+      setInterval(loadPlaylist, 180000);
     }
   </script>
 </body>
