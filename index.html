@@ -10,7 +10,201 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
   <style>
-    /* Same styles as before — tinanggal ko sa preview para di humaba */
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #0e0e0e;
+    color: white;
+  }
+
+  #loginSection, #iptvSection {
+    display: none;
+  }
+
+  #loginSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: radial-gradient(circle, #1a1a1a, #0e0e0e);
+  }
+
+  #loginCard {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 0 20px #ff007f;
+    width: 90%;
+    max-width: 360px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  #loginCard img {
+    height: 60px;
+    width: 60px;
+    border-radius: 50%;
+    margin-bottom: 15px;
+  }
+
+  #loginCard input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: white;
+    outline: none;
+  }
+
+  #loginCard input::placeholder {
+    color: #ccc;
+  }
+
+  #loginCard button {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(90deg, #ff007f, #9c27b0);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  #loginCard button:hover {
+    background: linear-gradient(90deg, #9c27b0, #ff007f);
+  }
+
+  #logoutBtn {
+    background: #e53935;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    color: white;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: #111;
+  }
+
+  header img {
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+
+  #player {
+    width: 100%;
+    height: 360px;
+    background: black;
+  }
+
+  #nowPlaying {
+    background: #1a1a1a;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-top: 1px solid #333;
+  }
+
+  #search {
+    width: 90%;
+    margin: 15px auto;
+    display: block;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    background: #222;
+    color: white;
+  }
+
+  .carousel {
+    display: flex;
+    overflow-x: auto;
+    gap: 10px;
+    padding: 0 15px;
+    margin-bottom: 10px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .carousel::-webkit-scrollbar {
+    display: none;
+  }
+
+  .carousel button {
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    background: #333;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .carousel button.active {
+    background: #ff007f;
+  }
+
+  .grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 15px 100px;
+  }
+
+  .channel {
+    width: calc(50% - 10px);
+    background: #1c1c1c;
+    border-radius: 12px;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  .channel:hover {
+    background: #272727;
+  }
+
+  .channel img {
+    width: 100%;
+    height: 70px;
+    object-fit: contain;
+    border-radius: 6px;
+  }
+
+  .channel p {
+    margin: 8px 0 0;
+    font-size: 0.85rem;
+  }
+
+  #reconnecting {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.7);
+    padding: 20px 30px;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    z-index: 999;
+  }
   </style>
 </head>
 <body>
