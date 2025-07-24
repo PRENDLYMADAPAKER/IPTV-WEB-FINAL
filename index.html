@@ -13,7 +13,6 @@
     }
     .hidden { display: none; }
 
-    /* Login Page UI */
     #loginPage {
       height: 100vh;
       display: flex;
@@ -29,13 +28,10 @@
       text-align: center;
     }
     .loginBox img {
-      width: 60px;
-      height: 60px;
+      width: 70px;
+      height: 70px;
       border-radius: 50%;
       margin-bottom: 10px;
-    }
-    .loginBox h2 {
-      margin-bottom: 15px;
     }
     .loginBox input {
       display: block;
@@ -58,9 +54,7 @@
       margin-top: 10px;
     }
 
-    /* IPTV Interface */
     #iptvPage.hidden { display: none; }
-
     header {
       display: flex;
       align-items: center;
@@ -164,10 +158,9 @@
   </style>
 </head>
 <body>
-  <!-- Login Page -->
   <div id="loginPage">
     <div class="loginBox">
-      <img src="https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/NZMMODSLOGO.jpg">
+      <img src="https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/NZMMODSLOGO.jpg" alt="Logo" />
       <h2>NZM IPTV</h2>
       <input type="email" id="email" placeholder="Email">
       <input type="password" id="password" placeholder="Password">
@@ -175,25 +168,22 @@
     </div>
   </div>
 
-  <!-- IPTV Interface -->
   <div id="iptvPage" class="hidden">
     <header>
       <div style="display:flex; align-items:center; gap:10px">
-        <img src="https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/NZMMODSLOGO.jpg">
+        <img src="https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/NZMMODSLOGO.jpg" />
         <h3>NZM IPTV</h3>
       </div>
       <button id="logoutBtn" onclick="logout()">Logout</button>
     </header>
+
     <video id="player" controls autoplay></video>
     <div id="nowPlaying">Now Playing: <span id="nowChannel">Nothing</span></div>
     <input type="text" id="search" placeholder="Search channels..."/>
     <div class="carousel" id="categoryList"></div>
     <div class="grid" id="channelList"></div>
     <div id="reconnecting">Reconnecting…</div>
-  </div>
-
-  <!-- Firebase Auth & IPTV Logic -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script>
@@ -213,48 +203,50 @@
     const deviceId = localStorage.getItem('deviceId') || Math.random().toString(36).substring(2);
     localStorage.setItem('deviceId', deviceId);
 
-    function login() {
+    async function login() {
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
-      auth.signInWithEmailAndPassword(email, password)
-        .then(async ({ user }) => {
-          const ref = db.ref(`sessions/${user.uid}`);
-          const sessions = (await ref.get()).val() || {};
-          const keys = Object.keys(sessions);
-          if (keys.length >= 2 && !sessions[deviceId]) {
-            const oldest = keys.sort((a, b) => sessions[a].timestamp - sessions[b].timestamp)[0];
-            await ref.child(oldest).remove();
-          }
-          await ref.child(deviceId).set({ timestamp: Date.now() });
-          document.getElementById('loginPage').classList.add('hidden');
-          document.getElementById('iptvPage').classList.remove('hidden');
-          initApp();
-        })
-        .catch(err => alert(err.message));
+      try {
+        const { user } = await auth.signInWithEmailAndPassword(email, password);
+        const ref = db.ref(`sessions/${user.uid}`);
+        const snapshot = await ref.once('value');
+        const sessions = snapshot.val() || {};
+        const keys = Object.keys(sessions);
+
+        if (keys.length >= 2 && !sessions[deviceId]) {
+          const oldestKey = keys.sort((a, b) => sessions[a].timestamp - sessions[b].timestamp)[0];
+          await ref.child(oldestKey).remove();
+        }
+
+        await ref.child(deviceId).set({ timestamp: Date.now() });
+        document.getElementById('loginPage').classList.add('hidden');
+        document.getElementById('iptvPage').classList.remove('hidden');
+        initApp();
+      } catch (e) {
+        alert("Login failed: " + e.message);
+      }
     }
 
     function logout() {
       const user = auth.currentUser;
-      if (user) {
-        db.ref(`sessions/${user.uid}/${deviceId}`).remove();
-        auth.signOut().then(() => location.reload());
-      }
+      if (!user) return;
+      db.ref(`sessions/${user.uid}/${deviceId}`).remove();
+      auth.signOut().then(() => location.reload());
     }
 
     auth.onAuthStateChanged(async user => {
       if (user) {
-        const sessions = (await db.ref(`sessions/${user.uid}`).get()).val() || {};
-        if (sessions[deviceId]) {
+        const sessions = (await db.ref(`sessions/${user.uid}`).once('value')).val() || {};
+        if (!sessions[deviceId]) {
+          logout();
+        } else {
           document.getElementById('loginPage').classList.add('hidden');
           document.getElementById('iptvPage').classList.remove('hidden');
           initApp();
-        } else {
-          logout();
         }
       }
     });
 
-    // IPTV Functions
     const M3U_URL = 'https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/IPTVPREMIUM.m3u';
     const video = document.getElementById('player');
     const channelList = document.getElementById('channelList');
@@ -262,26 +254,21 @@
     const nowChannel = document.getElementById('nowChannel');
     const reconnecting = document.getElementById('reconnecting');
     const search = document.getElementById('search');
-    let channels = [], currentCategory = 'All', freezeCheck, lastTime = 0;
 
-    async function loadPlaylist() {
-      const res = await fetch(M3U_URL);
-      const text = await res.text();
-      channels = parseM3U(text);
-      renderCategories();
-      renderChannels();
-    }
+    let channels = [];
+    let currentCategory = 'All';
+    let freezeCheck, lastTime = 0;
 
     function parseM3U(data) {
-      const lines = data.split('\n'), items = [];
+      const lines = data.split('\n');
+      const items = [];
       let current = {};
       lines.forEach(line => {
         if (line.startsWith('#EXTINF')) {
-          current = {
-            name: line.match(/,(.*)/)?.[1] || 'Unknown',
-            logo: line.match(/tvg-logo="(.*?)"/)?.[1] || '',
-            group: line.match(/group-title="(.*?)"/)?.[1] || 'Other'
-          };
+          const name = line.match(/,(.*)/)?.[1] || 'Unknown';
+          const logo = line.match(/tvg-logo="(.*?)"/)?.[1] || '';
+          const group = line.match(/group-title="(.*?)"/)?.[1] || 'Other';
+          current = { name, logo, group };
         } else if (line.startsWith('http')) {
           current.url = line.trim();
           items.push(current);
@@ -289,6 +276,18 @@
         }
       });
       return items;
+    }
+
+    async function loadPlaylist() {
+      try {
+        const res = await fetch(M3U_URL);
+        const text = await res.text();
+        channels = parseM3U(text);
+        renderCategories();
+        renderChannels();
+      } catch (e) {
+        console.error('Failed to load playlist:', e);
+      }
     }
 
     function renderCategories() {
@@ -330,7 +329,7 @@
     function playChannel(channel) {
       video.src = channel.url;
       video.play();
-      nowChannel.innerHTML = `${channel.name}`;
+      nowChannel.textContent = channel.name;
     }
 
     function startFreezeMonitor() {
@@ -339,7 +338,8 @@
         if (!video.paused && !video.ended) {
           if (video.currentTime === lastTime) {
             reconnecting.style.display = 'block';
-            video.load(); video.play();
+            video.load();
+            video.play();
           } else {
             reconnecting.style.display = 'none';
           }
@@ -352,7 +352,7 @@
       video.addEventListener('play', startFreezeMonitor);
       search.addEventListener('input', renderChannels);
       loadPlaylist();
-      setInterval(loadPlaylist, 180000);
+      setInterval(loadPlaylist, 180000); // every 3 minutes
     }
   </script>
 </body>
