@@ -7,190 +7,73 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
   <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #0e0e0e;
-      color: white;
-    }
-    #loginSection, #iptvSection {
-      display: none;
-    }
+    /* [Same styles as before] */
+    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #0e0e0e; color: white; }
+    #loginSection, #iptvSection { display: none; }
     #loginSection {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      background: radial-gradient(circle, #1a1a1a, #0e0e0e);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100vh; background: radial-gradient(circle, #1a1a1a, #0e0e0e);
     }
     #loginCard {
-      background: rgba(30,30,30,0.8);
-      padding: 30px;
-      border-radius: 16px;
-      box-shadow: 0 0 15px #ff007f;
-      width: 90%;
-      max-width: 360px;
-      text-align: center;
+      background: rgba(30,30,30,0.8); padding: 30px; border-radius: 16px;
+      box-shadow: 0 0 15px #ff007f; width: 90%; max-width: 360px; text-align: center;
     }
-    #loginCard img {
-      height: 60px;
-      width: 60px;
-      border-radius: 50%;
-      margin-bottom: 15px;
+    #loginCard img { height: 60px; width: 60px; border-radius: 50%; margin-bottom: 15px; }
+    #loginCard input, #loginCard button {
+      width: 100%; padding: 10px; margin: 10px 0; border: none; border-radius: 6px;
     }
-    #loginCard input {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      background: #222;
-      border: none;
-      border-radius: 6px;
-      color: white;
-    }
+    #loginCard input { background: #222; color: white; }
     #loginCard button {
-      width: 100%;
-      padding: 10px;
-      background: #ff007f;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
+      background: #ff007f; color: white; font-weight: bold; cursor: pointer;
     }
     header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 20px;
-      background: #111;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 20px; background: #111;
     }
-    header img {
-      height: 40px;
-      width: 40px;
-      border-radius: 50%;
-      margin-right: 10px;
-    }
+    header img { height: 40px; width: 40px; border-radius: 50%; margin-right: 10px; }
     #logoutBtn {
-      background: #e53935;
-      border: none;
-      border-radius: 4px;
-      padding: 6px 12px;
-      color: white;
-      cursor: pointer;
-      font-size: 0.9rem;
+      background: #e53935; border: none; border-radius: 4px;
+      padding: 6px 12px; color: white; cursor: pointer; font-size: 0.9rem;
     }
-    #player {
-      width: 100%;
-      height: 360px;
-      background: black;
-    }
+    #player { width: 100%; height: 360px; background: black; }
     #nowPlaying {
-      background: #1a1a1a;
-      padding: 10px 20px;
-      font-size: 1rem;
-      border-top: 1px solid #333;
+      background: #1a1a1a; padding: 10px 20px; font-size: 1rem; border-top: 1px solid #333;
     }
     #search {
-      width: 90%;
-      margin: 15px auto;
-      display: block;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      background: #222;
-      color: white;
-    }
-    .carousel-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
-      overflow: hidden;
-      margin: 10px 0;
+      width: 90%; margin: 15px auto; display: block; padding: 10px;
+      border-radius: 8px; border: none; background: #222; color: white;
     }
     .carousel {
-      display: flex;
-      gap: 10px;
-      overflow-x: auto;
-      scroll-behavior: smooth;
-      padding: 10px;
-      scrollbar-width: none;
+      display: flex; overflow-x: auto; gap: 10px; padding: 0 15px;
+      margin-bottom: 10px; scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
     }
-    .carousel::-webkit-scrollbar {
-      display: none;
-    }
+    .carousel::-webkit-scrollbar { display: none; }
     .carousel button {
-      flex-shrink: 0;
-      background: #333;
-      color: white;
-      border: none;
-      border-radius: 20px;
-      padding: 8px 16px;
-      cursor: pointer;
-      white-space: nowrap;
+      flex-shrink: 0; scroll-snap-align: start; background: #333; color: white;
+      border: none; border-radius: 20px; padding: 8px 16px; cursor: pointer; white-space: nowrap;
     }
-    .carousel button.active {
-      background: #ff007f;
-    }
-    .carousel-arrow {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      background: rgba(0,0,0,0.5);
-      border: none;
-      color: white;
-      font-size: 20px;
-      padding: 6px 12px;
-      cursor: pointer;
-      z-index: 1;
-    }
-    .carousel-arrow.left {
-      left: 0;
-    }
-    .carousel-arrow.right {
-      right: 0;
-    }
+    .carousel button.active { background: #ff007f; }
     .grid {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-      padding: 10px 15px 100px;
+      display: flex; flex-wrap: wrap; justify-content: center;
+      gap: 10px; padding: 10px 15px 100px;
     }
     .channel {
-      width: calc(50% - 10px);
-      background: #1c1c1c;
-      border-radius: 12px;
-      padding: 10px;
-      text-align: center;
-      cursor: pointer;
-      transition: 0.2s;
+      width: calc(50% - 10px); background: #1c1c1c; border-radius: 12px;
+      padding: 10px; text-align: center; cursor: pointer; transition: 0.2s;
     }
-    .channel:hover {
-      background: #272727;
-    }
+    .channel:hover { background: #272727; }
     .channel img {
-      width: 100%;
-      height: 70px;
-      object-fit: contain;
-      border-radius: 6px;
+      width: 100%; height: 70px; object-fit: contain; border-radius: 6px;
     }
-    .channel p {
-      margin: 8px 0 0;
-      font-size: 0.85rem;
-    }
+    .channel p { margin: 8px 0 0; font-size: 0.85rem; }
     #reconnecting {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
+      display: none; position: fixed; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.7);
-      padding: 20px 30px;
-      border-radius: 10px;
-      font-size: 1.2rem;
-      z-index: 999;
+      background: rgba(0,0,0,0.7); padding: 20px 30px; border-radius: 10px;
+      font-size: 1.2rem; z-index: 999;
     }
   </style>
 </head>
@@ -221,13 +104,7 @@
   <video id="player" controls autoplay></video>
   <div id="nowPlaying">Now Playing: <span id="nowChannel">Nothing</span></div>
   <input type="text" id="search" placeholder="Search channels..."/>
-
-  <div class="carousel-wrapper">
-    <button class="carousel-arrow left" onclick="scrollCategory(-200)">‹</button>
-    <div class="carousel" id="categoryList"></div>
-    <button class="carousel-arrow right" onclick="scrollCategory(200)">›</button>
-  </div>
-
+  <div class="carousel" id="categoryList"></div>
   <div class="grid" id="channelList"></div>
   <div id="reconnecting">Reconnecting…</div>
 </div>
@@ -238,19 +115,43 @@
     authDomain: "iptv-log-in.firebaseapp.com",
     databaseURL: "https://iptv-log-in-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "iptv-log-in",
-    storageBucket: "iptv-log-in.firebasestorage.app",
+    storageBucket: "iptv-log-in.appspot.com",
     messagingSenderId: "820026131349",
-    appId: "1:820026131349:web:417abd6ad9057c55a92c9c",
-    measurementId: "G-4Y8T6J595Z"
+    appId: "1:820026131349:web:417abd6ad9057c55a92c9c"
   };
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
+  const db = firebase.database();
+
+  const sessionId = localStorage.getItem('sessionId') || crypto.randomUUID();
+  localStorage.setItem('sessionId', sessionId);
 
   const loginSection = document.getElementById('loginSection');
   const iptvSection = document.getElementById('iptvSection');
 
-  auth.onAuthStateChanged(user => {
+  auth.onAuthStateChanged(async user => {
     if (user) {
+      const uid = user.uid;
+      const userSessionsRef = db.ref(`sessions/${uid}`);
+      const snapshot = await userSessionsRef.once('value');
+      let sessions = snapshot.val() || {};
+
+      sessions[sessionId] = Date.now();
+
+      const sessionEntries = Object.entries(sessions).sort((a,b) => a[1] - b[1]);
+      while (sessionEntries.length > 2) {
+        const [oldSessionId] = sessionEntries.shift();
+        delete sessions[oldSessionId];
+      }
+
+      await userSessionsRef.set(sessions);
+
+      // If current session was deleted (means it was oldest)
+      if (!sessions[sessionId]) {
+        alert('You have been logged out due to device limit.');
+        return auth.signOut();
+      }
+
       loginSection.style.display = 'none';
       iptvSection.style.display = 'block';
       loadPlaylist();
@@ -270,9 +171,14 @@
   }
 
   function logout() {
+    const user = auth.currentUser;
+    if (user) {
+      firebase.database().ref(`sessions/${user.uid}/${sessionId}`).remove();
+    }
     auth.signOut();
   }
 
+  // IPTV logic
   const M3U_URL = 'https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/IPTVPREMIUM.m3u';
   const video = document.getElementById('player');
   const channelList = document.getElementById('channelList');
@@ -292,8 +198,8 @@
     lines.forEach(line => {
       if (line.startsWith('#EXTINF')) {
         const name = line.match(/,(.*)/)?.[1] || 'Unknown';
-        const logo = line.match(/tvg-logo="(.*?)"/)?.[1] || '';
-        const group = line.match(/group-title="(.*?)"/)?.[1] || 'Other';
+        const logo = line.match(/tvg-logo=\"(.*?)\"/)?.[1] || '';
+        const group = line.match(/group-title=\"(.*?)\"/)?.[1] || 'Other';
         current = { name, logo, group };
       } else if (line.startsWith('http')) {
         current.url = line.trim();
@@ -340,7 +246,7 @@
       const div = document.createElement('div');
       div.className = 'channel';
       div.innerHTML = `
-        <img src="${c.logo}" onerror="this.src='https://via.placeholder.com/150x70?text=No+Logo'"/>
+        <img src="${c.logo}" onerror="this.src='https://via.placeholder.com/150x70?text=No+Logo'" />
         <p>${c.name}</p>
       `;
       div.onclick = () => playChannel(c);
@@ -372,12 +278,6 @@
 
   video.addEventListener('play', startFreezeMonitor);
   search.addEventListener('input', renderChannels);
-
-  function scrollCategory(offset) {
-    const container = document.getElementById('categoryList');
-    container.scrollBy({ left: offset, behavior: 'smooth' });
-  }
-
   setInterval(loadPlaylist, 180000);
 </script>
 
