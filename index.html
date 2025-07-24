@@ -14,176 +14,121 @@
       background: #0e0e0e;
       color: white;
     }
-    #loginSection, #iptvSection {
-      display: none;
-    }
+    #loginSection, #iptvSection { display: none; }
     #loginSection {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      background: radial-gradient(circle, #1a1a1a, #0e0e0e);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100vh; background: radial-gradient(circle, #1a1a1a, #0e0e0e);
     }
     #loginCard {
       background: rgba(30,30,30,0.8);
-      padding: 30px;
-      border-radius: 16px;
+      padding: 30px; border-radius: 16px;
       box-shadow: 0 0 15px #ff007f;
-      width: 90%;
-      max-width: 360px;
-      text-align: center;
+      width: 90%; max-width: 360px; text-align: center;
     }
     #loginCard img {
-      height: 60px;
-      width: 60px;
+      height: 60px; width: 60px;
       border-radius: 50%;
       margin-bottom: 15px;
     }
     #loginCard input, #loginCard button {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 6px;
+      width: 100%; padding: 10px; margin: 10px 0;
+      border: none; border-radius: 6px;
     }
     #loginCard input {
-      background: #222;
-      color: white;
+      background: #222; color: white;
     }
     #loginCard button {
-      background: #ff007f;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
+      background: #ff007f; color: white; font-weight: bold; cursor: pointer;
     }
     header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 20px;
-      background: #111;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 20px; background: #111;
     }
     header img {
-      height: 40px;
-      width: 40px;
-      border-radius: 50%;
+      height: 40px; width: 40px; border-radius: 50%;
       margin-right: 10px;
     }
     #logoutBtn {
-      background: #e53935;
-      border: none;
-      border-radius: 4px;
-      padding: 6px 12px;
-      color: white;
-      cursor: pointer;
+      background: #e53935; border: none; border-radius: 4px;
+      padding: 6px 12px; color: white; cursor: pointer;
       font-size: 0.9rem;
     }
     #player {
-      width: 100%;
-      height: 360px;
-      background: black;
+      width: 100%; height: 360px; background: black;
     }
     #nowPlaying {
-      background: #1a1a1a;
-      padding: 10px 20px;
-      font-size: 1rem;
-      border-top: 1px solid #333;
+      background: #1a1a1a; padding: 10px 20px;
+      font-size: 1rem; border-top: 1px solid #333;
     }
     #search {
-      width: 90%;
-      margin: 15px auto;
-      display: block;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      background: #222;
-      color: white;
+      width: 90%; margin: 15px auto; display: block;
+      padding: 10px; border-radius: 8px;
+      border: none; background: #222; color: white;
     }
     .carousel {
-      display: flex;
-      overflow-x: auto;
-      gap: 10px;
-      padding: 0 15px;
-      margin-bottom: 10px;
+      display: flex; overflow-x: auto; gap: 10px;
+      padding: 0 15px; margin-bottom: 10px;
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
     }
-    .carousel::-webkit-scrollbar {
-      display: none;
-    }
+    .carousel::-webkit-scrollbar { display: none; }
     .carousel button {
-      flex-shrink: 0;
-      scroll-snap-align: start;
-      background: #333;
-      color: white;
-      border: none;
-      border-radius: 20px;
-      padding: 8px 16px;
-      cursor: pointer;
-      white-space: nowrap;
+      flex-shrink: 0; scroll-snap-align: start;
+      background: #333; color: white; border: none;
+      border-radius: 20px; padding: 8px 16px;
+      cursor: pointer; white-space: nowrap;
     }
-    .carousel button.active {
-      background: #ff007f;
-    }
-
-    /* Horizontal channel carousel */
-    #channelList {
-      display: flex;
-      overflow-x: auto;
-      padding: 10px 15px 100px;
-      gap: 10px;
-      scroll-snap-type: x mandatory;
-      -webkit-overflow-scrolling: touch;
-    }
-    #channelList::-webkit-scrollbar {
-      display: none;
+    .carousel button.active { background: #ff007f; }
+    .grid {
+      display: flex; flex-wrap: wrap; justify-content: center;
+      gap: 10px; padding: 10px 15px 100px;
     }
     .channel {
-      flex: 0 0 auto;
-      width: 160px;
+      width: calc(50% - 10px);
       background: #1c1c1c;
       border-radius: 12px;
       padding: 10px;
       text-align: center;
       cursor: pointer;
-      scroll-snap-align: start;
       transition: 0.2s;
     }
-    .channel:hover {
-      background: #272727;
-    }
+    .channel:hover { background: #272727; }
     .channel img {
-      width: 100%;
-      height: 70px;
-      object-fit: contain;
-      border-radius: 6px;
+      width: 100%; height: 70px;
+      object-fit: contain; border-radius: 6px;
     }
     .channel p {
       margin: 8px 0 0;
       font-size: 0.85rem;
     }
-
     #reconnecting {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
+      display: none; position: fixed; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       background: rgba(0,0,0,0.7);
-      padding: 20px 30px;
+      padding: 20px 30px; border-radius: 10px;
+      font-size: 1.2rem; z-index: 999;
+    }
+    #externalPlayerBtn {
+      display: block;
+      width: 90%;
+      margin: 15px auto;
+      padding: 12px;
+      background: #222;
+      border: 2px solid #ff007f;
       border-radius: 10px;
-      font-size: 1.2rem;
-      z-index: 999;
+      color: #ff007f;
+      text-align: center;
+      font-weight: bold;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
-<!-- Login UI -->
+<!-- LOGIN PAGE -->
 <div id="loginSection">
   <div id="loginCard">
-    <img src="logo.png" alt="Logo" />
+    <img src="https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/NZMMODSLOGO.jpg" alt="Logo" />
     <h2>Welcome to NZM IPTV</h2>
     <input type="email" id="email" placeholder="Email">
     <input type="password" id="password" placeholder="Password">
@@ -192,25 +137,26 @@
   </div>
 </div>
 
-<!-- IPTV UI -->
+<!-- IPTV PAGE -->
 <div id="iptvSection">
   <header>
     <div style="display: flex; align-items: center;">
-      <img src="logo.png" alt="Logo" />
+      <img src="https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/NZMMODSLOGO.jpg" alt="Logo" />
       <h2>NZM IPTV</h2>
     </div>
     <button id="logoutBtn" onclick="logout()">Logout</button>
   </header>
 
   <video id="player" controls autoplay></video>
+  <div id="externalPlayerBtn" onclick="openInExternal()">🎬 Open in External Player</div>
   <div id="nowPlaying">Now Playing: <span id="nowChannel">Nothing</span></div>
   <input type="text" id="search" placeholder="Search channels..."/>
   <div class="carousel" id="categoryList"></div>
-  <div id="channelList"></div>
+  <div class="grid" id="channelList"></div>
   <div id="reconnecting">Reconnecting…</div>
 </div>
 
-<script>
+  <script>
   const firebaseConfig = {
     apiKey: "AIzaSyA0TjMoFSYBIs0VQ9shUilOuDGb1uXHjKI",
     authDomain: "iptv-log-in.firebaseapp.com",
@@ -233,21 +179,20 @@
   auth.onAuthStateChanged(async user => {
     if (user) {
       const uid = user.uid;
-      const userSessionsRef = db.ref(`sessions/${uid}`);
-      const snapshot = await userSessionsRef.once('value');
-      let sessions = snapshot.val() || {};
-
+      const sessionsRef = db.ref(`sessions/${uid}`);
+      const snap = await sessionsRef.once('value');
+      let sessions = snap.val() || {};
       sessions[sessionId] = Date.now();
-      const sessionEntries = Object.entries(sessions).sort((a,b) => a[1] - b[1]);
-      while (sessionEntries.length > 2) {
-        const [oldId] = sessionEntries.shift();
-        delete sessions[oldId];
+
+      const entries = Object.entries(sessions).sort((a,b) => a[1] - b[1]);
+      while (entries.length > 2) {
+        const [old] = entries.shift();
+        delete sessions[old];
       }
 
-      await userSessionsRef.set(sessions);
-
+      await sessionsRef.set(sessions);
       if (!sessions[sessionId]) {
-        alert("You've been logged out due to device limit.");
+        alert("You have been logged out due to device limit.");
         return auth.signOut();
       }
 
@@ -272,25 +217,27 @@
   function logout() {
     const user = auth.currentUser;
     if (user) {
-      firebase.database().ref(`sessions/${user.uid}/${sessionId}`).remove();
+      db.ref(`sessions/${user.uid}/${sessionId}`).remove();
     }
     auth.signOut();
   }
 
   const M3U_URL = 'https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/IPTVPREMIUM.m3u';
   const video = document.getElementById('player');
-  const channelList = document.getElementById('channelList');
-  const categoryList = document.getElementById('categoryList');
   const nowChannel = document.getElementById('nowChannel');
   const reconnecting = document.getElementById('reconnecting');
+  const categoryList = document.getElementById('categoryList');
+  const channelList = document.getElementById('channelList');
   const search = document.getElementById('search');
 
   let channels = [];
   let currentCategory = 'All';
-  let freezeCheck, lastTime = 0;
+  let lastTime = 0;
+  let freezeCheck = null;
+  let currentUrl = '';
 
-  function parseM3U(data) {
-    const lines = data.split('\n');
+  function parseM3U(text) {
+    const lines = text.split('\n');
     const items = [];
     let current = {};
     lines.forEach(line => {
@@ -309,22 +256,26 @@
   }
 
   async function loadPlaylist() {
-    const res = await fetch(M3U_URL);
-    const text = await res.text();
-    channels = parseM3U(text);
-    renderCategories();
-    renderChannels();
+    try {
+      const res = await fetch(M3U_URL);
+      const text = await res.text();
+      channels = parseM3U(text);
+      renderCategories();
+      renderChannels();
+    } catch (e) {
+      console.error("Failed to load playlist:", e);
+    }
   }
 
   function renderCategories() {
     const groups = ['All', ...new Set(channels.map(c => c.group))];
     categoryList.innerHTML = '';
-    groups.forEach(g => {
+    groups.forEach(group => {
       const btn = document.createElement('button');
-      btn.textContent = g;
-      if (g === currentCategory) btn.classList.add('active');
+      btn.textContent = group;
+      if (group === currentCategory) btn.classList.add('active');
       btn.onclick = () => {
-        currentCategory = g;
+        currentCategory = group;
         document.querySelectorAll('.carousel button').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         renderChannels();
@@ -352,10 +303,16 @@
     });
   }
 
-  function playChannel(channel) {
-    video.src = channel.url;
+  function playChannel(c) {
+    currentUrl = c.url;
+    video.src = currentUrl;
     video.play();
-    nowChannel.innerHTML = `${channel.name}`;
+    nowChannel.textContent = c.name;
+  }
+
+  function openInExternal() {
+    if (!currentUrl) return alert("No channel playing.");
+    window.open(currentUrl, '_blank');
   }
 
   function startFreezeMonitor() {
@@ -365,6 +322,7 @@
         if (video.currentTime === lastTime) {
           reconnecting.style.display = 'block';
           video.load();
+          video.src = currentUrl;
           video.play();
         } else {
           reconnecting.style.display = 'none';
@@ -378,6 +336,5 @@
   search.addEventListener('input', renderChannels);
   setInterval(loadPlaylist, 180000);
 </script>
-
 </body>
 </html>
