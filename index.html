@@ -4,268 +4,316 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NZM IPTV</title>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', sans-serif;
-    }
-    body {
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Orbitron', sans-serif; }
+    body, html { height: 100%; background: black; color: white; }
+
+    #loginSection {
       background: url('https://i.imgur.com/yeftKeD.jpeg') no-repeat center center fixed;
       background-size: cover;
-      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
     }
-    .glass-box {
-      background: rgba(0, 0, 0, 0.6);
+
+    .login-box {
+      background: rgba(0, 0, 0, 0.65);
       backdrop-filter: blur(10px);
-      border-radius: 12px;
-      padding: 20px;
-      margin: 60px auto;
-      width: 90%;
-      max-width: 400px;
+      padding: 30px 40px;
+      border-radius: 15px;
       text-align: center;
     }
-    .logo {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      height: 60px;
+
+    .login-box h2 {
+      margin-bottom: 20px;
+      color: #fff;
     }
-    input, button {
-      width: 100%;
-      margin: 8px 0;
-      padding: 12px;
+
+    .login-box input {
+      display: block;
+      width: 250px;
+      margin: 10px auto;
+      padding: 10px;
+      font-size: 16px;
       border: none;
       border-radius: 8px;
     }
-    input {
-      background: #222;
+
+    .login-box button {
+      background: hotpink;
       color: white;
-    }
-    button {
-      background: #ff007f;
-      color: white;
+      padding: 10px 25px;
       font-weight: bold;
-      cursor: pointer;
-    }
-    #iptvSection { display: none; padding: 10px; }
-    .carousel {
-      overflow-x: auto;
-      white-space: nowrap;
-      margin: 10px 0;
-    }
-    .carousel button {
-      display: inline-block;
-      margin-right: 5px;
-      padding: 8px 14px;
-      background: #444;
       border: none;
       border-radius: 8px;
-      color: white;
-    }
-    .carousel button.active {
-      background: #ff007f;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 10px;
+      cursor: pointer;
+      font-size: 16px;
       margin-top: 10px;
     }
-    .channel {
-      background: rgba(255,255,255,0.1);
-      border-radius: 12px;
+
+    #iptvSection { display: none; padding: 10px; }
+    .header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .header img { width: 60px; height: 60px; border-radius: 100%; }
+    .header .logout-btn {
+      margin-left: auto;
+      background: #ff0040;
+      padding: 5px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    video { width: 100%; border-radius: 10px; background: black; }
+    #nowChannel { margin: 10px 0; font-size: 18px; font-weight: bold; text-align: center; }
+
+    .carousel {
+      display: flex;
+      overflow-x: auto;
+      gap: 8px;
       padding: 10px;
-      text-align: center;
+      white-space: nowrap;
+      scroll-snap-type: x mandatory;
+    }
+    .carousel button {
+      scroll-snap-align: start;
+      flex-shrink: 0;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 8px 16px;
       cursor: pointer;
     }
-    .channel img {
-      width: 100%;
-      border-radius: 8px;
+    .carousel button.active { background: hotpink; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(45%, 1fr));
+      gap: 10px;
+      padding: 10px;
     }
+    .channel {
+      background: rgba(255,255,255,0.05);
+      padding: 10px;
+      border-radius: 12px;
+      text-align: center;
+      transition: transform 0.2s;
+    }
+    .channel:hover { transform: scale(1.05); }
+    .channel img { width: 100%; max-height: 100px; object-fit: contain; }
+
+    #search {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
     #reconnecting {
       display: none;
+      background: #0009;
+      color: white;
       text-align: center;
-      color: yellow;
-      font-weight: bold;
-      margin-top: 5px;
+      padding: 10px;
+      border-radius: 8px;
     }
   </style>
 </head>
 <body>
-  <img src="logo.png" class="logo" alt="Logo">
-  <div id="loginSection" class="glass-box">
-    <h2>NZM IPTV Login</h2>
-    <input id="email" type="email" placeholder="Email">
-    <input id="password" type="password" placeholder="Password">
-    <button onclick="login()">Login</button>
-    <p id="loginError" style="color: red;"></p>
+  <div id="loginSection">
+    <div class="login-box">
+      <h2>NZM IPTV Login</h2>
+      <input type="email" id="email" placeholder="Email">
+      <input type="password" id="password" placeholder="Password">
+      <button onclick="login()">Login</button>
+      <p id="loginError" style="color:red;margin-top:10px"></p>
+    </div>
   </div>
 
   <div id="iptvSection">
-    <video id="player" width="100%" height="auto" controls autoplay></video>
-    <div id="nowChannel"></div>
-    <div id="reconnecting">Reconnecting...</div>
-    <input id="search" type="text" placeholder="Search channel..." />
+    <div class="header">
+      <img src="logo.png" alt="Logo">
+      <div class="logout-btn" onclick="logout()">Logout</div>
+    </div>
+    <video id="player" controls autoplay></video>
+    <div id="reconnecting">Reconnecting stream...</div>
+    <div id="nowChannel">Now Playing</div>
+    <input type="text" id="search" placeholder="Search channels...">
     <div id="categoryList" class="carousel"></div>
     <div id="channelList" class="grid"></div>
-    <button onclick="logout()" style="margin-top:10px; background:#333;">Logout</button>
   </div>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyA0TjMoFSYBIs0VQ9shUilOuDGb1uXHjKI",
-      authDomain: "iptv-log-in.firebaseapp.com",
-      databaseURL: "https://iptv-log-in-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "iptv-log-in",
-      storageBucket: "iptv-log-in.appspot.com",
-      messagingSenderId: "820026131349",
-      appId: "1:820026131349:web:417abd6ad9057c55a92c9c"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.database();
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyA0TjMoFSYBIs0VQ9shUilOuDGb1uXHjKI",
+    authDomain: "iptv-log-in.firebaseapp.com",
+    databaseURL: "https://iptv-log-in-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "iptv-log-in",
+    storageBucket: "iptv-log-in.appspot.com",
+    messagingSenderId: "820026131349",
+    appId: "1:820026131349:web:417abd6ad9057c55a92c9c"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.database();
+  const sessionId = localStorage.getItem('sessionId') || crypto.randomUUID();
+  localStorage.setItem('sessionId', sessionId);
+  const loginSection = document.getElementById('loginSection');
+  const iptvSection = document.getElementById('iptvSection');
 
-    const sessionId = localStorage.getItem('sessionId') || crypto.randomUUID();
-    localStorage.setItem('sessionId', sessionId);
+  auth.onAuthStateChanged(async user => {
+    if (user) {
+      const uid = user.uid;
+      const userSessionsRef = db.ref(`sessions/${uid}`);
+      const snapshot = await userSessionsRef.once('value');
+      let sessions = snapshot.val() || {};
+      sessions[sessionId] = Date.now();
+      const sessionEntries = Object.entries(sessions).sort((a,b) => a[1]-b[1]);
+      while (sessionEntries.length > 2) {
+        const [oldId] = sessionEntries.shift();
+        delete sessions[oldId];
+      }
+      await userSessionsRef.set(sessions);
+      if (!sessions[sessionId]) {
+        alert("Max 2 devices reached. You've been logged out.");
+        return auth.signOut();
+      }
+      loginSection.style.display = 'none';
+      iptvSection.style.display = 'block';
+      loadPlaylist();
+    } else {
+      loginSection.style.display = 'flex';
+      iptvSection.style.display = 'none';
+    }
+  });
 
-    const loginSection = document.getElementById('loginSection');
-    const iptvSection = document.getElementById('iptvSection');
-    const M3U_URL = 'https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/IPTVPREMIUM.m3u';
-    const video = document.getElementById('player');
-    const channelList = document.getElementById('channelList');
-    const categoryList = document.getElementById('categoryList');
-    const nowChannel = document.getElementById('nowChannel');
-    const reconnecting = document.getElementById('reconnecting');
-    const search = document.getElementById('search');
+  function login() {
+    const email = document.getElementById('email').value.trim();
+    const pass = document.getElementById('password').value.trim();
+    auth.signInWithEmailAndPassword(email, pass).catch(err => {
+      document.getElementById('loginError').textContent = err.message;
+    });
+  }
+  function logout() {
+    const user = auth.currentUser;
+    if (user) {
+      db.ref(`sessions/${user.uid}/${sessionId}`).remove();
+    }
+    auth.signOut();
+  }
+  window.addEventListener("beforeunload", () => {
+    const user = auth.currentUser;
+    if (user) {
+      db.ref(`sessions/${user.uid}/${sessionId}`).remove();
+    }
+  });
 
-    let channels = [], currentCategory = 'All', freezeCheck, lastTime = 0;
+  const M3U_URL = 'https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/IPTVPREMIUM.m3u';
+  const video = document.getElementById('player');
+  const channelList = document.getElementById('channelList');
+  const categoryList = document.getElementById('categoryList');
+  const nowChannel = document.getElementById('nowChannel');
+  const reconnecting = document.getElementById('reconnecting');
+  const search = document.getElementById('search');
 
-    auth.onAuthStateChanged(async user => {
-      if (user) {
-        const uid = user.uid;
-        const ref = db.ref(`sessions/${uid}`);
-        const snap = await ref.once('value');
-        let sessions = snap.val() || {};
-        sessions[sessionId] = Date.now();
-        const entries = Object.entries(sessions).sort((a,b) => a[1] - b[1]);
-        while (entries.length > 2) delete sessions[entries.shift()[0]];
-        await ref.set(sessions);
-        if (!sessions[sessionId]) return auth.signOut();
-        loginSection.style.display = 'none';
-        iptvSection.style.display = 'block';
-        loadPlaylist();
-      } else {
-        loginSection.style.display = 'flex';
-        iptvSection.style.display = 'none';
+  let channels = [];
+  let currentCategory = 'All';
+  let freezeCheck, lastTime = 0;
+
+  function parseM3U(data) {
+    const lines = data.split('\n');
+    const items = [];
+    let current = {};
+    lines.forEach(line => {
+      if (line.startsWith('#EXTINF')) {
+        const name = line.match(/,(.*)/)?.[1] || 'Unknown';
+        const logo = line.match(/tvg-logo="(.*?)"/)?.[1] || '';
+        const group = line.match(/group-title="(.*?)"/)?.[1] || 'Other';
+        current = { name, logo, group };
+      } else if (line.startsWith('http')) {
+        current.url = line.trim();
+        items.push(current);
+        current = {};
       }
     });
+    return items;
+  }
 
-    function login() {
-      const email = document.getElementById('email').value.trim();
-      const pass = document.getElementById('password').value.trim();
-      auth.signInWithEmailAndPassword(email, pass).catch(e => {
-        document.getElementById('loginError').innerText = e.message;
-      });
-    }
+  async function loadPlaylist() {
+    const res = await fetch(M3U_URL);
+    const text = await res.text();
+    channels = parseM3U(text);
+    renderCategories();
+    renderChannels();
+  }
 
-    function logout() {
-      const user = auth.currentUser;
-      if (user) db.ref(`sessions/${user.uid}/${sessionId}`).remove();
-      auth.signOut();
-    }
-
-    window.addEventListener("beforeunload", () => {
-      const user = auth.currentUser;
-      if (user) db.ref(`sessions/${user.uid}/${sessionId}`).remove();
+  function renderCategories() {
+    const groups = ['All', ...new Set(channels.map(c => c.group))];
+    categoryList.innerHTML = '';
+    groups.forEach(g => {
+      const btn = document.createElement('button');
+      btn.textContent = g;
+      if (g === currentCategory) btn.classList.add('active');
+      btn.onclick = () => {
+        currentCategory = g;
+        document.querySelectorAll('.carousel button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderChannels();
+      };
+      categoryList.appendChild(btn);
     });
+  }
 
-    async function loadPlaylist() {
-      const res = await fetch(M3U_URL);
-      const text = await res.text();
-      channels = parseM3U(text);
-      renderCategories();
-      renderChannels();
-    }
+  function renderChannels() {
+    const term = search.value.toLowerCase();
+    const filtered = channels.filter(c =>
+      (currentCategory === 'All' || c.group === currentCategory) &&
+      c.name.toLowerCase().includes(term)
+    );
+    channelList.innerHTML = '';
+    filtered.forEach(c => {
+      const div = document.createElement('div');
+      div.className = 'channel';
+      div.innerHTML = `
+        <img src="${c.logo}" onerror="this.src='https://via.placeholder.com/150x70?text=No+Logo'" />
+        <p>${c.name}</p>
+      `;
+      div.onclick = () => playChannel(c);
+      channelList.appendChild(div);
+    });
+  }
 
-    function parseM3U(data) {
-      const lines = data.split('\n');
-      const items = [];
-      let current = {};
-      lines.forEach(line => {
-        if (line.startsWith('#EXTINF')) {
-          const name = line.match(/,(.*)/)?.[1] || 'Unknown';
-          const logo = line.match(/tvg-logo="(.*?)"/)?.[1] || '';
-          const group = line.match(/group-title="(.*?)"/)?.[1] || 'Other';
-          current = { name, logo, group };
-        } else if (line.startsWith('http')) {
-          current.url = line.trim();
-          items.push(current);
-          current = {};
+  function playChannel(channel) {
+    video.src = channel.url;
+    video.play();
+    nowChannel.innerHTML = `${channel.name}`;
+  }
+
+  function startFreezeMonitor() {
+    clearInterval(freezeCheck);
+    freezeCheck = setInterval(() => {
+      if (!video.paused && !video.ended) {
+        if (video.currentTime === lastTime) {
+          reconnecting.style.display = 'block';
+          video.load();
+          video.play();
+        } else {
+          reconnecting.style.display = 'none';
         }
-      });
-      return items;
-    }
+        lastTime = video.currentTime;
+      }
+    }, 5000);
+  }
 
-    function renderCategories() {
-      const groups = ['All', ...new Set(channels.map(c => c.group))];
-      categoryList.innerHTML = '';
-      groups.forEach(g => {
-        const btn = document.createElement('button');
-        btn.textContent = g;
-        if (g === currentCategory) btn.classList.add('active');
-        btn.onclick = () => {
-          currentCategory = g;
-          document.querySelectorAll('.carousel button').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          renderChannels();
-        };
-        categoryList.appendChild(btn);
-      });
-    }
-
-    function renderChannels() {
-      const term = search.value.toLowerCase();
-      const filtered = channels.filter(c => (currentCategory === 'All' || c.group === currentCategory) && c.name.toLowerCase().includes(term));
-      channelList.innerHTML = '';
-      filtered.forEach(c => {
-        const div = document.createElement('div');
-        div.className = 'channel';
-        div.innerHTML = `<img src="${c.logo}" onerror="this.src='https://via.placeholder.com/150x70?text=No+Logo'" /><p>${c.name}</p>`;
-        div.onclick = () => playChannel(c);
-        channelList.appendChild(div);
-      });
-    }
-
-    function playChannel(channel) {
-      video.src = channel.url;
-      video.play();
-      nowChannel.innerHTML = channel.name;
-    }
-
-    function startFreezeMonitor() {
-      clearInterval(freezeCheck);
-      freezeCheck = setInterval(() => {
-        if (!video.paused && !video.ended) {
-          if (video.currentTime === lastTime) {
-            reconnecting.style.display = 'block';
-            video.load();
-            video.play();
-          } else {
-            reconnecting.style.display = 'none';
-          }
-          lastTime = video.currentTime;
-        }
-      }, 5000);
-    }
-
-    video.addEventListener('play', startFreezeMonitor);
-    search.addEventListener('input', renderChannels);
-    setInterval(loadPlaylist, 180000);
-  </script>
+  video.addEventListener('play', startFreezeMonitor);
+  search.addEventListener('input', renderChannels);
+  setInterval(loadPlaylist, 180000);
+</script>
 </body>
 </html>
