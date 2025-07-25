@@ -256,6 +256,8 @@
       loadPlaylist();
     } else {
 <script>
+<script>
+  // ✅ Firebase Initialization
   const firebaseConfig = {
     apiKey: "AIzaSyA0TjMoFSYBIs0VQ9shUilOuDGb1uXHjKI",
     authDomain: "iptv-log-in.firebaseapp.com",
@@ -269,12 +271,14 @@
   const auth = firebase.auth();
   const db = firebase.database();
 
+  // ✅ Session ID per device
   const sessionId = localStorage.getItem('sessionId') || crypto.randomUUID();
   localStorage.setItem('sessionId', sessionId);
 
   const loginSection = document.getElementById('loginSection');
   const iptvSection = document.getElementById('iptvSection');
 
+  // ✅ Auth lifecycle
   auth.onAuthStateChanged(async user => {
     if (user) {
       const uid = user.uid;
@@ -282,10 +286,11 @@
       const snapshot = await userSessionsRef.once('value');
       let sessions = snapshot.val() || {};
 
+      // Add/update this session
       sessions[sessionId] = Date.now();
-      const sessionEntries = Object.entries(sessions).sort((a, b) => a[1] - b[1]);
 
-      // Keep only the latest 2 devices
+      // Limit to max 2 devices
+      const sessionEntries = Object.entries(sessions).sort((a, b) => a[1] - b[1]);
       while (sessionEntries.length > 2) {
         const [oldId] = sessionEntries.shift();
         delete sessions[oldId];
@@ -293,13 +298,12 @@
 
       await userSessionsRef.set(sessions);
 
-      // If our session was removed due to limit
       if (!sessions[sessionId]) {
-        alert("⚠️ Max 2 devices reached. You’ve been logged out.");
+        alert("⚠️ Max 2 device login reached. This session was removed.");
         return auth.signOut();
       }
 
-      // Proceed to IPTV interface
+      // ✅ Show IPTV
       loginSection.style.display = 'none';
       iptvSection.style.display = 'block';
       loadPlaylist();
@@ -309,15 +313,16 @@
     }
   });
 
+  // ✅ Login button handler
   function login() {
     const email = document.getElementById('email').value.trim();
     const pass = document.getElementById('password').value.trim();
-    auth.signInWithEmailAndPassword(email, pass)
-      .catch(err => {
-        document.getElementById('loginError').textContent = err.message;
-      });
+    auth.signInWithEmailAndPassword(email, pass).catch(err => {
+      document.getElementById('loginError').textContent = err.message;
+    });
   }
 
+  // ✅ Logout
   function logout() {
     const user = auth.currentUser;
     if (user) {
@@ -326,7 +331,7 @@
     auth.signOut();
   }
 
-  // Auto-remove session when tab closes
+  // ✅ Remove session on browser/tab close
   window.addEventListener("beforeunload", () => {
     const user = auth.currentUser;
     if (user) {
@@ -334,7 +339,7 @@
     }
   });
 
-  // --------------------- IPTV FEATURES ---------------------
+  // ✅ IPTV Code — unchanged
   const M3U_URL = 'https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/IPTVPREMIUM.m3u';
   const video = document.getElementById('player');
   const channelList = document.getElementById('channelList');
@@ -434,7 +439,7 @@
 
   video.addEventListener('play', startFreezeMonitor);
   search.addEventListener('input', renderChannels);
-  setInterval(loadPlaylist, 180000);
+  setInterval(loadPlaylist, 180000); // auto-refresh every 3 min
 </script>
 </body>
 </html>
