@@ -205,20 +205,39 @@ function resetActivityTimer() {
 auth.onAuthStateChanged(async user => {
   if (user) {
     const uid = user.uid;
-    const now = Date.now();
     const userSessionsRef = db.ref(`sessions/${uid}`);
     const snapshot = await userSessionsRef.once('value');
     let sessions = snapshot.val() || {};
-    Object.keys(sessions).forEach(key => {
-      if (now - sessions[key] > 3600000) delete sessions[key];
-    });
-    sessions[sessionId] = now;
-    const sessionEntries = Object.entries(sessions).sort((a, b) => a[1] - b[1]);
-    if (sessionEntries.length > 2 && !sessions[sessionId]) {
+    const now = Date.now();
+
+    // Remove expired sessions
+    for (const [id, s] of Object.entries(sessions)) {
+      if (s.expiresAt && now > s.expiresAt) {
+        delete sessions[id];
+      }
+    }
+
+    // Add/update this session
+    sessions[sessionId] = {
+      loginTime: now,
+      expiresAt: now + 3600000 // 1 hour
+    };
+
+    // Keep only 2 most recent
+    const sorted = Object.entries(sessions).sort((a, b) => a[1].loginTime - b[1].loginTime);
+    while (sorted.length > 2) {
+      const [oldId] = sorted.shift();
+      delete sessions[oldId];
+    }
+
+    await userSessionsRef.set(sessions);
+
+    // Check if this session was removed
+    if (!sessions[sessionId]) {
       alert("Max 2 devices reached. You've been logged out.");
       return auth.signOut();
     }
-    await userSessionsRef.set(sessions);
+
     loginSection.style.display = 'none';
     iptvSection.style.display = 'block';
     loadPlaylist();
@@ -335,7 +354,7 @@ function startFreezeMonitor() {
 }
 video.addEventListener('play', startFreezeMonitor);
 search.addEventListener('input', renderChannels);
-setInterval(loadPlaylist, 180000);
+setInterval(loadPlaylist, 180000); // 3 mins
 </script>
 </body>
 </html>
