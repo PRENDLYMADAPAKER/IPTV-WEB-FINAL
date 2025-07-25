@@ -237,19 +237,17 @@
       const snapshot = await userSessionsRef.once('value');
       let sessions = snapshot.val() || {};
 
+      const isOwnSession = sessions[sessionId];
+      const totalSessions = Object.keys(sessions).length;
+
+      if (!isOwnSession && totalSessions >= 2) {
+        alert("Your account has reached the maximum device login limit. Please logout from another device to login here.");
+        auth.signOut();
+        return;
+      }
+
       sessions[sessionId] = Date.now();
-      const sessionEntries = Object.entries(sessions).sort((a,b) => a[1] - b[1]);
-      while (sessionEntries.length > 2) {
-        const [oldId] = sessionEntries.shift();
-        delete sessions[oldId];
-      }
-
       await userSessionsRef.set(sessions);
-
-      if (!sessions[sessionId]) {
-        alert("You've been logged out due to device limit.");
-        return auth.signOut();
-      }
 
       loginSection.style.display = 'none';
       iptvSection.style.display = 'block';
