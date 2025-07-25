@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -10,11 +9,14 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Orbitron', sans-serif; }
-    body, html { height: 100%; background: black; color: white; }
-
-    #loginSection {
+    body, html {
+      height: 100%; 
       background: url('https://i.imgur.com/yeftKeD.jpeg') no-repeat center center fixed;
       background-size: cover;
+      color: white;
+    }
+
+    #loginSection {
       display: flex;
       justify-content: center;
       align-items: center;
@@ -56,9 +58,20 @@
       margin-top: 10px;
     }
 
-    #iptvSection { display: none; padding: 10px; }
-    .header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    #iptvSection { 
+      display: none; 
+      padding: 10px; 
+    }
+
+    .header { 
+      display: flex; 
+      align-items: center; 
+      gap: 10px; 
+      margin-bottom: 10px; 
+    }
+
     .header img { width: 60px; height: 60px; border-radius: 100%; }
+
     .header .logout-btn {
       margin-left: auto;
       background: #ff0040;
@@ -79,6 +92,7 @@
       white-space: nowrap;
       scroll-snap-type: x mandatory;
     }
+
     .carousel button {
       scroll-snap-align: start;
       flex-shrink: 0;
@@ -89,6 +103,7 @@
       padding: 8px 16px;
       cursor: pointer;
     }
+
     .carousel button.active { background: hotpink; }
 
     .channel-carousel {
@@ -102,12 +117,14 @@
     .channel {
       flex: 0 0 48%;
       scroll-snap-align: start;
-      background: rgba(255,255,255,0.05);
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(6px);
       padding: 10px;
       border-radius: 12px;
       text-align: center;
       transition: transform 0.2s;
     }
+
     .channel:hover { transform: scale(1.05); }
     .channel img { width: 100%; max-height: 100px; object-fit: contain; }
 
