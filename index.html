@@ -2,42 +2,45 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NZM IPTV</title>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
   <style>
-    body {
+    * {
+      box-sizing: border-box;
       margin: 0;
+      padding: 0;
       font-family: 'Segoe UI', sans-serif;
+    }
+    body {
       background: url('https://i.imgur.com/yeftKeD.jpeg') no-repeat center center fixed;
       background-size: cover;
       color: white;
     }
-    #loginSection, #iptvSection {
-      display: none;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      flex-direction: column;
-    }
     .glass-box {
       background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(12px);
-      border-radius: 16px;
-      padding: 30px;
-      max-width: 400px;
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 60px auto;
       width: 90%;
-      box-shadow: 0 0 20px #000;
+      max-width: 400px;
+      text-align: center;
+    }
+    .logo {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      height: 60px;
     }
     input, button {
       width: 100%;
+      margin: 8px 0;
       padding: 12px;
-      margin-top: 10px;
       border: none;
       border-radius: 8px;
-      font-size: 16px;
     }
     input {
       background: #222;
@@ -49,77 +52,71 @@
       font-weight: bold;
       cursor: pointer;
     }
+    #iptvSection { display: none; padding: 10px; }
     .carousel {
       overflow-x: auto;
       white-space: nowrap;
-      margin-bottom: 10px;
-      padding: 5px;
+      margin: 10px 0;
     }
     .carousel button {
       display: inline-block;
-      margin-right: 8px;
-      padding: 8px 12px;
+      margin-right: 5px;
+      padding: 8px 14px;
+      background: #444;
       border: none;
-      border-radius: 20px;
-      background: #333;
+      border-radius: 8px;
       color: white;
-      cursor: pointer;
     }
     .carousel button.active {
       background: #ff007f;
     }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
     .channel {
-      display: inline-block;
-      width: 48%;
-      margin: 1%;
-      background: rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.1);
       border-radius: 12px;
-      text-align: center;
       padding: 10px;
+      text-align: center;
       cursor: pointer;
     }
     .channel img {
       width: 100%;
       border-radius: 8px;
     }
-    #nowChannel {
-      text-align: center;
-      font-size: 18px;
-      margin-top: 8px;
-    }
     #reconnecting {
+      display: none;
       text-align: center;
       color: yellow;
-      display: none;
+      font-weight: bold;
+      margin-top: 5px;
     }
   </style>
 </head>
 <body>
-
-  <!-- LOGIN -->
-  <div id="loginSection">
-    <div class="glass-box">
-      <h2 style="text-align:center;">🔒 Login to IPTV</h2>
-      <input id="email" type="email" placeholder="Email" />
-      <input id="password" type="password" placeholder="Password" />
-      <button onclick="login()">Login</button>
-      <p id="loginError" style="color:red;text-align:center;"></p>
-    </div>
+  <img src="logo.png" class="logo" alt="Logo">
+  <div id="loginSection" class="glass-box">
+    <h2>NZM IPTV Login</h2>
+    <input id="email" type="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <p id="loginError" style="color: red;"></p>
   </div>
 
-  <!-- IPTV APP -->
   <div id="iptvSection">
-    <video id="player" controls autoplay style="width:100%;max-height:40vh;"></video>
-    <div id="nowChannel">Now Playing: None</div>
-    <div id="reconnecting">🔁 Reconnecting...</div>
-    <input id="search" type="text" placeholder="Search..." style="width:90%;margin:10px auto;display:block;padding:10px;border-radius:8px;border:none;" />
-    <div class="carousel" id="categoryList"></div>
-    <div id="channelList" style="display:flex;flex-wrap:wrap;justify-content:center;"></div>
-    <button onclick="logout()" style="margin: 20px auto; display:block; background:#444;">🚪 Logout</button>
+    <video id="player" width="100%" height="auto" controls autoplay></video>
+    <div id="nowChannel"></div>
+    <div id="reconnecting">Reconnecting...</div>
+    <input id="search" type="text" placeholder="Search channel..." />
+    <div id="categoryList" class="carousel"></div>
+    <div id="channelList" class="grid"></div>
+    <button onclick="logout()" style="margin-top:10px; background:#333;">Logout</button>
   </div>
 
   <script>
-    // Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyA0TjMoFSYBIs0VQ9shUilOuDGb1uXHjKI",
       authDomain: "iptv-log-in.firebaseapp.com",
@@ -138,6 +135,15 @@
 
     const loginSection = document.getElementById('loginSection');
     const iptvSection = document.getElementById('iptvSection');
+    const M3U_URL = 'https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/IPTVPREMIUM.m3u';
+    const video = document.getElementById('player');
+    const channelList = document.getElementById('channelList');
+    const categoryList = document.getElementById('categoryList');
+    const nowChannel = document.getElementById('nowChannel');
+    const reconnecting = document.getElementById('reconnecting');
+    const search = document.getElementById('search');
+
+    let channels = [], currentCategory = 'All', freezeCheck, lastTime = 0;
 
     auth.onAuthStateChanged(async user => {
       if (user) {
@@ -147,15 +153,9 @@
         let sessions = snap.val() || {};
         sessions[sessionId] = Date.now();
         const entries = Object.entries(sessions).sort((a,b) => a[1] - b[1]);
-        while (entries.length > 2) {
-          const [oldId] = entries.shift();
-          delete sessions[oldId];
-        }
+        while (entries.length > 2) delete sessions[entries.shift()[0]];
         await ref.set(sessions);
-        if (!sessions[sessionId]) {
-          alert("⚠️ Max 2 devices reached. You’ve been logged out.");
-          return auth.signOut();
-        }
+        if (!sessions[sessionId]) return auth.signOut();
         loginSection.style.display = 'none';
         iptvSection.style.display = 'block';
         loadPlaylist();
@@ -168,39 +168,29 @@
     function login() {
       const email = document.getElementById('email').value.trim();
       const pass = document.getElementById('password').value.trim();
-      auth.signInWithEmailAndPassword(email, pass)
-        .catch(err => {
-          document.getElementById('loginError').innerText = err.message;
-        });
+      auth.signInWithEmailAndPassword(email, pass).catch(e => {
+        document.getElementById('loginError').innerText = e.message;
+      });
     }
 
     function logout() {
       const user = auth.currentUser;
-      if (user) {
-        db.ref(`sessions/${user.uid}/${sessionId}`).remove();
-      }
+      if (user) db.ref(`sessions/${user.uid}/${sessionId}`).remove();
       auth.signOut();
     }
 
     window.addEventListener("beforeunload", () => {
       const user = auth.currentUser;
-      if (user) {
-        db.ref(`sessions/${user.uid}/${sessionId}`).remove();
-      }
+      if (user) db.ref(`sessions/${user.uid}/${sessionId}`).remove();
     });
 
-    // IPTV Logic
-    const M3U_URL = 'https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/IPTVPREMIUM.m3u';
-    const video = document.getElementById('player');
-    const channelList = document.getElementById('channelList');
-    const categoryList = document.getElementById('categoryList');
-    const nowChannel = document.getElementById('nowChannel');
-    const reconnecting = document.getElementById('reconnecting');
-    const search = document.getElementById('search');
-
-    let channels = [];
-    let currentCategory = 'All';
-    let freezeCheck, lastTime = 0;
+    async function loadPlaylist() {
+      const res = await fetch(M3U_URL);
+      const text = await res.text();
+      channels = parseM3U(text);
+      renderCategories();
+      renderChannels();
+    }
 
     function parseM3U(data) {
       const lines = data.split('\n');
@@ -219,14 +209,6 @@
         }
       });
       return items;
-    }
-
-    async function loadPlaylist() {
-      const res = await fetch(M3U_URL);
-      const text = await res.text();
-      channels = parseM3U(text);
-      renderCategories();
-      renderChannels();
     }
 
     function renderCategories() {
@@ -248,18 +230,12 @@
 
     function renderChannels() {
       const term = search.value.toLowerCase();
-      const filtered = channels.filter(c =>
-        (currentCategory === 'All' || c.group === currentCategory) &&
-        c.name.toLowerCase().includes(term)
-      );
+      const filtered = channels.filter(c => (currentCategory === 'All' || c.group === currentCategory) && c.name.toLowerCase().includes(term));
       channelList.innerHTML = '';
       filtered.forEach(c => {
         const div = document.createElement('div');
         div.className = 'channel';
-        div.innerHTML = `
-          <img src="${c.logo}" onerror="this.src='https://via.placeholder.com/150x70?text=No+Logo'" />
-          <p>${c.name}</p>
-        `;
+        div.innerHTML = `<img src="${c.logo}" onerror="this.src='https://via.placeholder.com/150x70?text=No+Logo'" /><p>${c.name}</p>`;
         div.onclick = () => playChannel(c);
         channelList.appendChild(div);
       });
@@ -268,7 +244,7 @@
     function playChannel(channel) {
       video.src = channel.url;
       video.play();
-      nowChannel.textContent = `Now Playing: ${channel.name}`;
+      nowChannel.innerHTML = channel.name;
     }
 
     function startFreezeMonitor() {
