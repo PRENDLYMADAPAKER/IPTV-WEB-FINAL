@@ -2,47 +2,48 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>NZM IPTV</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Orbitron', sans-serif;
-    }
-    body, html {
-      height: 100%;
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Orbitron', sans-serif; }
+    body, html { height: 100%; background: black; color: white; }
+
+    #loginSection {
       background: url('https://i.imgur.com/yeftKeD.jpeg') no-repeat center center fixed;
       background-size: cover;
-      color: white;
-    }
-    #loginSection {
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
     }
+
     .login-box {
-      background: rgba(0, 0, 0, 0.6);
+      background: rgba(0, 0, 0, 0.65);
       backdrop-filter: blur(10px);
       padding: 30px 40px;
       border-radius: 15px;
       text-align: center;
     }
+
+    .login-box h2 {
+      margin-bottom: 20px;
+      color: #fff;
+    }
+
     .login-box input {
       display: block;
-      width: 100%;
+      width: 250px;
       margin: 10px auto;
-      padding: 12px;
+      padding: 10px;
       font-size: 16px;
       border: none;
       border-radius: 8px;
     }
+
     .login-box button {
       background: hotpink;
       color: white;
@@ -54,48 +55,58 @@
       font-size: 16px;
       margin-top: 10px;
     }
+
     #iptvSection {
       display: none;
       padding: 10px;
+      background: url('https://i.imgur.com/yeftKeD.jpeg') no-repeat center center fixed;
+      background-size: cover;
     }
+
     .header {
       display: flex;
       align-items: center;
       gap: 10px;
       margin-bottom: 10px;
     }
+
     .header img {
       width: 60px;
       height: 60px;
       border-radius: 100%;
     }
+
     .logout-btn {
       margin-left: auto;
       background: #ff0040;
-      padding: 6px 15px;
+      padding: 6px 16px;
       border-radius: 8px;
       cursor: pointer;
       font-size: 14px;
     }
+
     video {
       width: 100%;
       border-radius: 10px;
       background: black;
     }
+
     #nowChannel {
       margin: 10px 0;
       font-size: 18px;
       font-weight: bold;
       text-align: center;
     }
+
     .carousel {
       display: flex;
       overflow-x: auto;
       gap: 8px;
-      padding: 10px 0;
+      padding: 10px;
       white-space: nowrap;
       scroll-snap-type: x mandatory;
     }
+
     .carousel button {
       scroll-snap-align: start;
       flex-shrink: 0;
@@ -106,9 +117,11 @@
       padding: 8px 16px;
       cursor: pointer;
     }
+
     .carousel button.active {
       background: hotpink;
     }
+
     #search {
       width: 100%;
       padding: 10px;
@@ -116,6 +129,7 @@
       border-radius: 8px;
       font-size: 16px;
     }
+
     #channelList {
       display: flex;
       overflow-x: auto;
@@ -123,24 +137,28 @@
       gap: 10px;
       padding: 10px 0;
     }
+
     .channel {
       flex: 0 0 48%;
       scroll-snap-align: start;
-      background: rgba(255,255,255,0.1);
+      background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(6px);
       border-radius: 12px;
       padding: 10px;
       text-align: center;
       transition: transform 0.2s;
     }
+
     .channel:hover {
       transform: scale(1.05);
     }
+
     .channel img {
       width: 100%;
       max-height: 100px;
       object-fit: contain;
     }
+
     #reconnecting {
       display: none;
       background: #0009;
@@ -148,6 +166,7 @@
       text-align: center;
       padding: 10px;
       border-radius: 8px;
+      margin-top: 5px;
     }
   </style>
 </head>
@@ -193,15 +212,6 @@ localStorage.setItem('sessionId', sessionId);
 const loginSection = document.getElementById('loginSection');
 const iptvSection = document.getElementById('iptvSection');
 
-let activityTimer;
-function resetActivityTimer() {
-  clearTimeout(activityTimer);
-  activityTimer = setTimeout(() => logout(), 60 * 60 * 1000);
-}
-['click', 'keydown', 'mousemove', 'touchstart'].forEach(evt =>
-  document.addEventListener(evt, resetActivityTimer)
-);
-
 auth.onAuthStateChanged(async user => {
   if (user) {
     const uid = user.uid;
@@ -210,38 +220,33 @@ auth.onAuthStateChanged(async user => {
     let sessions = snapshot.val() || {};
     const now = Date.now();
 
-    // Remove expired sessions
-    for (const [id, s] of Object.entries(sessions)) {
-      if (s.expiresAt && now > s.expiresAt) {
+    const thisSession = sessions[sessionId];
+    const expired = thisSession && thisSession.timestamp && (now - thisSession.timestamp > 3600000);
+
+    Object.entries(sessions).forEach(([id, data]) => {
+      if (!data.timestamp || (now - data.timestamp > 3600000)) {
         delete sessions[id];
       }
-    }
+    });
 
-    // Add/update this session
-    sessions[sessionId] = {
-      loginTime: now,
-      expiresAt: now + 3600000 // 1 hour
-    };
-
-    // Keep only 2 most recent
-    const sorted = Object.entries(sessions).sort((a, b) => a[1].loginTime - b[1].loginTime);
-    while (sorted.length > 2) {
-      const [oldId] = sorted.shift();
-      delete sessions[oldId];
-    }
-
-    await userSessionsRef.set(sessions);
-
-    // Check if this session was removed
-    if (!sessions[sessionId]) {
-      alert("Max 2 devices reached. You've been logged out.");
+    if (expired) {
+      alert("Your 1 hour offline session has expired. To watch on NZM IPTV, just login again.");
+      delete sessions[sessionId];
+      await userSessionsRef.set(sessions);
       return auth.signOut();
     }
 
+    sessions[sessionId] = { timestamp: now };
+
+    if (Object.keys(sessions).length > 2 && !sessions[sessionId]) {
+      alert("Max 2 devices already in use. Please logout from another device.");
+      return auth.signOut();
+    }
+
+    await userSessionsRef.set(sessions);
     loginSection.style.display = 'none';
     iptvSection.style.display = 'block';
     loadPlaylist();
-    resetActivityTimer();
   } else {
     loginSection.style.display = 'flex';
     iptvSection.style.display = 'none';
@@ -354,7 +359,7 @@ function startFreezeMonitor() {
 }
 video.addEventListener('play', startFreezeMonitor);
 search.addEventListener('input', renderChannels);
-setInterval(loadPlaylist, 180000); // 3 mins
+setInterval(loadPlaylist, 180000);
 </script>
 </body>
 </html>
