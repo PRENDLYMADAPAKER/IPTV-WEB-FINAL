@@ -6,11 +6,10 @@
   <title>NZM IPTV</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Orbitron', sans-serif; }
     body, html { height: 100%; background: black; color: white; }
-
     #loginSection {
       background: url('https://i.imgur.com/yeftKeD.jpeg') no-repeat center center fixed;
       background-size: cover;
@@ -19,7 +18,6 @@
       align-items: center;
       height: 100vh;
     }
-
     .login-box {
       background: rgba(0, 0, 0, 0.65);
       backdrop-filter: blur(10px);
@@ -27,7 +25,6 @@
       border-radius: 15px;
       text-align: center;
     }
-
     .login-box h2 { margin-bottom: 20px; color: #fff; }
     .login-box input {
       display: block;
@@ -38,7 +35,6 @@
       border: none;
       border-radius: 8px;
     }
-
     .login-box button {
       background: hotpink;
       color: white;
@@ -50,14 +46,12 @@
       font-size: 16px;
       margin-top: 10px;
     }
-
     #iptvSection {
       display: none;
       padding: 10px;
       background: url('https://i.imgur.com/yeftKeD.jpeg') no-repeat center center fixed;
       background-size: cover;
     }
-
     .header {
       display: flex;
       align-items: center;
@@ -73,10 +67,8 @@
       cursor: pointer;
       font-size: 14px;
     }
-
     video { width: 100%; border-radius: 10px; background: black; }
     #nowChannel { margin: 10px 0; font-size: 18px; font-weight: bold; text-align: center; }
-
     .carousel {
       display: flex;
       overflow-x: auto;
@@ -96,7 +88,6 @@
       cursor: pointer;
     }
     .carousel button.active { background: hotpink; }
-
     #search {
       width: 100%;
       padding: 10px;
@@ -104,7 +95,6 @@
       border-radius: 8px;
       font-size: 16px;
     }
-
     #channelList {
       display: flex;
       overflow-x: auto;
@@ -124,7 +114,6 @@
     }
     .channel:hover { transform: scale(1.05); }
     .channel img { width: 100%; max-height: 100px; object-fit: contain; }
-
     #reconnecting {
       display: none;
       background: #0009;
@@ -142,7 +131,7 @@
       <h2>NZM IPTV Login</h2>
       <input type="text" id="email" placeholder="Username">
       <input type="password" id="password" placeholder="Password">
-      <button onclick="login()">Login</button>
+      <button id="loginBtn">Login</button>
       <p id="loginError" style="color:red;margin-top:10px"></p>
     </div>
   </div>
@@ -162,105 +151,71 @@
 
 <script>
 const firebaseConfig = {
-  apiKey: "AIzaSyA0TjMoFSYBIs0VQ9shUilOuDGb1uXHjKI",
-  authDomain: "iptv-log-in.firebaseapp.com",
-  databaseURL: "https://iptv-log-in-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "iptv-log-in",
-  storageBucket: "iptv-log-in.appspot.com",
-  messagingSenderId: "820026131349",
-  appId: "1:820026131349:web:417abd6ad9057c55a92c9c"
+  apiKey: "AIzaSyDssixgarRWvLMKtUsX7HLEt8uPGmNIRak",
+  authDomain: "iptv-login-3204b.firebaseapp.com",
+  databaseURL: "https://iptv-login-3204b-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "iptv-login-3204b",
+  storageBucket: "iptv-login-3204b.appspot.com",
+  messagingSenderId: "464216999882",
+  appId: "1:464216999882:web:d7e1f7d44adacd8b46b133"
 };
 firebase.initializeApp(firebaseConfig);
-// Firebase Auth removed
 const db = firebase.database();
 const sessionId = localStorage.getItem('sessionId') || crypto.randomUUID();
 localStorage.setItem('sessionId', sessionId);
 const loginSection = document.getElementById('loginSection');
 const iptvSection = document.getElementById('iptvSection');
 
-let inactivityTimer, sessionTimeout;
-const OFFLINE_LIMIT = 60 * 60 * 1000;
-function trackOfflineExpiry(uid) {
-  sessionTimeout = setInterval(async () => {
-    const snap = await db.ref(`sessions/${uid}/${sessionId}`).once('value');
-    const session = snap.val();
-    if (session && session.expire && Date.now() > session.expire) {
-      alert("Your 1 hour offline session has expired. Please login again.");
-      logout();
-    }
-  }, 10000);
-}
-
-// Removed auth state listener
-
-
-async function login() {
-  const username = document.getElementById('email').value.trim(); // using as username
+document.getElementById("loginBtn").addEventListener("click", async function login() {
+  const username = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value.trim();
   const loginError = document.getElementById('loginError');
   loginError.textContent = "";
 
   if (!username || !password) {
-    loginError.textContent = "Please enter both username and password.";
+    loginError.textContent = "Both fields required.";
     return;
   }
 
   try {
-    const userSnap = await db.ref("users/" + username).once("value");
-    if (!userSnap.exists()) {
-      loginError.textContent = "User not found.";
-      return;
-    }
+    const userRef = db.ref('users/' + username);
+    const snapshot = await userRef.once('value');
+    if (!snapshot.exists()) return loginError.textContent = "User not found.";
 
-    const data = userSnap.val();
-    if (data.password !== password) {
-      loginError.textContent = "Incorrect password.";
-      return;
-    }
-
+    const data = snapshot.val();
+    if (data.password !== password) return loginError.textContent = "Incorrect password.";
     const today = new Date().toISOString().split("T")[0];
-    if (data.expiration < today) {
-      loginError.textContent = "Account expired.";
-      return;
+    if (data.expiration < today) return loginError.textContent = "Account expired.";
+
+    const devicesRef = db.ref('users/' + username + '/devices');
+    const devicesSnap = await devicesRef.once('value');
+    const devices = devicesSnap.val() || {};
+    if (Object.keys(devices).length >= data.device_limit && !devices[sessionId]) {
+      return loginError.textContent = "Device limit reached.";
     }
 
-    const devicesRef = db.ref("users/" + username + "/devices");
-    const deviceSnap = await devicesRef.once("value");
-    const devices = deviceSnap.val() || {};
-    const deviceCount = Object.keys(devices).length;
-
-    if (deviceCount >= data.device_limit && !devices[sessionId]) {
-      loginError.textContent = "Device limit reached.";
-      return;
-    }
-
-    if (!devices[sessionId]) {
-      await devicesRef.child(sessionId).set(true);
-    }
-
+    await devicesRef.child(sessionId).set(true);
     localStorage.setItem("username", username);
     loginSection.style.display = 'none';
     iptvSection.style.display = 'block';
     loadPlaylist();
-
-    // Session tracking
     setInterval(() => {
-      db.ref("users/" + username + "/devices/" + sessionId).set(true);
+      devicesRef.child(sessionId).set(true);
     }, 60000);
-
   } catch (err) {
     loginError.textContent = "Login error: " + err.message;
   }
-}
-);
-}
-function logout() {
-  // Removed user session cleanup
-  // Removed signOut
-}
-window.addEventListener("beforeunload", () => {
-  // Removed user session cleanup
 });
+
+function logout() {
+  const username = localStorage.getItem("username");
+  if (username) {
+    db.ref('users/' + username + '/devices/' + sessionId).remove();
+    localStorage.removeItem("username");
+  }
+  loginSection.style.display = 'flex';
+  iptvSection.style.display = 'none';
+}
 
 const M3U_URL = 'https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/IPTVPREMIUM.m3u';
 const video = document.getElementById('player');
@@ -269,12 +224,10 @@ const categoryList = document.getElementById('categoryList');
 const nowChannel = document.getElementById('nowChannel');
 const reconnecting = document.getElementById('reconnecting');
 const search = document.getElementById('search');
-let channels = [];
-let currentCategory = 'All';
-let freezeCheck, lastTime = 0;
+let channels = [], currentCategory = 'All', freezeCheck, lastTime = 0;
 
 function parseM3U(data) {
-  const lines = data.split('\n');
+  const lines = data.split('\\n');
   const items = [];
   let current = {};
   lines.forEach(line => {
@@ -291,15 +244,12 @@ function parseM3U(data) {
   });
   return items;
 }
-
 async function loadPlaylist() {
   const res = await fetch(M3U_URL);
   const text = await res.text();
   channels = parseM3U(text);
-  renderCategories();
-  renderChannels();
+  renderCategories(); renderChannels();
 }
-
 function renderCategories() {
   const groups = ['All', ...new Set(channels.map(c => c.group))];
   categoryList.innerHTML = '';
@@ -316,7 +266,6 @@ function renderCategories() {
     categoryList.appendChild(btn);
   });
 }
-
 function renderChannels() {
   const term = search.value.toLowerCase();
   const filtered = channels.filter(c =>
@@ -332,13 +281,11 @@ function renderChannels() {
     channelList.appendChild(div);
   });
 }
-
 function playChannel(channel) {
   video.src = channel.url;
   video.play();
   nowChannel.innerHTML = `${channel.name}`;
 }
-
 function startFreezeMonitor() {
   clearInterval(freezeCheck);
   freezeCheck = setInterval(() => {
@@ -354,7 +301,6 @@ function startFreezeMonitor() {
     }
   }, 5000);
 }
-
 video.addEventListener('play', startFreezeMonitor);
 search.addEventListener('input', renderChannels);
 setInterval(loadPlaylist, 180000);
