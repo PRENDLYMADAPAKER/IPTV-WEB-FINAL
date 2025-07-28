@@ -227,7 +227,7 @@ const search = document.getElementById('search');
 let channels = [], currentCategory = 'All', freezeCheck, lastTime = 0;
 
 function parseM3U(data) {
-  const lines = data.split('\\n');
+  const lines = data.split('\n'); // ✅ FIXED HERE
   const items = [];
   let current = {};
   lines.forEach(line => {
