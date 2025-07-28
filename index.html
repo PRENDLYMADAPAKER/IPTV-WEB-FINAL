@@ -162,12 +162,14 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-const loginSection = document.getElementById('loginSection');
-const iptvSection = document.getElementById('iptvSection');
 const sessionId = localStorage.getItem('sessionId') || crypto.randomUUID();
 localStorage.setItem('sessionId', sessionId);
+const loginSection = document.getElementById('loginSection');
+const iptvSection = document.getElementById('iptvSection');
 
-document.getElementById("loginBtn").addEventListener("click", async function login() {
+document.getElementById("loginBtn").addEventListener("click", login);
+
+async function login() {
   const username = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value.trim();
   const loginError = document.getElementById('loginError');
@@ -206,7 +208,7 @@ document.getElementById("loginBtn").addEventListener("click", async function log
   } catch (err) {
     loginError.textContent = "Login error: " + err.message;
   }
-});
+}
 
 function logout() {
   const username = localStorage.getItem("username");
@@ -320,9 +322,38 @@ function startFreezeMonitor() {
 
 video.addEventListener('play', startFreezeMonitor);
 search.addEventListener('input', renderChannels);
+setInterval(loadPlaylist, 180000); // refresh playlist every 3 minutes
 
-// 🔁 Auto-refresh playlist every 3 minutes
-setInterval(loadPlaylist, 180000);
+// ✅ Auto-login on page reload
+window.onload = async function () {
+  const username = localStorage.getItem("username");
+  if (username) {
+    try {
+      const userRef = db.ref('users/' + username);
+      const snapshot = await userRef.once('value');
+      if (!snapshot.exists()) return;
+
+      const data = snapshot.val();
+      const today = new Date().toISOString().split("T")[0];
+      if (data.expiration < today) return;
+
+      const devices = data.devices || {};
+      if (Object.keys(devices).length >= data.device_limit && !devices[sessionId]) {
+        return;
+      }
+
+      await db.ref('users/' + username + '/devices/' + sessionId).set(true);
+      loginSection.style.display = 'none';
+      iptvSection.style.display = 'block';
+      loadPlaylist();
+      setInterval(() => {
+        db.ref('users/' + username + '/devices/' + sessionId).set(true);
+      }, 60000);
+    } catch (err) {
+      console.log("Auto-login failed:", err.message);
+    }
+  }
+};
 </script>
 </body>
 </html>
