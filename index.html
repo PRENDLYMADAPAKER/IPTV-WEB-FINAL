@@ -10,7 +10,6 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Orbitron', sans-serif; }
     body, html { height: 100%; background: black; color: white; }
-
     #loginSection {
       background: url('https://i.imgur.com/yeftKeD.jpeg') no-repeat center center fixed;
       background-size: cover;
@@ -19,7 +18,6 @@
       align-items: center;
       height: 100vh;
     }
-
     .login-box {
       background: rgba(0, 0, 0, 0.65);
       backdrop-filter: blur(10px);
@@ -27,7 +25,6 @@
       border-radius: 15px;
       text-align: center;
     }
-
     .login-box h2 { margin-bottom: 20px; color: #fff; }
     .login-box input {
       display: block;
@@ -38,7 +35,6 @@
       border: none;
       border-radius: 8px;
     }
-
     .login-box button {
       background: hotpink;
       color: white;
@@ -50,23 +46,19 @@
       font-size: 16px;
       margin-top: 10px;
     }
-
     #iptvSection {
       display: none;
       padding: 10px;
       background: url('https://i.imgur.com/yeftKeD.jpeg') no-repeat center center fixed;
       background-size: cover;
     }
-
     .header {
       display: flex;
       align-items: center;
       gap: 10px;
       margin-bottom: 10px;
     }
-
     .header img { width: 60px; height: 60px; border-radius: 100%; }
-
     .logout-btn {
       margin-left: auto;
       background: #ff0040;
@@ -75,11 +67,8 @@
       cursor: pointer;
       font-size: 14px;
     }
-
     video { width: 100%; border-radius: 10px; background: black; }
-
     #nowChannel { margin: 10px 0; font-size: 18px; font-weight: bold; text-align: center; }
-
     .carousel {
       display: flex;
       overflow-x: auto;
@@ -88,7 +77,6 @@
       white-space: nowrap;
       scroll-snap-type: x mandatory;
     }
-
     .carousel button {
       scroll-snap-align: start;
       flex-shrink: 0;
@@ -99,9 +87,7 @@
       padding: 8px 16px;
       cursor: pointer;
     }
-
     .carousel button.active { background: hotpink; }
-
     #search {
       width: 100%;
       padding: 10px;
@@ -109,7 +95,6 @@
       border-radius: 8px;
       font-size: 16px;
     }
-
     #channelList {
       display: flex;
       overflow-x: auto;
@@ -117,7 +102,6 @@
       gap: 10px;
       padding: 10px 0;
     }
-
     .channel {
       flex: 0 0 48%;
       scroll-snap-align: start;
@@ -128,10 +112,8 @@
       text-align: center;
       transition: transform 0.2s;
     }
-
     .channel:hover { transform: scale(1.05); }
     .channel img { width: 100%; max-height: 100px; object-fit: contain; }
-
     #reconnecting {
       display: none;
       background: #0009;
@@ -144,28 +126,28 @@
   </style>
 </head>
 <body>
-  <div id="loginSection">
-    <div class="login-box">
-      <h2>NZM IPTV Login</h2>
-      <input type="text" id="email" placeholder="Username">
-      <input type="password" id="password" placeholder="Password">
-      <button id="loginBtn">Login</button>
-      <p id="loginError" style="color:red;margin-top:10px"></p>
-    </div>
+<div id="loginSection">
+  <div class="login-box">
+    <h2>NZM IPTV Login</h2>
+    <input type="text" id="email" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button id="loginBtn">Login</button>
+    <p id="loginError" style="color:red;margin-top:10px"></p>
   </div>
+</div>
 
-  <div id="iptvSection">
-    <div class="header">
-      <img src="logo.png" alt="Logo">
-      <div class="logout-btn" onclick="logout()">Logout</div>
-    </div>
-    <video id="player" controls autoplay></video>
-    <div id="reconnecting">Reconnecting stream...</div>
-    <div id="nowChannel">Now Playing</div>
-    <input type="text" id="search" placeholder="Search channels...">
-    <div id="categoryList" class="carousel"></div>
-    <div id="channelList"></div>
+<div id="iptvSection">
+  <div class="header">
+    <img src="logo.png" alt="Logo">
+    <div class="logout-btn" onclick="logout()">Logout</div>
   </div>
+  <video id="player" controls autoplay></video>
+  <div id="reconnecting">Reconnecting stream...</div>
+  <div id="nowChannel">Now Playing</div>
+  <input type="text" id="search" placeholder="Search channels...">
+  <div id="categoryList" class="carousel"></div>
+  <div id="channelList"></div>
+</div>
 
   <script>
 const firebaseConfig = {
@@ -180,10 +162,10 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-const sessionId = localStorage.getItem('sessionId') || crypto.randomUUID();
-localStorage.setItem('sessionId', sessionId);
 const loginSection = document.getElementById('loginSection');
 const iptvSection = document.getElementById('iptvSection');
+const sessionId = localStorage.getItem('sessionId') || crypto.randomUUID();
+localStorage.setItem('sessionId', sessionId);
 
 document.getElementById("loginBtn").addEventListener("click", async function login() {
   const username = document.getElementById('email').value.trim();
@@ -226,34 +208,6 @@ document.getElementById("loginBtn").addEventListener("click", async function log
   }
 });
 
-window.onload = async () => {
-  const username = localStorage.getItem("username");
-  const sessionId = localStorage.getItem("sessionId");
-  if (!username || !sessionId) return;
-
-  try {
-    const userRef = db.ref('users/' + username);
-    const snapshot = await userRef.once('value');
-    if (!snapshot.exists()) return;
-
-    const data = snapshot.val();
-    const today = new Date().toISOString().split("T")[0];
-    if (data.expiration < today || data.status !== "active") return;
-
-    const devices = data.devices || {};
-    if (!devices[sessionId]) return;
-
-    loginSection.style.display = 'none';
-    iptvSection.style.display = 'block';
-    loadPlaylist();
-    setInterval(() => {
-      db.ref('users/' + username + '/devices/' + sessionId).set(true);
-    }, 60000);
-  } catch (e) {
-    console.warn("Auto-login failed:", e.message);
-  }
-};
-
 function logout() {
   const username = localStorage.getItem("username");
   if (username) {
@@ -264,8 +218,6 @@ function logout() {
   iptvSection.style.display = 'none';
 }
 
-// 🎥 Playlist Logic
-const M3U_URL = 'https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/IPTVPREMIUM.m3u';
 const video = document.getElementById('player');
 const channelList = document.getElementById('channelList');
 const categoryList = document.getElementById('categoryList');
@@ -295,13 +247,19 @@ function parseM3U(data) {
 
 async function loadPlaylist() {
   try {
-    const res = await fetch(M3U_URL);
+    const username = localStorage.getItem("username");
+    const ref = db.ref("users/" + username + "/playlist");
+    const snap = await ref.once("value");
+    const url = snap.val();
+    if (!url) throw new Error("No playlist found for this user.");
+
+    const res = await fetch(url);
     const text = await res.text();
     channels = parseM3U(text);
     renderCategories();
     renderChannels();
-  } catch (e) {
-    console.error("Failed to load playlist:", e.message);
+  } catch (err) {
+    alert("🔒 Playlist cannot be loaded.\n" + err.message);
   }
 }
 
@@ -362,7 +320,9 @@ function startFreezeMonitor() {
 
 video.addEventListener('play', startFreezeMonitor);
 search.addEventListener('input', renderChannels);
-setInterval(loadPlaylist, 180000); // auto-refresh every 3 mins
+
+// 🔁 Auto-refresh playlist every 3 minutes
+setInterval(loadPlaylist, 180000);
 </script>
 </body>
 </html>
