@@ -23,13 +23,14 @@
       backdrop-filter: blur(8px); text-align: center;
     }
 
-    .login-box input, .login-box button {
+    .login-box input {
       display: block; width: 250px; margin: 10px auto;
       padding: 10px; border-radius: 6px; border: none;
     }
 
     .login-box button {
-      background: hotpink; color: white; font-weight: bold; cursor: pointer;
+      background: hotpink; border: none; color: white; font-weight: bold;
+      padding: 10px 25px; border-radius: 6px; cursor: pointer;
     }
 
     #iptvSection {
@@ -44,12 +45,11 @@
     }
 
     .logout-btn {
-      background: crimson; padding: 8px 16px; border-radius: 6px; cursor: pointer;
+      background: crimson; padding: 8px 16px;
+      border-radius: 6px; cursor: pointer;
     }
 
-    video {
-      width: 100%; border-radius: 10px; background: black;
-    }
+    video { width: 100%; border-radius: 10px; background: black; }
 
     #nowChannel {
       text-align: center; font-weight: bold; margin: 10px 0;
@@ -60,14 +60,9 @@
       font-size: 16px;
     }
 
-    .carousel-wrapper {
-      position: relative;
-    }
-
     .carousel, #channelList {
       display: flex; overflow-x: auto; gap: 8px;
       padding: 10px 0;
-      scroll-behavior: smooth;
     }
 
     .carousel button {
@@ -81,28 +76,20 @@
 
     .channel {
       flex: 0 0 48%;
-      background: rgba(255,255,255,0.1); border-radius: 10px;
-      text-align: center; padding: 10px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px; text-align: center;
+      padding: 10px;
     }
 
     .channel img {
-      width: 100%; max-height: 100px; object-fit: contain;
+      width: 100%; max-height: 100px;
+      object-fit: contain;
     }
 
     #reconnecting {
-      text-align: center; color: red; display: none; margin: 5px 0;
+      text-align: center; color: red; display: none;
+      margin: 5px 0;
     }
-
-    .scroll-btn {
-      position: absolute;
-      top: 50%; transform: translateY(-50%);
-      background: rgba(0,0,0,0.6); border: none;
-      padding: 8px; cursor: pointer;
-      z-index: 2;
-    }
-
-    .scroll-left { left: -10px; }
-    .scroll-right { right: -10px; }
   </style>
 </head>
 <body>
@@ -122,25 +109,12 @@
     <img src="logo.png" alt="Logo" style="width:60px;height:60px;border-radius:50%;" />
     <div class="logout-btn" onclick="logout()">Logout</div>
   </div>
-
   <video id="player" controls autoplay></video>
   <div id="reconnecting">Reconnecting stream...</div>
   <div id="nowChannel">Now Playing</div>
   <input type="text" id="search" placeholder="Search channels..." />
-
-  <!-- CATEGORY SCROLLER -->
-  <div class="carousel-wrapper">
-    <button class="scroll-btn scroll-left" onclick="scrollElement(categoryList, -200)">⏪</button>
-    <div id="categoryList" class="carousel"></div>
-    <button class="scroll-btn scroll-right" onclick="scrollElement(categoryList, 200)">⏩</button>
-  </div>
-
-  <!-- CHANNEL GRID -->
-  <div class="carousel-wrapper">
-    <button class="scroll-btn scroll-left" onclick="scrollElement(channelList, -300)">⏪</button>
-    <div id="channelList"></div>
-    <button class="scroll-btn scroll-right" onclick="scrollElement(channelList, 300)">⏩</button>
-  </div>
+  <div id="categoryList" class="carousel"></div>
+  <div id="channelList"></div>
 </div>
 
 <script>
@@ -288,11 +262,19 @@ function playChannel(channel) {
     const hls = new Hls();
     hls.loadSource(channel.url);
     hls.attachMedia(video);
-    hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      video.play();
+    });
+    hls.on(Hls.Events.ERROR, (e, data) => {
+      nowChannel.textContent = "⚠️ Failed to play channel.";
+    });
   } else {
     video.src = channel.url;
-    video.play().catch(() => nowChannel.textContent = "⚠️ Video playback error.");
+    video.play().catch(err => {
+      nowChannel.textContent = "⚠️ Video playback error.";
+    });
   }
+
   nowChannel.textContent = `Now Playing: ${channel.name}`;
 }
 
@@ -336,11 +318,6 @@ window.addEventListener('load', async () => {
   iptvSection.style.display = 'block';
   loadPlaylist();
 });
-
-// Scroll function
-function scrollElement(el, amount) {
-  el.scrollBy({ left: amount, behavior: 'smooth' });
-}
 </script>
 </body>
 </html>
