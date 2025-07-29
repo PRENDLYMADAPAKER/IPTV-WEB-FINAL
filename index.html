@@ -1,103 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>NZM IPTV</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet" />
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
     * { box-sizing: border-box; font-family: 'Orbitron', sans-serif; }
-    body, html {
-      margin: 0; padding: 0; height: 100%;
-      background: black; color: white;
-    }
+    body, html { margin: 0; padding: 0; height: 100%; background: black; color: white; }
+
     #loginSection {
       display: flex; justify-content: center; align-items: center;
-      height: 100vh;
-      background: url('https://i.imgur.com/yeftKeD.jpeg') no-repeat center center fixed;
+      height: 100vh; background: url('https://i.imgur.com/yeftKeD.jpeg') no-repeat center center fixed;
       background-size: cover;
     }
+
     .login-box {
       background: rgba(0,0,0,0.6); padding: 30px 40px; border-radius: 12px;
       backdrop-filter: blur(8px); text-align: center;
     }
+
     .login-box input {
       display: block; width: 250px; margin: 10px auto;
       padding: 10px; border-radius: 6px; border: none;
     }
+
     .login-box button {
       background: hotpink; border: none; color: white; font-weight: bold;
       padding: 10px 25px; border-radius: 6px; cursor: pointer;
     }
+
     #iptvSection {
-      display: none;
-      min-height: 100vh;
+      display: none; min-height: 100vh;
       background: url('https://i.imgur.com/yeftKeD.jpeg') no-repeat center center fixed;
-      background-size: cover;
-      padding: 10px;
+      background-size: cover; padding: 10px;
     }
+
     .header {
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 10px;
     }
+
     .logout-btn {
       background: crimson; padding: 8px 16px;
       border-radius: 6px; cursor: pointer;
     }
-    video {
-      width: 100%; border-radius: 10px;
-      background: black;
-    }
+
+    video { width: 100%; border-radius: 10px; background: black; }
+
     #nowChannel {
       text-align: center; font-weight: bold; margin: 10px 0;
     }
+
     #search {
       width: 100%; padding: 10px; border-radius: 8px; margin: 10px 0;
       font-size: 16px;
     }
+
     .carousel, #channelList {
       display: flex; overflow-x: auto; gap: 8px;
       padding: 10px 0;
     }
+
     .carousel button {
       background: #222; color: white; border: none;
       padding: 6px 12px; border-radius: 20px; white-space: nowrap;
     }
+
     .carousel button.active {
       background: hotpink;
     }
+
     .channel {
       flex: 0 0 48%;
       background: rgba(255,255,255,0.1);
       border-radius: 10px; text-align: center;
       padding: 10px;
     }
+
     .channel img {
       width: 100%; max-height: 100px;
       object-fit: contain;
     }
+
     #reconnecting {
       text-align: center; color: red; display: none;
       margin: 5px 0;
-    }
-    .scroll-buttons {
-      display: flex; justify-content: space-between;
-    }
-    .scroll-buttons button {
-      background: rgba(255, 255, 255, 0.1);
-      color: white;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .scroll-buttons button:hover {
-      background: hotpink;
     }
   </style>
 </head>
@@ -106,8 +97,8 @@
 <div id="loginSection">
   <div class="login-box">
     <h2>NZM IPTV Login</h2>
-    <input type="text" id="email" placeholder="Username">
-    <input type="password" id="password" placeholder="Password">
+    <input type="text" id="email" placeholder="Username" />
+    <input type="password" id="password" placeholder="Password" />
     <button id="loginBtn">Login</button>
     <p id="loginError" style="color:red;"></p>
   </div>
@@ -115,24 +106,14 @@
 
 <div id="iptvSection">
   <div class="header">
-    <img src="logo.png" alt="Logo" style="width:60px;height:60px;border-radius:50%;">
+    <img src="logo.png" alt="Logo" style="width:60px;height:60px;border-radius:50%;" />
     <div class="logout-btn" onclick="logout()">Logout</div>
   </div>
   <video id="player" controls autoplay></video>
   <div id="reconnecting">Reconnecting stream...</div>
   <div id="nowChannel">Now Playing</div>
-  <input type="text" id="search" placeholder="Search channels...">
-
-  <div class="scroll-buttons">
-    <button onclick="scrollCarousel('categoryList', -200)">⏪</button>
-    <button onclick="scrollCarousel('categoryList', 200)">⏩</button>
-  </div>
+  <input type="text" id="search" placeholder="Search channels..." />
   <div id="categoryList" class="carousel"></div>
-
-  <div class="scroll-buttons">
-    <button onclick="scrollCarousel('channelList', -300)">⏪</button>
-    <button onclick="scrollCarousel('channelList', 300)">⏩</button>
-  </div>
   <div id="channelList"></div>
 </div>
 
@@ -167,10 +148,7 @@ document.getElementById("loginBtn").addEventListener("click", async () => {
   const password = document.getElementById("password").value.trim();
   const loginError = document.getElementById("loginError");
 
-  if (!username || !password) {
-    loginError.textContent = "Both fields required.";
-    return;
-  }
+  if (!username || !password) return loginError.textContent = "Both fields required.";
 
   try {
     const userRef = db.ref('users/' + username);
@@ -279,22 +257,25 @@ function renderChannels() {
 }
 
 function playChannel(channel) {
-  if (Hls.isSupported()) {
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (!isMobile && Hls.isSupported() && channel.url.endsWith(".m3u8")) {
     const hls = new Hls();
     hls.loadSource(channel.url);
     hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      video.play();
+    });
+    hls.on(Hls.Events.ERROR, (e, data) => {
+      nowChannel.textContent = "⚠️ Failed to play channel.";
+    });
   } else {
     video.src = channel.url;
+    video.play().catch(err => {
+      nowChannel.textContent = "⚠️ Video playback error.";
+    });
   }
-  video.play();
-  nowChannel.textContent = `Now Playing: ${channel.name}`;
-}
 
-function scrollCarousel(id, offset) {
-  const el = document.getElementById(id);
-  if (el) {
-    el.scrollBy({ left: offset, behavior: 'smooth' });
-  }
+  nowChannel.textContent = `Now Playing: ${channel.name}`;
 }
 
 function startFreezeMonitor() {
