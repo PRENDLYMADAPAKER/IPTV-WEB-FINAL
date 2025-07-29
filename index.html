@@ -11,100 +11,62 @@
   <style>
     * { box-sizing: border-box; font-family: 'Orbitron', sans-serif; }
     body, html { margin: 0; padding: 0; height: 100%; background: black; color: white; }
-
     #loginSection {
       display: flex; justify-content: center; align-items: center;
       height: 100vh; background: url('https://i.imgur.com/yeftKeD.jpeg') no-repeat center center fixed;
       background-size: cover;
     }
-
     .login-box {
       background: rgba(0,0,0,0.6); padding: 30px 40px; border-radius: 12px;
       backdrop-filter: blur(8px); text-align: center;
     }
-
     .login-box input {
       display: block; width: 250px; margin: 10px auto;
       padding: 10px; border-radius: 6px; border: none;
     }
-
     .login-box button {
       background: hotpink; border: none; color: white; font-weight: bold;
       padding: 10px 25px; border-radius: 6px; cursor: pointer;
     }
-
     #iptvSection {
       display: none; min-height: 100vh;
       background: url('https://i.imgur.com/yeftKeD.jpeg') no-repeat center center fixed;
       background-size: cover; padding: 10px;
     }
-
     .header {
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 10px;
     }
-
     .logout-btn {
       background: crimson; padding: 8px 16px;
       border-radius: 6px; cursor: pointer;
     }
-
     video { width: 100%; border-radius: 10px; background: black; }
-
     #nowChannel {
       text-align: center; font-weight: bold; margin: 10px 0;
     }
-
     #search {
       width: 100%; padding: 10px; border-radius: 8px; margin: 10px 0;
       font-size: 16px;
     }
-
     .carousel, #channelList {
       display: flex; overflow-x: auto; gap: 8px;
       padding: 10px 0;
     }
-
     .carousel button {
       background: #222; color: white; border: none;
       padding: 6px 12px; border-radius: 20px; white-space: nowrap;
     }
-
-    .carousel button.active {
-      background: hotpink;
-    }
-
+    .carousel button.active { background: hotpink; }
     .channel {
-      flex: 0 0 48%;
-      background: rgba(255,255,255,0.1);
-      border-radius: 10px; text-align: center;
-      padding: 10px;
+      flex: 0 0 48%; background: rgba(255,255,255,0.1);
+      border-radius: 10px; text-align: center; padding: 10px;
     }
-
     .channel img {
-      width: 100%; max-height: 100px;
-      object-fit: contain;
+      width: 100%; max-height: 100px; object-fit: contain;
     }
-
     #reconnecting {
-      text-align: center; color: red; display: none;
-      margin: 5px 0;
-    }
-
-    .scroll-buttons {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 5px 0;
-    }
-
-    .scroll-buttons button {
-      background: hotpink;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
+      text-align: center; color: red; display: none; margin: 5px 0;
     }
   </style>
 </head>
@@ -125,28 +87,12 @@
     <img src="logo.png" alt="Logo" style="width:60px;height:60px;border-radius:50%;" />
     <div class="logout-btn" onclick="logout()">Logout</div>
   </div>
-
   <video id="player" controls autoplay></video>
   <div id="reconnecting">Reconnecting stream...</div>
   <div id="nowChannel">Now Playing</div>
   <input type="text" id="search" placeholder="Search channels..." />
-
-  <!-- CATEGORY SCROLL BUTTONS -->
-  <div class="scroll-buttons">
-    <button onclick="scrollElement('categoryList', -200)">⏪</button>
-    <span>Categories</span>
-    <button onclick="scrollElement('categoryList', 200)">⏩</button>
-  </div>
   <div id="categoryList" class="carousel"></div>
-
-  <!-- CHANNEL GRID -->
   <div id="channelList" class="carousel"></div>
-  <!-- CHANNEL SCROLL BUTTONS -->
-  <div class="scroll-buttons">
-    <button onclick="scrollElement('channelList', -300)">⏪</button>
-    <span>Channels</span>
-    <button onclick="scrollElement('channelList', 300)">⏩</button>
-  </div>
 </div>
 
 <script>
@@ -171,7 +117,7 @@ const categoryList = document.getElementById('categoryList');
 const nowChannel = document.getElementById('nowChannel');
 const reconnecting = document.getElementById('reconnecting');
 
-let channels = [], currentCategory = 'All', freezeCheck, lastTime = 0;
+let channels = [], currentCategory = 'All';
 let sessionId = localStorage.getItem('sessionId') || crypto.randomUUID();
 localStorage.setItem('sessionId', sessionId);
 
@@ -202,9 +148,6 @@ document.getElementById("loginBtn").addEventListener("click", async () => {
     loginSection.style.display = 'none';
     iptvSection.style.display = 'block';
     loadPlaylist();
-    setInterval(() => {
-      db.ref(`users/${username}/devices/${sessionId}`).set(true);
-    }, 60000);
   } catch (e) {
     loginError.textContent = "Login error: " + e.message;
   }
@@ -221,10 +164,7 @@ function logout() {
 }
 
 async function loadPlaylist() {
-  const username = localStorage.getItem("username");
-  const snapshot = await db.ref('users/' + username).once('value');
-  if (!snapshot.exists()) return;
-  const playlistURL = snapshot.val().playlist;
+  const playlistURL = "https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/refs/heads/main/IPTVPREMIUM.m3u";
   try {
     const res = await fetch(playlistURL);
     const text = await res.text();
@@ -282,7 +222,8 @@ function renderChannels() {
   filtered.forEach(c => {
     const div = document.createElement('div');
     div.className = 'channel';
-    div.innerHTML = `<img src="${c.logo}" onerror="this.src='https://via.placeholder.com/150x70?text=No+Logo'"><p>${c.name}</p>`;
+    div.innerHTML = `<img src="${c.logo}" onerror="this.src='https://via.placeholder.com/150x70?text=No+Logo'">
+                     <p>${c.name}</p>`;
     div.onclick = () => playChannel(c);
     channelList.appendChild(div);
   });
@@ -297,64 +238,14 @@ function playChannel(channel) {
     hls.on(Hls.Events.MANIFEST_PARSED, () => {
       video.play();
     });
-    hls.on(Hls.Events.ERROR, (e, data) => {
-      nowChannel.textContent = "⚠️ Failed to play channel.";
-    });
   } else {
     video.src = channel.url;
-    video.play().catch(err => {
-      nowChannel.textContent = "⚠️ Video playback error.";
+    video.play().catch(() => {
+      nowChannel.textContent = "\u26a0\ufe0f Video playback error.";
     });
   }
-
   nowChannel.textContent = `Now Playing: ${channel.name}`;
 }
-
-function scrollElement(id, amount) {
-  const el = document.getElementById(id);
-  if (el) el.scrollBy({ left: amount, behavior: 'smooth' });
-}
-
-function startFreezeMonitor() {
-  clearInterval(freezeCheck);
-  freezeCheck = setInterval(() => {
-    if (!video.paused && !video.ended) {
-      if (video.currentTime === lastTime) {
-        reconnecting.style.display = 'block';
-        video.load(); video.play();
-      } else {
-        reconnecting.style.display = 'none';
-      }
-      lastTime = video.currentTime;
-    }
-  }, 5000);
-}
-
-video.addEventListener('play', startFreezeMonitor);
-search.addEventListener('input', renderChannels);
-
-window.addEventListener('load', async () => {
-  const savedUser = localStorage.getItem("username");
-  if (!savedUser) return;
-  const snapshot = await db.ref('users/' + savedUser).once('value');
-  if (!snapshot.exists()) return;
-
-  const data = snapshot.val();
-  const today = new Date().toISOString().split("T")[0];
-  const isExpired = data.expiration < today;
-  const devices = data.devices || {};
-  const sessionId = localStorage.getItem('sessionId');
-
-  if (isExpired || (!devices[sessionId] && Object.keys(devices).length >= data.device_limit)) {
-    localStorage.removeItem("username");
-    localStorage.removeItem("sessionId");
-    return;
-  }
-
-  loginSection.style.display = 'none';
-  iptvSection.style.display = 'block';
-  loadPlaylist();
-});
 </script>
 </body>
 </html>
