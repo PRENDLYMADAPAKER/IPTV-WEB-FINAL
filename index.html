@@ -1,144 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>NZM IPTV</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Orbitron', sans-serif; }
-    body, html { height: 100%; background: black; color: white; }
+    * { box-sizing: border-box; font-family: 'Orbitron', sans-serif; }
+    body, html { margin: 0; padding: 0; height: 100%; background: black; color: white; }
+
     #loginSection {
+      display: flex; justify-content: center; align-items: center;
+      height: 100vh;
       background: url('https://i.imgur.com/yeftKeD.jpeg') no-repeat center center fixed;
       background-size: cover;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
     }
+
     .login-box {
-      background: rgba(0, 0, 0, 0.65);
-      backdrop-filter: blur(10px);
-      padding: 30px 40px;
-      border-radius: 15px;
-      text-align: center;
+      background: rgba(0,0,0,0.6); padding: 30px 40px; border-radius: 12px;
+      backdrop-filter: blur(8px); text-align: center;
     }
-    .login-box h2 { margin-bottom: 20px; color: #fff; }
+
     .login-box input {
-      display: block;
-      width: 250px;
-      margin: 10px auto;
-      padding: 10px;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
+      display: block; width: 250px; margin: 10px auto;
+      padding: 10px; border-radius: 6px; border: none;
     }
+
     .login-box button {
-      background: hotpink;
-      color: white;
-      padding: 10px 25px;
-      font-weight: bold;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-      margin-top: 10px;
+      background: hotpink; border: none; color: white; font-weight: bold;
+      padding: 10px 25px; border-radius: 6px; cursor: pointer;
     }
+
     #iptvSection {
       display: none;
       padding: 10px;
       background: url('https://i.imgur.com/yeftKeD.jpeg') no-repeat center center fixed;
       background-size: cover;
     }
+
     .header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 10px;
     }
-    .header img { width: 60px; height: 60px; border-radius: 100%; }
+
     .logout-btn {
-      margin-left: auto;
-      background: #ff0040;
-      padding: 6px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 14px;
+      background: crimson; padding: 8px 16px;
+      border-radius: 6px; cursor: pointer;
     }
-    video { width: 100%; border-radius: 10px; background: black; }
-    #nowChannel { margin: 10px 0; font-size: 18px; font-weight: bold; text-align: center; }
-    .carousel {
-      display: flex;
-      overflow-x: auto;
-      gap: 8px;
-      padding: 10px;
-      white-space: nowrap;
-      scroll-snap-type: x mandatory;
+
+    video {
+      width: 100%; border-radius: 10px;
     }
-    .carousel button {
-      scroll-snap-align: start;
-      flex-shrink: 0;
-      background: #333;
-      color: white;
-      border: none;
-      border-radius: 20px;
-      padding: 8px 16px;
-      cursor: pointer;
+
+    #nowChannel {
+      text-align: center; font-weight: bold; margin: 10px 0;
     }
-    .carousel button.active { background: hotpink; }
+
     #search {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 8px;
+      width: 100%; padding: 10px; border-radius: 8px; margin: 10px 0;
       font-size: 16px;
     }
-    #channelList {
-      display: flex;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      gap: 10px;
+
+    .carousel, #channelList {
+      display: flex; overflow-x: auto; gap: 8px;
       padding: 10px 0;
     }
+
+    .carousel button {
+      background: #222; color: white; border: none;
+      padding: 6px 12px; border-radius: 20px; white-space: nowrap;
+    }
+
+    .carousel button.active {
+      background: hotpink;
+    }
+
     .channel {
       flex: 0 0 48%;
-      scroll-snap-align: start;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(6px);
-      border-radius: 12px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px; text-align: center;
       padding: 10px;
-      text-align: center;
-      transition: transform 0.2s;
     }
-    .channel:hover { transform: scale(1.05); }
-    .channel img { width: 100%; max-height: 100px; object-fit: contain; }
+
+    .channel img {
+      width: 100%; max-height: 100px;
+      object-fit: contain;
+    }
+
     #reconnecting {
-      display: none;
-      background: #0009;
-      color: white;
-      text-align: center;
-      padding: 10px;
-      border-radius: 8px;
-      margin-top: 5px;
+      text-align: center; color: red; display: none;
+      margin: 5px 0;
     }
   </style>
 </head>
 <body>
+
 <div id="loginSection">
   <div class="login-box">
     <h2>NZM IPTV Login</h2>
     <input type="text" id="email" placeholder="Username">
     <input type="password" id="password" placeholder="Password">
     <button id="loginBtn">Login</button>
-    <p id="loginError" style="color:red;margin-top:10px"></p>
+    <p id="loginError" style="color:red;"></p>
   </div>
 </div>
 
 <div id="iptvSection">
   <div class="header">
-    <img src="logo.png" alt="Logo">
+    <img src="logo.png" alt="Logo" style="width:60px;height:60px;border-radius:50%;">
     <div class="logout-btn" onclick="logout()">Logout</div>
   </div>
   <video id="player" controls autoplay></video>
@@ -162,18 +133,23 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-const sessionId = localStorage.getItem('sessionId') || crypto.randomUUID();
-localStorage.setItem('sessionId', sessionId);
 const loginSection = document.getElementById('loginSection');
 const iptvSection = document.getElementById('iptvSection');
+const video = document.getElementById('player');
+const search = document.getElementById('search');
+const channelList = document.getElementById('channelList');
+const categoryList = document.getElementById('categoryList');
+const nowChannel = document.getElementById('nowChannel');
+const reconnecting = document.getElementById('reconnecting');
 
-document.getElementById("loginBtn").addEventListener("click", login);
+let channels = [], currentCategory = 'All', freezeCheck, lastTime = 0;
+let sessionId = localStorage.getItem('sessionId') || crypto.randomUUID();
+localStorage.setItem('sessionId', sessionId);
 
-async function login() {
-  const username = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value.trim();
-  const loginError = document.getElementById('loginError');
-  loginError.textContent = "";
+document.getElementById("loginBtn").addEventListener("click", async () => {
+  const username = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const loginError = document.getElementById("loginError");
 
   if (!username || !password) {
     loginError.textContent = "Both fields required.";
@@ -190,90 +166,77 @@ async function login() {
     const today = new Date().toISOString().split("T")[0];
     if (data.expiration < today) return loginError.textContent = "Account expired.";
 
-    const devicesRef = db.ref('users/' + username + '/devices');
-    const devicesSnap = await devicesRef.once('value');
-    const devices = devicesSnap.val() || {};
-    if (Object.keys(devices).length >= data.device_limit && !devices[sessionId]) {
+    const devices = data.devices || {};
+    if (!devices[sessionId] && Object.keys(devices).length >= data.device_limit) {
       return loginError.textContent = "Device limit reached.";
     }
 
-    await devicesRef.child(sessionId).set(true);
-    localStorage.setItem("username", username);
+    await db.ref(`users/${username}/devices/${sessionId}`).set(true);
+    localStorage.setItem('username', username);
     loginSection.style.display = 'none';
     iptvSection.style.display = 'block';
     loadPlaylist();
     setInterval(() => {
-      devicesRef.child(sessionId).set(true);
+      db.ref(`users/${username}/devices/${sessionId}`).set(true);
     }, 60000);
-  } catch (err) {
-    loginError.textContent = "Login error: " + err.message;
+  } catch (e) {
+    loginError.textContent = "Login error: " + e.message;
   }
-}
+});
 
 function logout() {
-  const username = localStorage.getItem("username");
-  if (username) {
-    db.ref('users/' + username + '/devices/' + sessionId).remove();
+  const user = localStorage.getItem("username");
+  if (user) {
+    db.ref('users/' + user + '/devices/' + sessionId).remove();
     localStorage.removeItem("username");
   }
   loginSection.style.display = 'flex';
   iptvSection.style.display = 'none';
 }
 
-const video = document.getElementById('player');
-const channelList = document.getElementById('channelList');
-const categoryList = document.getElementById('categoryList');
-const nowChannel = document.getElementById('nowChannel');
-const reconnecting = document.getElementById('reconnecting');
-const search = document.getElementById('search');
-let channels = [], currentCategory = 'All', freezeCheck, lastTime = 0;
-
-function parseM3U(data) {
-  const lines = data.split('\n');
-  const items = [];
-  let current = {};
-  lines.forEach(line => {
-    if (line.startsWith('#EXTINF')) {
-      const name = line.match(/,(.*)/)?.[1] || 'Unknown';
-      const logo = line.match(/tvg-logo="(.*?)"/)?.[1] || '';
-      const group = line.match(/group-title="(.*?)"/)?.[1] || 'Other';
-      current = { name, logo, group };
-    } else if (line.startsWith('http')) {
-      current.url = line.trim();
-      items.push(current);
-      current = {};
-    }
-  });
-  return items;
-}
+const username = localStorage.getItem("username");
+const M3U_URL = `https://iptv-proxy-nwat.onrender.com/secure-playlist?user=${username}&session=${sessionId}`;
 
 async function loadPlaylist() {
   try {
-    const username = localStorage.getItem("username");
-    const ref = db.ref("users/" + username + "/playlist");
-    const snap = await ref.once("value");
-    const url = snap.val();
-    if (!url) throw new Error("No playlist found for this user.");
-
-    const res = await fetch(url);
+    const res = await fetch(M3U_URL);
     const text = await res.text();
     channels = parseM3U(text);
     renderCategories();
     renderChannels();
-  } catch (err) {
-    alert("🔒 Playlist cannot be loaded.\n" + err.message);
+  } catch (e) {
+    nowChannel.textContent = "Failed to load playlist.";
   }
+}
+
+function parseM3U(data) {
+  const lines = data.split("\n");
+  const items = [];
+  let temp = {};
+  for (let line of lines) {
+    if (line.startsWith("#EXTINF")) {
+      const name = line.match(/,(.*)/)?.[1] || 'Unknown';
+      const logo = line.match(/tvg-logo="(.*?)"/)?.[1] || '';
+      const group = line.match(/group-title="(.*?)"/)?.[1] || 'Other';
+      temp = { name, logo, group };
+    } else if (line.startsWith("http")) {
+      temp.url = line.trim();
+      items.push(temp);
+      temp = {};
+    }
+  }
+  return items;
 }
 
 function renderCategories() {
   const groups = ['All', ...new Set(channels.map(c => c.group))];
   categoryList.innerHTML = '';
-  groups.forEach(g => {
+  groups.forEach(group => {
     const btn = document.createElement('button');
-    btn.textContent = g;
-    if (g === currentCategory) btn.classList.add('active');
+    btn.textContent = group;
+    if (group === currentCategory) btn.classList.add('active');
     btn.onclick = () => {
-      currentCategory = g;
+      currentCategory = group;
       document.querySelectorAll('.carousel button').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       renderChannels();
@@ -283,16 +246,16 @@ function renderCategories() {
 }
 
 function renderChannels() {
-  const term = search.value.toLowerCase();
+  const keyword = search.value.toLowerCase();
   const filtered = channels.filter(c =>
     (currentCategory === 'All' || c.group === currentCategory) &&
-    c.name.toLowerCase().includes(term)
+    c.name.toLowerCase().includes(keyword)
   );
   channelList.innerHTML = '';
   filtered.forEach(c => {
     const div = document.createElement('div');
     div.className = 'channel';
-    div.innerHTML = `<img src="${c.logo}" onerror="this.src='https://via.placeholder.com/150x70?text=No+Logo'" /><p>${c.name}</p>`;
+    div.innerHTML = `<img src="${c.logo}" onerror="this.src='https://via.placeholder.com/150x70?text=No+Logo'"><p>${c.name}</p>`;
     div.onclick = () => playChannel(c);
     channelList.appendChild(div);
   });
@@ -301,7 +264,7 @@ function renderChannels() {
 function playChannel(channel) {
   video.src = channel.url;
   video.play();
-  nowChannel.innerHTML = `${channel.name}`;
+  nowChannel.textContent = `Now Playing: ${channel.name}`;
 }
 
 function startFreezeMonitor() {
@@ -310,8 +273,7 @@ function startFreezeMonitor() {
     if (!video.paused && !video.ended) {
       if (video.currentTime === lastTime) {
         reconnecting.style.display = 'block';
-        video.load();
-        video.play();
+        video.load(); video.play();
       } else {
         reconnecting.style.display = 'none';
       }
@@ -322,38 +284,7 @@ function startFreezeMonitor() {
 
 video.addEventListener('play', startFreezeMonitor);
 search.addEventListener('input', renderChannels);
-setInterval(loadPlaylist, 180000); // refresh playlist every 3 minutes
-
-// ✅ Auto-login on page reload
-window.onload = async function () {
-  const username = localStorage.getItem("username");
-  if (username) {
-    try {
-      const userRef = db.ref('users/' + username);
-      const snapshot = await userRef.once('value');
-      if (!snapshot.exists()) return;
-
-      const data = snapshot.val();
-      const today = new Date().toISOString().split("T")[0];
-      if (data.expiration < today) return;
-
-      const devices = data.devices || {};
-      if (Object.keys(devices).length >= data.device_limit && !devices[sessionId]) {
-        return;
-      }
-
-      await db.ref('users/' + username + '/devices/' + sessionId).set(true);
-      loginSection.style.display = 'none';
-      iptvSection.style.display = 'block';
-      loadPlaylist();
-      setInterval(() => {
-        db.ref('users/' + username + '/devices/' + sessionId).set(true);
-      }, 60000);
-    } catch (err) {
-      console.log("Auto-login failed:", err.message);
-    }
-  }
-};
+setInterval(loadPlaylist, 180000); // Auto-refresh playlist every 3 mins
 </script>
 </body>
 </html>
