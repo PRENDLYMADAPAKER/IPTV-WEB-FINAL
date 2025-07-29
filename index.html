@@ -90,6 +90,22 @@
       text-align: center; color: red; display: none;
       margin: 5px 0;
     }
+
+    .scroll-buttons {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 5px 0;
+    }
+
+    .scroll-buttons button {
+      background: hotpink;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -109,12 +125,28 @@
     <img src="logo.png" alt="Logo" style="width:60px;height:60px;border-radius:50%;" />
     <div class="logout-btn" onclick="logout()">Logout</div>
   </div>
+
   <video id="player" controls autoplay></video>
   <div id="reconnecting">Reconnecting stream...</div>
   <div id="nowChannel">Now Playing</div>
   <input type="text" id="search" placeholder="Search channels..." />
+
+  <!-- CATEGORY SCROLL BUTTONS -->
+  <div class="scroll-buttons">
+    <button onclick="scrollElement('categoryList', -200)">⏪</button>
+    <span>Categories</span>
+    <button onclick="scrollElement('categoryList', 200)">⏩</button>
+  </div>
   <div id="categoryList" class="carousel"></div>
-  <div id="channelList"></div>
+
+  <!-- CHANNEL GRID -->
+  <div id="channelList" class="carousel"></div>
+  <!-- CHANNEL SCROLL BUTTONS -->
+  <div class="scroll-buttons">
+    <button onclick="scrollElement('channelList', -300)">⏪</button>
+    <span>Channels</span>
+    <button onclick="scrollElement('channelList', 300)">⏩</button>
+  </div>
 </div>
 
 <script>
@@ -276,6 +308,11 @@ function playChannel(channel) {
   }
 
   nowChannel.textContent = `Now Playing: ${channel.name}`;
+}
+
+function scrollElement(id, amount) {
+  const el = document.getElementById(id);
+  if (el) el.scrollBy({ left: amount, behavior: 'smooth' });
 }
 
 function startFreezeMonitor() {
