@@ -1,24 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>NZM IPTV</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet" />
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
     * { box-sizing: border-box; font-family: 'Orbitron', sans-serif; }
-    body, html {
-      margin: 0; padding: 0; height: 100%;
-      background: black; color: white;
-    }
+    body, html { margin: 0; padding: 0; height: 100%; background: black; color: white; }
 
     #loginSection {
       display: flex; justify-content: center; align-items: center;
-      height: 100vh;
-      background: url('https://i.imgur.com/yeftKeD.jpeg') no-repeat center center fixed;
+      height: 100vh; background: url('https://i.imgur.com/yeftKeD.jpeg') no-repeat center center fixed;
       background-size: cover;
     }
 
@@ -27,22 +23,19 @@
       backdrop-filter: blur(8px); text-align: center;
     }
 
-    .login-box input {
+    .login-box input, .login-box button {
       display: block; width: 250px; margin: 10px auto;
       padding: 10px; border-radius: 6px; border: none;
     }
 
     .login-box button {
-      background: hotpink; border: none; color: white; font-weight: bold;
-      padding: 10px 25px; border-radius: 6px; cursor: pointer;
+      background: hotpink; color: white; font-weight: bold; cursor: pointer;
     }
 
     #iptvSection {
-      display: none;
-      min-height: 100vh;
+      display: none; min-height: 100vh;
       background: url('https://i.imgur.com/yeftKeD.jpeg') no-repeat center center fixed;
-      background-size: cover;
-      padding: 10px;
+      background-size: cover; padding: 10px;
     }
 
     .header {
@@ -51,13 +44,11 @@
     }
 
     .logout-btn {
-      background: crimson; padding: 8px 16px;
-      border-radius: 6px; cursor: pointer;
+      background: crimson; padding: 8px 16px; border-radius: 6px; cursor: pointer;
     }
 
     video {
-      width: 100%; border-radius: 10px;
-      background: black;
+      width: 100%; border-radius: 10px; background: black;
     }
 
     #nowChannel {
@@ -67,6 +58,10 @@
     #search {
       width: 100%; padding: 10px; border-radius: 8px; margin: 10px 0;
       font-size: 16px;
+    }
+
+    .carousel-wrapper {
+      position: relative;
     }
 
     .carousel, #channelList {
@@ -86,36 +81,28 @@
 
     .channel {
       flex: 0 0 48%;
-      background: rgba(255,255,255,0.1);
-      border-radius: 10px; text-align: center;
-      padding: 10px;
+      background: rgba(255,255,255,0.1); border-radius: 10px;
+      text-align: center; padding: 10px;
     }
 
     .channel img {
-      width: 100%; max-height: 100px;
-      object-fit: contain;
+      width: 100%; max-height: 100px; object-fit: contain;
     }
 
     #reconnecting {
-      text-align: center; color: red; display: none;
-      margin: 5px 0;
+      text-align: center; color: red; display: none; margin: 5px 0;
     }
 
-    .scrollBtn {
+    .scroll-btn {
       position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      background: rgba(0,0,0,0.5);
-      color: white;
-      border: none;
-      font-size: 20px;
-      padding: 10px;
-      z-index: 10;
-      border-radius: 8px;
-      cursor: pointer;
+      top: 50%; transform: translateY(-50%);
+      background: rgba(0,0,0,0.6); border: none;
+      padding: 8px; cursor: pointer;
+      z-index: 2;
     }
-    #catLeft, #chanLeft { left: 0; }
-    #catRight, #chanRight { right: 0; }
+
+    .scroll-left { left: -10px; }
+    .scroll-right { right: -10px; }
   </style>
 </head>
 <body>
@@ -123,8 +110,8 @@
 <div id="loginSection">
   <div class="login-box">
     <h2>NZM IPTV Login</h2>
-    <input type="text" id="email" placeholder="Username">
-    <input type="password" id="password" placeholder="Password">
+    <input type="text" id="email" placeholder="Username" />
+    <input type="password" id="password" placeholder="Password" />
     <button id="loginBtn">Login</button>
     <p id="loginError" style="color:red;"></p>
   </div>
@@ -132,24 +119,27 @@
 
 <div id="iptvSection">
   <div class="header">
-    <img src="logo.png" alt="Logo" style="width:60px;height:60px;border-radius:50%;">
+    <img src="logo.png" alt="Logo" style="width:60px;height:60px;border-radius:50%;" />
     <div class="logout-btn" onclick="logout()">Logout</div>
   </div>
+
   <video id="player" controls autoplay></video>
   <div id="reconnecting">Reconnecting stream...</div>
   <div id="nowChannel">Now Playing</div>
-  <input type="text" id="search" placeholder="Search channels...">
+  <input type="text" id="search" placeholder="Search channels..." />
 
-  <div style="position:relative">
-    <button id="catLeft" class="scrollBtn" onclick="scrollCategory(-1)">⏪</button>
+  <!-- CATEGORY SCROLLER -->
+  <div class="carousel-wrapper">
+    <button class="scroll-btn scroll-left" onclick="scrollElement(categoryList, -200)">⏪</button>
     <div id="categoryList" class="carousel"></div>
-    <button id="catRight" class="scrollBtn" onclick="scrollCategory(1)">⏩</button>
+    <button class="scroll-btn scroll-right" onclick="scrollElement(categoryList, 200)">⏩</button>
   </div>
 
-  <div style="position:relative">
-    <button id="chanLeft" class="scrollBtn" onclick="scrollChannel(-1)">⏪</button>
+  <!-- CHANNEL GRID -->
+  <div class="carousel-wrapper">
+    <button class="scroll-btn scroll-left" onclick="scrollElement(channelList, -300)">⏪</button>
     <div id="channelList"></div>
-    <button id="chanRight" class="scrollBtn" onclick="scrollChannel(1)">⏩</button>
+    <button class="scroll-btn scroll-right" onclick="scrollElement(channelList, 300)">⏩</button>
   </div>
 </div>
 
@@ -293,16 +283,16 @@ function renderChannels() {
 }
 
 function playChannel(channel) {
-  if (Hls.isSupported()) {
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (!isMobile && Hls.isSupported() && channel.url.endsWith(".m3u8")) {
     const hls = new Hls();
     hls.loadSource(channel.url);
     hls.attachMedia(video);
-  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    video.src = channel.url;
+    hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
   } else {
     video.src = channel.url;
+    video.play().catch(() => nowChannel.textContent = "⚠️ Video playback error.");
   }
-  video.play();
   nowChannel.textContent = `Now Playing: ${channel.name}`;
 }
 
@@ -321,17 +311,9 @@ function startFreezeMonitor() {
   }, 5000);
 }
 
-function scrollCategory(dir) {
-  document.getElementById("categoryList").scrollBy({ left: dir * 200, behavior: 'smooth' });
-}
-function scrollChannel(dir) {
-  document.getElementById("channelList").scrollBy({ left: dir * 200, behavior: 'smooth' });
-}
-
 video.addEventListener('play', startFreezeMonitor);
 search.addEventListener('input', renderChannels);
 
-// Auto restore
 window.addEventListener('load', async () => {
   const savedUser = localStorage.getItem("username");
   if (!savedUser) return;
@@ -354,6 +336,11 @@ window.addEventListener('load', async () => {
   iptvSection.style.display = 'block';
   loadPlaylist();
 });
+
+// Scroll function
+function scrollElement(el, amount) {
+  el.scrollBy({ left: amount, behavior: 'smooth' });
+}
 </script>
 </body>
 </html>
