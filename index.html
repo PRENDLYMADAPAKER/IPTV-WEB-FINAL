@@ -2,35 +2,103 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>NZM IPTV</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NZM IPTV</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet" />
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <style>
     * { box-sizing: border-box; font-family: 'Orbitron', sans-serif; }
     body, html { margin: 0; padding: 0; height: 100%; background: black; color: white; }
-    #loginSection { display: flex; justify-content: center; align-items: center; height: 100vh; background: url('https://i.imgur.com/yeftKeD.jpeg') no-repeat center center fixed; background-size: cover; }
-    .login-box { background: rgba(0,0,0,0.6); padding: 30px 40px; border-radius: 12px; backdrop-filter: blur(8px); text-align: center; }
-    .login-box input { display: block; width: 250px; margin: 10px auto; padding: 10px; border-radius: 6px; border: none; }
-    .login-box button { background: hotpink; border: none; color: white; font-weight: bold; padding: 10px 25px; border-radius: 6px; cursor: pointer; }
-    #iptvSection { display: none; min-height: 100vh; background: url('https://i.imgur.com/yeftKeD.jpeg') no-repeat center center fixed; background-size: cover; padding: 10px; }
-    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-    .logout-btn { background: crimson; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+
+    #loginSection {
+      display: flex; justify-content: center; align-items: center;
+      height: 100vh; background: url('https://i.imgur.com/yeftKeD.jpeg') no-repeat center center fixed;
+      background-size: cover;
+    }
+    .login-box {
+      background: rgba(0,0,0,0.6); padding: 30px 40px; border-radius: 12px;
+      backdrop-filter: blur(8px); text-align: center;
+    }
+    .login-box input {
+      display: block; width: 250px; margin: 10px auto;
+      padding: 10px; border-radius: 6px; border: none;
+    }
+    .login-box button {
+      background: hotpink; border: none; color: white; font-weight: bold;
+      padding: 10px 25px; border-radius: 6px; cursor: pointer;
+    }
+
+    #iptvSection {
+      display: none; min-height: 100vh;
+      background: url('https://i.imgur.com/yeftKeD.jpeg') no-repeat center center fixed;
+      background-size: cover; padding: 10px;
+    }
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .logout-btn {
+      background: crimson; padding: 8px 16px;
+      border-radius: 6px; cursor: pointer;
+    }
     video { width: 100%; border-radius: 10px; background: black; }
-    #nowChannel { text-align: center; font-weight: bold; margin: 10px 0; }
-    #search { width: 100%; padding: 10px; border-radius: 8px; margin: 10px 0; font-size: 16px; }
-    .carousel, #channelList { display: flex; overflow-x: auto; gap: 8px; padding: 10px 0; }
-    .carousel button { background: #222; color: white; border: none; padding: 6px 12px; border-radius: 20px; white-space: nowrap; }
-    .carousel button.active { background: hotpink; }
-    .channel { flex: 0 0 48%; background: rgba(255,255,255,0.1); border-radius: 10px; text-align: center; padding: 10px; }
-    .channel img { width: 100%; max-height: 100px; object-fit: contain; }
-    #reconnecting { text-align: center; color: red; display: none; margin: 5px 0; }
-    .scroll-buttons { display: flex; justify-content: space-between; align-items: center; margin: 5px 0; }
-    .scroll-buttons button { background: hotpink; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    #nowChannel {
+      text-align: center; font-weight: bold; margin: 10px 0;
+    }
+    #search {
+      width: 100%; padding: 10px; border-radius: 8px; margin: 10px 0;
+      font-size: 16px;
+    }
+
+    .carousel, #channelList {
+      display: flex; overflow-x: auto; gap: 8px;
+      padding: 10px 0;
+    }
+    .carousel button {
+      background: #222; color: white; border: none;
+      padding: 6px 12px; border-radius: 20px; white-space: nowrap;
+    }
+    .carousel button.active {
+      background: hotpink;
+    }
+
+    .channel {
+      flex: 0 0 22%; /* mas maliit sa PC */
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px; text-align: center;
+      padding: 10px;
+    }
+    .channel img {
+      width: 100%; max-height: 100px;
+      object-fit: contain;
+    }
+    #reconnecting {
+      text-align: center; color: red; display: none;
+      margin: 5px 0;
+    }
+    .scroll-buttons {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 5px 0;
+    }
+    .scroll-buttons button {
+      background: hotpink;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      .channel { flex: 0 0 45%; }
+    }
   </style>
 </head>
 <body>
+
 <div id="loginSection">
   <div class="login-box">
     <h2>NZM IPTV Login</h2>
@@ -40,21 +108,25 @@
     <p id="loginError" style="color:red;"></p>
   </div>
 </div>
+
 <div id="iptvSection">
   <div class="header">
-    <img src="logo.png" alt="Logo" style="width:60px;height:60px;border-radius:50%;">
+    <img src="logo.png" alt="Logo" style="width:60px;height:60px;border-radius:50%;" />
     <div class="logout-btn" onclick="logout()">Logout</div>
   </div>
+
   <video id="player" controls autoplay></video>
   <div id="reconnecting">Reconnecting stream...</div>
   <div id="nowChannel">Now Playing</div>
   <input type="text" id="search" placeholder="Search channels...">
+
   <div class="scroll-buttons">
     <button onclick="scrollElement('categoryList', -200)">⏪</button>
     <span>Categories</span>
     <button onclick="scrollElement('categoryList', 200)">⏩</button>
   </div>
   <div id="categoryList" class="carousel"></div>
+
   <div id="channelList" class="carousel"></div>
   <div class="scroll-buttons">
     <button onclick="scrollElement('channelList', -300)">⏪</button>
@@ -62,7 +134,7 @@
     <button onclick="scrollElement('channelList', 300)">⏩</button>
   </div>
 </div>
-
+<!-- Part 1 is already updated: This is Part 2 (JavaScript logic) -->
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyDssixgarRWvLMKtUsX7HLEt8uPGmNIRak",
@@ -90,6 +162,11 @@ localStorage.setItem('sessionId', sessionId);
 
 let channels = [], currentCategory = 'All', freezeCheck, lastTime = 0;
 
+const playlistURLs = [
+  { url: "https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/UDPTV.m3u", group: "UDPTV Live Streams" },
+  { url: "https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/TheTVApp.m3u", group: "TheTVApp" }
+];
+
 document.getElementById("loginBtn").addEventListener("click", async () => {
   const username = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
@@ -102,23 +179,23 @@ document.getElementById("loginBtn").addEventListener("click", async () => {
     if (!snapshot.exists()) return loginError.textContent = "User not found.";
     const data = snapshot.val();
 
-    if (data.password !== password) return loginError.textContent = "Incorrect password.";
-    const today = new Date().toISOString().split("T")[0];
-    if (data.expiration < today) return loginError.textContent = "Account expired.";
+    const pw = data.devices?.password;
+    const expiration = data.devices?.expiration;
+    const deviceLimit = data.device_limit || 1;
     const devices = data.devices || {};
-    if (!devices[sessionId] && Object.keys(devices).length >= data.device_limit) {
-      return loginError.textContent = "Device limit reached.";
-    }
+
+    if (!pw || pw !== password) return loginError.textContent = "Incorrect password.";
+    const today = new Date().toISOString().split("T")[0];
+    if (expiration < today) return loginError.textContent = "Account expired.";
+    const sessions = Object.keys(devices).filter(k => !["password", "expiration", "playlist", "status"].includes(k));
+    if (!devices[sessionId] && sessions.length >= deviceLimit) return loginError.textContent = "Device limit reached.";
 
     await db.ref(`users/${username}/devices/${sessionId}`).set(true);
-    localStorage.setItem('username', username);
+    localStorage.setItem("username", username);
     loginSection.style.display = 'none';
     iptvSection.style.display = 'block';
     loadPlaylist();
-
-    setInterval(() => {
-      db.ref(`users/${username}/devices/${sessionId}`).set(true);
-    }, 60000);
+    setInterval(() => db.ref(`users/${username}/devices/${sessionId}`).set(true), 60000);
   } catch (e) {
     loginError.textContent = "Login error: " + e.message;
   }
@@ -136,11 +213,6 @@ function logout() {
   loginSection.style.display = 'flex';
   iptvSection.style.display = 'none';
 }
-
-const playlistURLs = [
-  { url: "https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/UDPTV.m3u", group: "UDPTV Live Streams" },
-  { url: "https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/TheTVApp.m3u", group: "TheTVApp" }
-];
 
 async function loadPlaylist() {
   try {
@@ -248,7 +320,6 @@ async function playChannel(channel) {
   } catch (err) {
     nowChannel.textContent = "⚠️ Video playback error.";
   }
-
   nowChannel.textContent = `Now Playing: ${channel.name}`;
 }
 
@@ -286,9 +357,10 @@ window.addEventListener('load', async () => {
   }
   const data = snapshot.val();
   const today = new Date().toISOString().split("T")[0];
-  const isExpired = data.expiration < today;
+  const isExpired = data.devices?.expiration < today;
   const devices = data.devices || {};
-  if (isExpired || (!devices[savedSession] && Object.keys(devices).length >= data.device_limit)) {
+  const sessions = Object.keys(devices).filter(k => !["password", "expiration", "playlist", "status"].includes(k));
+  if (isExpired || (!devices[savedSession] && sessions.length >= data.device_limit)) {
     localStorage.clear();
     return;
   }
