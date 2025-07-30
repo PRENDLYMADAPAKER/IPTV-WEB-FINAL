@@ -10,7 +10,6 @@
   <style>
     * { box-sizing: border-box; font-family: 'Orbitron', sans-serif; }
     body, html { margin: 0; padding: 0; height: 100%; background: black; color: white; }
-
     #loginSection {
       display: flex; justify-content: center; align-items: center;
       height: 100vh; background: url('https://i.imgur.com/yeftKeD.jpeg') no-repeat center center fixed;
@@ -20,15 +19,13 @@
       background: rgba(0,0,0,0.6); padding: 30px 40px; border-radius: 12px;
       backdrop-filter: blur(8px); text-align: center;
     }
-    .login-box input {
+    .login-box input, .login-box button {
       display: block; width: 250px; margin: 10px auto;
       padding: 10px; border-radius: 6px; border: none;
     }
     .login-box button {
-      background: hotpink; border: none; color: white; font-weight: bold;
-      padding: 10px 25px; border-radius: 6px; cursor: pointer;
+      background: hotpink; color: white; font-weight: bold; cursor: pointer;
     }
-
     #iptvSection {
       display: none; min-height: 100vh;
       background: url('https://i.imgur.com/yeftKeD.jpeg') no-repeat center center fixed;
@@ -39,21 +36,17 @@
       margin-bottom: 10px;
     }
     .logout-btn {
-      background: crimson; padding: 8px 16px;
-      border-radius: 6px; cursor: pointer;
+      background: crimson; padding: 8px 16px; border-radius: 6px; cursor: pointer;
     }
     video { width: 100%; border-radius: 10px; background: black; }
     #nowChannel {
       text-align: center; font-weight: bold; margin: 10px 0;
     }
     #search {
-      width: 100%; padding: 10px; border-radius: 8px; margin: 10px 0;
-      font-size: 16px;
+      width: 100%; padding: 10px; border-radius: 8px; margin: 10px 0; font-size: 16px;
     }
-
     .carousel, #channelList {
-      display: flex; overflow-x: auto; gap: 8px;
-      padding: 10px 0;
+      display: flex; overflow-x: auto; gap: 8px; padding: 10px 0;
     }
     .carousel button {
       background: #222; color: white; border: none;
@@ -62,43 +55,27 @@
     .carousel button.active {
       background: hotpink;
     }
-
     .channel {
-      flex: 0 0 22%; /* mas maliit sa PC */
+      flex: 0 0 22%;
       background: rgba(255,255,255,0.1);
-      border-radius: 10px; text-align: center;
-      padding: 10px;
+      border-radius: 10px; text-align: center; padding: 10px;
     }
     .channel img {
-      width: 100%; max-height: 100px;
-      object-fit: contain;
+      width: 100%; max-height: 100px; object-fit: contain;
     }
     #reconnecting {
-      text-align: center; color: red; display: none;
-      margin: 5px 0;
+      text-align: center; color: red; display: none; margin: 5px 0;
     }
     .scroll-buttons {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 5px 0;
+      display: flex; justify-content: space-between; align-items: center; margin: 5px 0;
     }
     .scroll-buttons button {
-      background: hotpink;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    @media (max-width: 768px) {
-      .channel { flex: 0 0 45%; }
+      background: hotpink; border: none; padding: 6px 12px;
+      border-radius: 6px; font-weight: bold; cursor: pointer;
     }
   </style>
 </head>
 <body>
-
 <div id="loginSection">
   <div class="login-box">
     <h2>NZM IPTV Login</h2>
@@ -108,33 +85,29 @@
     <p id="loginError" style="color:red;"></p>
   </div>
 </div>
-
 <div id="iptvSection">
   <div class="header">
-    <img src="logo.png" alt="Logo" style="width:60px;height:60px;border-radius:50%;" />
+    <img src="logo.png" alt="Logo" style="width:60px;height:60px;border-radius:50%;">
     <div class="logout-btn" onclick="logout()">Logout</div>
   </div>
-
   <video id="player" controls autoplay></video>
   <div id="reconnecting">Reconnecting stream...</div>
   <div id="nowChannel">Now Playing</div>
   <input type="text" id="search" placeholder="Search channels...">
-
   <div class="scroll-buttons">
     <button onclick="scrollElement('categoryList', -200)">⏪</button>
     <span>Categories</span>
     <button onclick="scrollElement('categoryList', 200)">⏩</button>
   </div>
   <div id="categoryList" class="carousel"></div>
-
   <div id="channelList" class="carousel"></div>
   <div class="scroll-buttons">
     <button onclick="scrollElement('channelList', -300)">⏪</button>
     <span>Channels</span>
     <button onclick="scrollElement('channelList', 300)">⏩</button>
   </div>
-</div>
-<!-- Part 1 is already updated: This is Part 2 (JavaScript logic) -->
+  </div>
+
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyDssixgarRWvLMKtUsX7HLEt8uPGmNIRak",
@@ -162,11 +135,6 @@ localStorage.setItem('sessionId', sessionId);
 
 let channels = [], currentCategory = 'All', freezeCheck, lastTime = 0;
 
-const playlistURLs = [
-  { url: "https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/UDPTV.m3u", group: "UDPTV Live Streams" },
-  { url: "https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/TheTVApp.m3u", group: "TheTVApp" }
-];
-
 document.getElementById("loginBtn").addEventListener("click", async () => {
   const username = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
@@ -179,23 +147,27 @@ document.getElementById("loginBtn").addEventListener("click", async () => {
     if (!snapshot.exists()) return loginError.textContent = "User not found.";
     const data = snapshot.val();
 
-    const pw = data.devices?.password;
-    const expiration = data.devices?.expiration;
-    const deviceLimit = data.device_limit || 1;
-    const devices = data.devices || {};
-
-    if (!pw || pw !== password) return loginError.textContent = "Incorrect password.";
+    if (data.devices?.password !== password) return loginError.textContent = "Incorrect password.";
     const today = new Date().toISOString().split("T")[0];
-    if (expiration < today) return loginError.textContent = "Account expired.";
-    const sessions = Object.keys(devices).filter(k => !["password", "expiration", "playlist", "status"].includes(k));
-    if (!devices[sessionId] && sessions.length >= deviceLimit) return loginError.textContent = "Device limit reached.";
+    if (data.devices?.expiration < today) return loginError.textContent = "Account expired.";
+
+    const devices = data.devices || {};
+    const activeSessions = Object.keys(devices).filter(k =>
+      !["password", "expiration", "playlist", "status"].includes(k)
+    );
+    if (!devices[sessionId] && activeSessions.length >= data.device_limit) {
+      return loginError.textContent = "Device limit reached.";
+    }
 
     await db.ref(`users/${username}/devices/${sessionId}`).set(true);
-    localStorage.setItem("username", username);
+    localStorage.setItem('username', username);
     loginSection.style.display = 'none';
     iptvSection.style.display = 'block';
     loadPlaylist();
-    setInterval(() => db.ref(`users/${username}/devices/${sessionId}`).set(true), 60000);
+
+    setInterval(() => {
+      db.ref(`users/${username}/devices/${sessionId}`).set(true);
+    }, 60000);
   } catch (e) {
     loginError.textContent = "Login error: " + e.message;
   }
@@ -213,6 +185,11 @@ function logout() {
   loginSection.style.display = 'flex';
   iptvSection.style.display = 'none';
 }
+
+const playlistURLs = [
+  { url: "https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/UDPTV.m3u", group: "UDPTV Live Streams" },
+  { url: "https://raw.githubusercontent.com/PRENDLYMADAPAKER/ANG-KALAT-MO/main/TheTVApp.m3u", group: "TheTVApp" }
+];
 
 async function loadPlaylist() {
   try {
@@ -283,19 +260,6 @@ function renderChannels() {
   });
 }
 
-async function loadHlsVersion(version) {
-  return new Promise((resolve, reject) => {
-    const existing = document.getElementById("hlsjs-dynamic");
-    if (existing) existing.remove();
-    const script = document.createElement("script");
-    script.id = "hlsjs-dynamic";
-    script.src = `https://cdn.jsdelivr.net/npm/hls.js@${version}`;
-    script.onload = resolve;
-    script.onerror = reject;
-    document.head.appendChild(script);
-  });
-}
-
 async function playChannel(channel) {
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   video.pause();
@@ -303,10 +267,8 @@ async function playChannel(channel) {
   video.load();
 
   try {
-    if (!isMobile && channel.url.endsWith(".m3u8")) {
-      const version = channel.group === "UDPTV Live Streams" ? "1.4.12" : "1.1.5";
-      await loadHlsVersion(version);
-      const hls = new Hls();
+    if (!isMobile && Hls.isSupported() && channel.url.endsWith(".m3u8")) {
+      const hls = new Hls();  // using default loaded HLS.js (latest)
       hls.loadSource(channel.url);
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
@@ -320,6 +282,7 @@ async function playChannel(channel) {
   } catch (err) {
     nowChannel.textContent = "⚠️ Video playback error.";
   }
+
   nowChannel.textContent = `Now Playing: ${channel.name}`;
 }
 
@@ -359,8 +322,10 @@ window.addEventListener('load', async () => {
   const today = new Date().toISOString().split("T")[0];
   const isExpired = data.devices?.expiration < today;
   const devices = data.devices || {};
-  const sessions = Object.keys(devices).filter(k => !["password", "expiration", "playlist", "status"].includes(k));
-  if (isExpired || (!devices[savedSession] && sessions.length >= data.device_limit)) {
+  const activeSessions = Object.keys(devices).filter(k =>
+    !["password", "expiration", "playlist", "status"].includes(k)
+  );
+  if (isExpired || (!devices[savedSession] && activeSessions.length >= data.device_limit)) {
     localStorage.clear();
     return;
   }
